@@ -39,7 +39,7 @@
             <div class="relative mt-3">
                 <span
                     class="px-4 py-1 text-xs font-semibold rounded-full {{ $bgBadge }} {{ $textBadge }} shadow-sm uppercase tracking-wider">
-                    {{ __('Version') }} 2.0
+                    {{ __('Version') }} 2.1
                 </span>
             </div>
 

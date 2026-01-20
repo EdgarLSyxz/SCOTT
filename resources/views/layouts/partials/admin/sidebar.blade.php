@@ -52,7 +52,7 @@
         [
             'name' => __('MySQL'),
             'icon' => 'fa-solid fa-database',
-            'route' => 'http://172.16.100.93/phpmyadmin/index.php?route=/database/structure&db=scott_database',
+            'route' => 'http://172.16.126.166/phpmyadmin/index.php?route=/database/structure&db=scott_database',
             'external' => true,
             'active' => false,
         ],
