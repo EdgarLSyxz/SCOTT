@@ -83,7 +83,7 @@ class GrafanaCutv extends Component
         }
 
         $params = [
-            "orgId" => 1,
+            "orgId" => 3,
             "timezone" => "browser",
             "refresh" => "5s",
             "theme" => $this->theme,
