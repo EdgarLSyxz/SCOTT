@@ -53,7 +53,7 @@ class DownloadExportController extends Controller
             }
         }
 
-        $filename = __('Download history') . ' - ' . now()->format(format: 'dmY-His') . '.csv';
+        $filename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -600,6 +600,8 @@ class DownloadExportController extends Controller
             $sheet->setCellValue('B1', 'Value');
             $sheet->getColumnDimension('A')->setWidth(20);
             $sheet->getColumnDimension('B')->setWidth(36);
+            $sheet->getStyle('A1:B1')->getFont()->setBold(true);
+            $sheet->getStyle('A2:A4')->getFont()->setBold(true);
             $sheet->setCellValue('A2', 'Total reports');
             $sheet->setCellValue('B2', $pd['summary']['total'] ?? 0);
             $sheet->setCellValue('A3', 'Average per month');
@@ -621,6 +623,8 @@ class DownloadExportController extends Controller
                 $sheet2->setCellValueByColumnAndRow($colNum, 1, $lbl);
                 $colNum++;
             }
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(max(1, $colNum - 1));
+            $sheet2->getStyle("A1:{$lastColLetter}1")->getFont()->setBold(true);
 
             if (!empty($pd['devices']) && is_array($pd['devices'])) {
                 $row = 2;
@@ -641,13 +645,19 @@ class DownloadExportController extends Controller
             $writer->save('php://output');
             $xlsData = ob_get_clean();
 
-            $filename = 'download_history_' . now()->format('Ymd_His') . '.xlsx';
+            $filename = 'Download History - ' . now()->format('Ymd His') . '.xlsx';
 
             $to = $auth->email ?? config('mail.from.address');
             $subject = __('Download history') . ' - ' . ($pd['year'] ?? date('Y'));
             $body = __('Attached is the monthly download summary for the selected period.');
 
             Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename));
+
+            session()->flash('swal', [
+                'icon' => 'success',
+                'title' => __('Well done!'),
+                'text' => __('Email sent successfully.')
+            ]);
 
             return response()->json(['message' => __('Email sent successfully')]);
         } catch (\Throwable $e) {
@@ -675,6 +685,12 @@ class DownloadExportController extends Controller
                 $filename = 'download_history_' . now()->format('Ymd_His') . '.csv';
                 Mail::to($auth->email ?? config('mail.from.address'))
                     ->send(new DownloadsExcelMail($subject, $body, $csvData, $filename));
+
+                session()->flash('swal', [
+                    'icon' => 'success',
+                    'title' => __('Well done!'),
+                    'text' => __('Email sent with CSV fallback')
+                ]);
 
                 return response()->json(['message' => __('Email sent with CSV fallback')]);
             } catch (\Throwable $_e) {
