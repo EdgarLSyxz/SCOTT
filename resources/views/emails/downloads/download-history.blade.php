@@ -18,6 +18,34 @@
         {!! nl2br(e($body ?? '')) !!}
       </div>
 
+      @php
+        $meta = $report ?? [];
+        if (empty($meta)) {
+            $meta = [];
+            if (!empty($title)) $meta['title'] = $title;
+            if (!empty($description)) $meta['description'] = $description;
+            if (!empty($year)) $meta['year'] = $year;
+            if (!empty($device_name)) $meta['device_name'] = $device_name;
+            if (!empty($device_id)) $meta['device_id'] = $device_id;
+        }
+      @endphp
+
+      @if(!empty($meta) && is_array($meta))
+        <div style="margin-bottom:12px;">
+          <h3 style="margin:0 0 6px 0; font-size:14px; color:#0f172a;">{{ __('Report details') }}</h3>
+          <table style="width:100%; border-collapse:collapse; margin-top:6px;">
+            @foreach($meta as $k => $v)
+              @if($v !== null && $v !== '')
+                <tr>
+                  <td style="width:160px; font-weight:600; padding:6px 8px; border-bottom:1px solid #e5e7eb; text-transform:capitalize; color:#374151;">{{ __(ucwords(str_replace('_',' ', $k))) }}</td>
+                  <td style="padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#111;">@if(is_array($v)){{ implode(', ', $v) }}@else{{ $v }}@endif</td>
+                </tr>
+              @endif
+            @endforeach
+          </table>
+        </div>
+      @endif
+
       @if(!empty($summary) && is_array($summary))
         <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
           <tr>

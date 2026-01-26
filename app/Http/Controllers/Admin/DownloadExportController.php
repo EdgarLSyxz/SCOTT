@@ -612,11 +612,9 @@ class DownloadExportController extends Controller
             $sheet2 = $spreadsheet->createSheet();
             $sheet2->setTitle('Details');
             $labels = $pd['period_labels'] ?? [];
-            $sheet2->setCellValue('A1', 'Device ID');
-            $sheet2->setCellValue('B1', 'Device Name');
-            $sheet2->getColumnDimension('A')->setWidth(14);
-            $sheet2->getColumnDimension('B')->setWidth(40);
-            $colNum = 3;
+            $sheet2->setCellValue('A1', 'Device Name');
+            $sheet2->getColumnDimension('A')->setWidth(40);
+            $colNum = 2;
             foreach ($labels as $i => $lbl) {
                 $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colNum);
                 $sheet2->getColumnDimension($colLetter)->setWidth(18);
@@ -629,9 +627,8 @@ class DownloadExportController extends Controller
             if (!empty($pd['devices']) && is_array($pd['devices'])) {
                 $row = 2;
                 foreach ($pd['devices'] as $dev) {
-                    $sheet2->setCellValueByColumnAndRow(1, $row, $dev['id'] ?? '');
-                    $sheet2->setCellValueByColumnAndRow(2, $row, $dev['name'] ?? '');
-                    $colNum = 3;
+                    $sheet2->setCellValueByColumnAndRow(1, $row, $dev['name'] ?? '');
+                    $colNum = 2;
                     foreach ($dev['counts'] ?? [] as $count) {
                         $sheet2->setCellValueByColumnAndRow($colNum, $row, $count);
                         $colNum++;
@@ -659,7 +656,7 @@ class DownloadExportController extends Controller
                 'text' => __('Email sent successfully.')
             ]);
 
-            return response()->json(['message' => __('Email sent successfully')]);
+            return response()->json(['message' => __('Email sent successfully.')]);
         } catch (\Throwable $e) {
             \Log::error('historyEmail error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             try {

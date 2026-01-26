@@ -248,14 +248,15 @@ $selectRingClass = $area === 'OTT'
                         console.log('Prefetched data received:', preData);
                     } catch (err) {
                         console.error('Error fetching historical data:', err);
-                        alert('Error fetching historical data from server: ' + err.message);
+                        const errMsg1 = (err && err.message) ? String(err.message) : '';
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg1 ? @json(__('Error fetching historical data from server:')) + ' ' + errMsg1 : @json(__('Error fetching historical data from server')) });
                         return;
                     }
                 }
 
                 if (!preData || typeof preData !== 'object') {
                     console.error('Invalid data response (not object):', preData);
-                    alert('Invalid data response from server');
+                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Invalid data response from server')) });
                     return;
                 }
 
@@ -266,7 +267,7 @@ $selectRingClass = $area === 'OTT'
                 const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
                 const pieCanvas = document.getElementById('pieDownloadsChart');
                 if (!monthlyCanvas || !pieCanvas) {
-                    alert('Charts not ready');
+                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Charts not ready')) });
                     return;
                 }
 
@@ -308,7 +309,8 @@ $selectRingClass = $area === 'OTT'
                     console.log('PDF downloaded successfully');
                 } catch (err) {
                     console.error('Error generating PDF:', err);
-                    alert('Error generating PDF: ' + err.message);
+                    const errMsg2 = (err && err.message) ? String(err.message) : '';
+                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg2 ? @json(__('Error generating PDF:')) + ' ' + errMsg2 : @json(__('Error generating PDF')) });
                 }
             }
 
@@ -338,7 +340,8 @@ $selectRingClass = $area === 'OTT'
                         preData = await resp.json();
                     } catch (err) {
                         console.error('Error fetching data for email export:', err);
-                        alert('Error fetching data from server: ' + err.message);
+                        const errMsg3 = (err && err.message) ? String(err.message) : '';
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg3 ? @json(__('Error fetching data from server:')) + ' ' + errMsg3 : @json(__('Error fetching data from server')) });
                         return;
                     }
                 }
@@ -355,10 +358,11 @@ $selectRingClass = $area === 'OTT'
                         throw new Error('Email export failed: ' + (txt || resp.status));
                     }
                     const json = await resp.json().catch(()=>null);
-                    alert((json && json.message) ? json.message : 'Email sent successfully');
+                    Swal.fire({ icon: 'success', title: @json(__('Well done!')), text: (json && json.message) ? json.message : @json(__('Email sent successfully.')) });
                 } catch (err) {
                     console.error('Error sending email export:', err);
-                    alert('Error sending email export: ' + err.message);
+                    const errMsg4 = (err && err.message) ? String(err.message) : '';
+                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg4 ? @json(__('Error sending email export:')) + ' ' + errMsg4 : @json(__('Error sending email export')) });
                 }
             }
         </script>
