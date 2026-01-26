@@ -35,6 +35,10 @@ Route::post('devices/downloads/history.pdf', [DownloadExportController::class, '
     ->name('admin.downloads.history.pdf')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
+Route::post('devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
+    ->name('admin.downloads.history.email')
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+
 Route::get('devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
     ->name('admin.downloads.history.data')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);

@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\DownloadsExcelMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DownloadExportController extends Controller
 {
@@ -560,11 +564,123 @@ class DownloadExportController extends Controller
         $dompdf->render();
 
         $pdf = $dompdf->output();
-        $filename = __('Download History') . ' ' . now()->format(format: 'dmY His') . '.pdf';
+        $filename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    public function historyEmail(Request $request)
+    {
+        $auth = Auth::user();
+        if (! $auth) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $prefetched = $request->input('data');
+        if ($prefetched) {
+            $pd = is_string($prefetched) ? json_decode($prefetched, true) : $prefetched;
+        } else {
+            $resp = $this->historyData($request);
+            $pd = json_decode($resp->getContent(), true);
+        }
+
+        if (!is_array($pd)) {
+            return response()->json(['message' => 'Invalid data'], 422);
+        }
+
+        try {
+            $spreadsheet = new Spreadsheet();
+
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Summary');
+            $sheet->setCellValue('A1', 'Metric');
+            $sheet->setCellValue('B1', 'Value');
+            $sheet->getColumnDimension('A')->setWidth(20);
+            $sheet->getColumnDimension('B')->setWidth(36);
+            $sheet->setCellValue('A2', 'Total reports');
+            $sheet->setCellValue('B2', $pd['summary']['total'] ?? 0);
+            $sheet->setCellValue('A3', 'Average per month');
+            $sheet->setCellValue('B3', $pd['summary']['average'] ?? 0);
+            $sheet->setCellValue('A4', 'Top month');
+            $sheet->setCellValue('B4', ($pd['summary']['top_month_label'] ?? '') . ' (' . ($pd['summary']['top_month_value'] ?? 0) . ')');
+
+            $sheet2 = $spreadsheet->createSheet();
+            $sheet2->setTitle('Details');
+            $labels = $pd['period_labels'] ?? [];
+            $sheet2->setCellValue('A1', 'Device ID');
+            $sheet2->setCellValue('B1', 'Device Name');
+            $sheet2->getColumnDimension('A')->setWidth(14);
+            $sheet2->getColumnDimension('B')->setWidth(40);
+            $colNum = 3;
+            foreach ($labels as $i => $lbl) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colNum);
+                $sheet2->getColumnDimension($colLetter)->setWidth(18);
+                $sheet2->setCellValueByColumnAndRow($colNum, 1, $lbl);
+                $colNum++;
+            }
+
+            if (!empty($pd['devices']) && is_array($pd['devices'])) {
+                $row = 2;
+                foreach ($pd['devices'] as $dev) {
+                    $sheet2->setCellValueByColumnAndRow(1, $row, $dev['id'] ?? '');
+                    $sheet2->setCellValueByColumnAndRow(2, $row, $dev['name'] ?? '');
+                    $colNum = 3;
+                    foreach ($dev['counts'] ?? [] as $count) {
+                        $sheet2->setCellValueByColumnAndRow($colNum, $row, $count);
+                        $colNum++;
+                    }
+                    $row++;
+                }
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            ob_start();
+            $writer->save('php://output');
+            $xlsData = ob_get_clean();
+
+            $filename = 'download_history_' . now()->format('Ymd_His') . '.xlsx';
+
+            $to = $auth->email ?? config('mail.from.address');
+            $subject = __('Download history') . ' - ' . ($pd['year'] ?? date('Y'));
+            $body = __('Attached is the monthly download summary for the selected period.');
+
+            Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename));
+
+            return response()->json(['message' => __('Email sent successfully')]);
+        } catch (\Throwable $e) {
+            \Log::error('historyEmail error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            try {
+                $csv = fopen('php://temp', 'r+');
+                fputcsv($csv, ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at']);
+                foreach ($pd['download_rows'] ?? [] as $r) {
+                    fputcsv($csv, [
+                        $r['id'] ?? '',
+                        $r['device_id'] ?? '',
+                        $r['device_name'] ?? '',
+                        $r['protocol'] ?? '',
+                        $r['device_area'] ?? '',
+                        $r['year'] ?? '',
+                        $r['month'] ?? '',
+                        $r['count'] ?? '',
+                        $r['created_at'] ?? '',
+                    ]);
+                }
+                rewind($csv);
+                $csvData = stream_get_contents($csv);
+                fclose($csv);
+
+                $filename = 'download_history_' . now()->format('Ymd_His') . '.csv';
+                Mail::to($auth->email ?? config('mail.from.address'))
+                    ->send(new DownloadsExcelMail($subject, $body, $csvData, $filename));
+
+                return response()->json(['message' => __('Email sent with CSV fallback')]);
+            } catch (\Throwable $_e) {
+                \Log::error('historyEmail fallback error', ['error' => $_e->getMessage()]);
+                return response()->json(['message' => 'Failed to send email'], 500);
+            }
+        }
     }
 }

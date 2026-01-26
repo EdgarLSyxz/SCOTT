@@ -91,11 +91,42 @@ $selectRingClass = $area === 'OTT'
                         <i class="fa-solid fa-chart-pie"></i>{{ __(key: 'Distribution by year:') }}<span style="font-weight:600;">{{ $selectedYear ?? date('Y') }}</span>
                     </h3>
 
-                    <div class="ml-0 sm:ml-2 mt-0 sm:mt-0">
-                        <button type="button" id="exportPdfBtn" onclick="exportChartsPdf(event)"
-                            class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none">
-                            <i class="fa-solid fa-file-pdf mr-2"></i> {{ __('Export PDF') }}
-                        </button>
+                    <div class="ml-0 sm:ml-2 mt-0 sm:mt-0 flex items-center gap-2">
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                            <button type="button" id="exportPdfBtn" onclick="exportChartsPdf(event)"
+                                class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none">
+                                <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+                            </button>
+                            <div x-show="open" x-cloak
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-75"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-75"
+                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip">
+                                {{ __('Export PDF') }}
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                            <button type="button" id="emailExportBtn" onclick="exportMonthlyByEmail(event)"
+                                class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none">
+                                <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                            </button>
+                            <div x-show="open" x-cloak
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-75"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-75"
+                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip">
+                                {{ __('Send by email') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -174,6 +205,7 @@ $selectRingClass = $area === 'OTT'
         <script>
             const downloadsPdfUrl = "{{ route('admin.downloads.history.pdf') }}";
             const downloadsDataUrl = "{{ route('admin.downloads.history.data') }}";
+            const downloadsEmailUrl = "{{ route('admin.downloads.history.email') }}";
 
             if (window && typeof Livewire !== 'undefined') {
                 try {
@@ -266,7 +298,7 @@ $selectRingClass = $area === 'OTT'
                     (function(){
                         const now = new Date();
                         const pad = (n) => String(n).padStart(2, '0');
-                        const filename = `Download History ${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())} ${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.pdf`;
+                        const filename = `Download History - ${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())} ${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.pdf`;
                         a.download = filename;
                     })();
                     document.body.appendChild(a);
@@ -277,6 +309,56 @@ $selectRingClass = $area === 'OTT'
                 } catch (err) {
                     console.error('Error generating PDF:', err);
                     alert('Error generating PDF: ' + err.message);
+                }
+            }
+
+            async function exportMonthlyByEmail(e) {
+                e && e.preventDefault();
+
+                const yearSelect = document.querySelector('#select-year');
+                const deviceSelect = document.querySelector('#select-device');
+                const params = new URLSearchParams();
+                if (yearSelect) params.append('year', yearSelect.value);
+                if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
+
+                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
+
+                let preData = null;
+                try {
+                    if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                        preData = window.__downloadsLatest;
+                    }
+                } catch (e) { }
+
+                if (!preData) {
+                    try {
+                        const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
+                        if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
+                        preData = await resp.json();
+                    } catch (err) {
+                        console.error('Error fetching data for email export:', err);
+                        alert('Error fetching data from server: ' + err.message);
+                        return;
+                    }
+                }
+
+                const fd = new FormData();
+                fd.append('data', JSON.stringify(preData));
+                if (yearSelect) fd.append('year', yearSelect.value);
+                if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
+
+                try {
+                    const resp = await fetch(downloadsEmailUrl, { method: 'POST', body: fd, headers });
+                    if (!resp.ok) {
+                        const txt = await resp.text().catch(()=>null);
+                        throw new Error('Email export failed: ' + (txt || resp.status));
+                    }
+                    const json = await resp.json().catch(()=>null);
+                    alert((json && json.message) ? json.message : 'Email sent successfully');
+                } catch (err) {
+                    console.error('Error sending email export:', err);
+                    alert('Error sending email export: ' + err.message);
                 }
             }
         </script>
