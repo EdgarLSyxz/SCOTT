@@ -43,7 +43,7 @@
             @foreach($meta as $k => $v)
               @if($v !== null && $v !== '')
                 <tr>
-                  <td style="width:160px; font-weight:600; padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#374151;">{{ __(ucwords(str_replace('_', ' ', $k))) }}</td>
+                  <td style="width:220px; font-weight:600; padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#374151;">{{ __(ucwords(str_replace('_', ' ', $k))) }}</td>
                   <td style="padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#111;">@if(is_array($v)){{ implode(', ', $v) }}@else{{ $v }}@endif</td>
                 </tr>
               @endif
