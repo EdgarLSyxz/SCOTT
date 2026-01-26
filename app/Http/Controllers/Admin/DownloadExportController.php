@@ -645,7 +645,7 @@ class DownloadExportController extends Controller
             $filename = 'Download History - ' . now()->format('Ymd His') . '.xlsx';
 
             $to = $auth->email ?? config('mail.from.address');
-            $subject = __('Download history') . ' - ' . ($pd['year'] ?? date('Y'));
+            $subject = __('Download History') . ' - ' . ($pd['year'] ?? date('Y'));
             $body = __('Attached is the monthly download summary for the selected period.');
 
             Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename));
