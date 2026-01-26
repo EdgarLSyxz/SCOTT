@@ -646,9 +646,24 @@ class DownloadExportController extends Controller
 
             $to = $auth->email ?? config('mail.from.address');
             $subject = __('Download History') . ' - ' . ($pd['year'] ?? date('Y'));
-            $body = __('Attached is the monthly download summary for the selected period.');
+            $body = '';
 
-            Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename));
+            $meta = [];
+            $meta['year'] = $pd['year'] ?? $request->input('year') ?? date('Y');
+            $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
+            if ($deviceId) {
+                $meta['device_id'] = $deviceId;
+                try {
+                    $devName = DB::table('devices')->where('id', $deviceId)->value('name');
+                    $meta['device_name'] = $devName ?: null;
+                } catch (\Throwable $_e) { }
+            }
+            $meta['devices_count'] = is_array($pd['devices'] ?? null) ? count($pd['devices']) : 0;
+            $meta['selected_all'] = empty($deviceId);
+            if ($request->filled('title')) $meta['title'] = $request->input('title');
+            if ($request->filled('description')) $meta['description'] = $request->input('description');
+
+            Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename, $meta));
 
             session()->flash('swal', [
                 'icon' => 'success',
@@ -679,9 +694,10 @@ class DownloadExportController extends Controller
                 $csvData = stream_get_contents($csv);
                 fclose($csv);
 
-                $filename = 'download_history_' . now()->format('Ymd_His') . '.csv';
+                $filename = 'Download History' . ' - ' . now()->format('Ymd His') . '.csv';
+                $metaFallback = $meta ?? [];
                 Mail::to($auth->email ?? config('mail.from.address'))
-                    ->send(new DownloadsExcelMail($subject, $body, $csvData, $filename));
+                    ->send(new DownloadsExcelMail($subject, $body, $csvData, $filename, $metaFallback));
 
                 session()->flash('swal', [
                     'icon' => 'success',
