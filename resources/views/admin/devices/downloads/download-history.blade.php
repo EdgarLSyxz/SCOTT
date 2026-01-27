@@ -35,7 +35,7 @@
         .device-name { font-weight:700; font-size:13px; color:var(--text); }
         .device-meta { font-size:11px; color:var(--muted); }
         .device-total { font-weight:700; color:var(--text); }
-        .device-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+        .device-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; margin-bottom: 24px; }
         .month-list { margin:6px 0 0 0; padding:0; list-style:none; font-size:11px; color:var(--muted); }
         .month-list li { margin-bottom:6px; }
         .card .card-header { display:flex; align-items:center; gap:8px; width:100%; }
@@ -149,7 +149,7 @@
             </div>
         @endif
 
-        @if(!empty($pieImage))
+        @if(!empty($pieImage) && empty($device_id))
             <div class="section" style="margin-top: 12px;">
                 <h3>{{ __('Protocol distribution') }}</h3>
                 <div class="chart-box">
@@ -172,7 +172,7 @@
             @if(!empty($devices) && count($devices))
                 <div class="device-grid">
                     @foreach($devices as $d)
-                        <div class="card" style="display:flex;flex-direction:column;">
+                        <div class="card" style="display:flex;flex-direction:column;margin-bottom:24px;">
                             <div class="card-header">
                                 <div class="device-name-inline">{{ $d['name'] }}</div>
                                 <div class="device-total-inline">{{ __('Total') }}: {{ $d['total'] }}</div>

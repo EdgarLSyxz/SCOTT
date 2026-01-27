@@ -152,7 +152,7 @@ $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'f
                 </div>
 
                 @php
-$devProtocol = $kpis['device_protocol_percent'] ?? null;
+                    $devProtocol = $kpis['device_protocol_percent'] ?? null;
                 @endphp
 
                 @if(!empty($devProtocol) && is_array($devProtocol))

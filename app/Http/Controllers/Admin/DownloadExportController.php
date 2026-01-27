@@ -573,7 +573,7 @@ class DownloadExportController extends Controller
             }
         }
 
-        $html = view('admin.devices.downloads.pdf', $data)->render();
+        $html = view('admin.devices.downloads.download-history', $data)->render();
 
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
