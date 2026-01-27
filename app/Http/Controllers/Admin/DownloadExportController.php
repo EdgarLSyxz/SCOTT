@@ -610,47 +610,91 @@ class DownloadExportController extends Controller
 
         try {
             $spreadsheet = new Spreadsheet();
+            $year = $pd['year'] ?? $request->input('year') ?? date('Y');
+            $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
 
-            $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setTitle('Resumen');
-            $sheet->setCellValue('A1', 'Métrica');
-            $sheet->setCellValue('B1', 'Valor');
-            $sheet->getColumnDimension('A')->setWidth(20);
-            $sheet->getColumnDimension('B')->setWidth(36);
-            $sheet->getStyle('A1:B1')->getFont()->setBold(true);
-            $sheet->getStyle('A2:A4')->getFont()->setBold(true);
-            $sheet->setCellValue('A2', 'Total de descargas');
-            $sheet->setCellValue('B2', $pd['summary']['total'] ?? 0);
-            $sheet->setCellValue('A3', 'Promedio mensual');
-            $sheet->setCellValue('B3', $pd['summary']['average'] ?? 0);
-            $sheet->setCellValue('A4', 'Mes con más descargas');
-            $sheet->setCellValue('B4', ($pd['summary']['top_month_label'] ?? '') . ' (' . ($pd['summary']['top_month_value'] ?? 0) . ')');
+            $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-            $sheet2 = $spreadsheet->createSheet();
-            $sheet2->setTitle('Detalles');
-            $labels = $pd['period_labels'] ?? [];
-            $sheet2->setCellValue('A1', 'Dispositivo');
-            $sheet2->getColumnDimension('A')->setWidth(40);
-            $colNum = 2;
-            foreach ($labels as $i => $lbl) {
-                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colNum);
-                $sheet2->getColumnDimension($colLetter)->setWidth(18);
-                $sheet2->setCellValueByColumnAndRow($colNum, 1, $lbl);
-                $colNum++;
+            $auth = Auth::user();
+            $areaFilter = null;
+            if ($auth && $auth->id !== 1) {
+                if ($viewerArea = $auth->area) {
+                    $areaFilter = $viewerArea;
+                }
             }
-            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(max(1, $colNum - 1));
-            $sheet2->getStyle("A1:{$lastColLetter}1")->getFont()->setBold(true);
 
-            if (!empty($pd['devices']) && is_array($pd['devices'])) {
-                $row = 2;
-                foreach ($pd['devices'] as $dev) {
-                    $sheet2->setCellValueByColumnAndRow(1, $row, $dev['name'] ?? '');
-                    $colNum = 2;
-                    foreach ($dev['counts'] ?? [] as $count) {
-                        $sheet2->setCellValueByColumnAndRow($colNum, $row, $count);
-                        $colNum++;
+            $firstSheet = true;
+            for ($month = 1; $month <= 12; $month++) {
+                if ($firstSheet) {
+                    $sheet = $spreadsheet->getActiveSheet();
+                    $firstSheet = false;
+                } else {
+                    $sheet = $spreadsheet->createSheet();
+                }
+
+                $sheet->setTitle($monthNames[$month - 1]);
+                $sheet->setCellValue('A1', 'Día');
+                $sheet->setCellValue('B1', 'Dispositivo');
+                $sheet->setCellValue('C1', 'Descargas');
+                $sheet->getColumnDimension('A')->setWidth(15);
+                $sheet->getColumnDimension('B')->setWidth(40);
+                $sheet->getColumnDimension('C')->setWidth(15);
+                $sheet->getStyle('A1:C1')->getFont()->setBold(true);
+
+                $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+
+                $query = DB::table('downloads')
+                    ->selectRaw('DAY(downloads.created_at) as day, devices.name as device_name, SUM(downloads.count) as total')
+                    ->join('devices', 'downloads.device_id', '=', 'devices.id')
+                    ->where('downloads.year', $year)
+                    ->where('downloads.month', $month);
+
+                if ($areaFilter) {
+                    $query->where('devices.area', $areaFilter);
+                }
+
+                if ($deviceId) {
+                    $query->where('downloads.device_id', $deviceId);
+                }
+
+                $dailyDownloads = $query->groupBy(DB::raw('DAY(downloads.created_at)'), 'devices.name', 'downloads.device_id')
+                    ->orderBy(DB::raw('DAY(downloads.created_at)'), 'asc')
+                    ->orderBy('devices.name', 'asc')
+                    ->get();
+
+                $downloadsByDay = [];
+                foreach ($dailyDownloads as $download) {
+                    $day = (int)$download->day;
+                    $deviceName = $download->device_name ?? '—';
+
+                    if (!isset($downloadsByDay[$day])) {
+                        $downloadsByDay[$day] = [];
                     }
-                    $row++;
+
+                    if (!isset($downloadsByDay[$day][$deviceName])) {
+                        $downloadsByDay[$day][$deviceName] = 0;
+                    }
+
+                    $downloadsByDay[$day][$deviceName] += (int)($download->total ?? 0);
+                }
+
+                $row = 2;
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day);
+
+                    if (isset($downloadsByDay[$day]) && count($downloadsByDay[$day]) > 0) {
+                        foreach ($downloadsByDay[$day] as $deviceName => $total) {
+                            $sheet->setCellValue("A{$row}", $dateStr);
+                            $sheet->setCellValue("B{$row}", $deviceName);
+                            $sheet->setCellValue("C{$row}", $total);
+                            $row++;
+                        }
+                    } else {
+                        $sheet->setCellValue("A{$row}", $dateStr);
+                        $sheet->setCellValue("B{$row}", '—');
+                        $sheet->setCellValue("C{$row}", 0);
+                        $row++;
+                    }
                 }
             }
 
