@@ -234,7 +234,12 @@ class DownloadExportController extends Controller
                 $total = array_sum($counts);
                 $avg = count($counts) ? round($total / count($counts), 2) : 0;
                 $topIndex = array_search(max($counts), $counts);
-                $topLabel = isset($months[$topIndex]) ? Carbon::createFromFormat('Y-m', $months[$topIndex])->format('M Y') : null;
+                $topLabel = null;
+                if (isset($months[$topIndex])) {
+                    $topLabelRaw = Carbon::createFromFormat('Y-m', $months[$topIndex])->locale('es')->isoFormat('MMM YYYY');
+                    $topLabelRaw = preg_replace('/\.$/u', '', $topLabelRaw);
+                    $topLabel = mb_convert_case($topLabelRaw, MB_CASE_TITLE, 'UTF-8');
+                }
                 $topValue = $counts[$topIndex] ?? 0;
 
                 $devicesList[] = [
@@ -282,7 +287,11 @@ class DownloadExportController extends Controller
             $overallTopValue = $monthlyTotals[$overallTopIndex] ?? 0;
 
             $data['devices'] = $devicesList;
-            $data['period_labels'] = array_map(function ($m) { return Carbon::createFromFormat('Y-m', $m)->format('M Y'); }, $months);
+            $data['period_labels'] = array_map(function ($m) {
+                $lbl = Carbon::createFromFormat('Y-m', $m)->locale('es')->isoFormat('MMM YYYY');
+                $lbl = preg_replace('/\.$/u', '', $lbl);
+                return mb_convert_case($lbl, MB_CASE_TITLE, 'UTF-8');
+            }, $months);
             $data['summary'] = [
                 'total' => $overallTotal,
                 'average' => $overallAvg,
@@ -496,7 +505,12 @@ class DownloadExportController extends Controller
                     $total = array_sum($counts);
                     $avg = $n ? round($total / $n, 2) : 0;
                     $topIndex = array_search(max($counts), $counts);
-                    $topLabel = isset($months[$topIndex]) ? Carbon::createFromFormat('Y-m', $months[$topIndex])->format('M Y') : null;
+                    $topLabel = null;
+                    if (isset($months[$topIndex])) {
+                        $topLabelRaw = Carbon::createFromFormat('Y-m', $months[$topIndex])->locale('es')->isoFormat('MMM YYYY');
+                        $topLabelRaw = preg_replace('/\.$/u', '', $topLabelRaw);
+                        $topLabel = mb_convert_case($topLabelRaw, MB_CASE_TITLE, 'UTF-8');
+                    }
                     $topValue = $counts[$topIndex] ?? 0;
 
                     $devicesList[] = [
@@ -527,7 +541,11 @@ class DownloadExportController extends Controller
                 $overallTopValue = $monthlyTotals[$overallTopIndex] ?? 0;
 
                 $data['devices'] = $devicesList;
-                $data['period_labels'] = array_map(function ($m) { return Carbon::createFromFormat('Y-m', $m)->format('M Y'); }, $months);
+                $data['period_labels'] = array_map(function ($m) {
+                    $lbl = Carbon::createFromFormat('Y-m', $m)->locale('es')->isoFormat('MMM YYYY');
+                    $lbl = preg_replace('/\.$/u', '', $lbl);
+                    return mb_convert_case($lbl, MB_CASE_TITLE, 'UTF-8');
+                }, $months);
                 $data['summary'] = [
                     'total' => $overallTotal,
                     'average' => $overallAvg,
@@ -595,24 +613,24 @@ class DownloadExportController extends Controller
             $spreadsheet = new Spreadsheet();
 
             $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setTitle('Summary');
-            $sheet->setCellValue('A1', 'Metric');
-            $sheet->setCellValue('B1', 'Value');
+            $sheet->setTitle('Resumen');
+            $sheet->setCellValue('A1', 'Métrica');
+            $sheet->setCellValue('B1', 'Valor');
             $sheet->getColumnDimension('A')->setWidth(20);
             $sheet->getColumnDimension('B')->setWidth(36);
             $sheet->getStyle('A1:B1')->getFont()->setBold(true);
             $sheet->getStyle('A2:A4')->getFont()->setBold(true);
-            $sheet->setCellValue('A2', 'Total reports');
+            $sheet->setCellValue('A2', 'Total de descargas');
             $sheet->setCellValue('B2', $pd['summary']['total'] ?? 0);
-            $sheet->setCellValue('A3', 'Average per month');
+            $sheet->setCellValue('A3', 'Promedio mensual');
             $sheet->setCellValue('B3', $pd['summary']['average'] ?? 0);
-            $sheet->setCellValue('A4', 'Top month');
+            $sheet->setCellValue('A4', 'Mes con más descargas');
             $sheet->setCellValue('B4', ($pd['summary']['top_month_label'] ?? '') . ' (' . ($pd['summary']['top_month_value'] ?? 0) . ')');
 
             $sheet2 = $spreadsheet->createSheet();
-            $sheet2->setTitle('Details');
+            $sheet2->setTitle('Detalles');
             $labels = $pd['period_labels'] ?? [];
-            $sheet2->setCellValue('A1', 'Device Name');
+            $sheet2->setCellValue('A1', 'Dispositivo');
             $sheet2->getColumnDimension('A')->setWidth(40);
             $colNum = 2;
             foreach ($labels as $i => $lbl) {
