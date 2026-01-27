@@ -42,7 +42,7 @@ $selectRingClass = $area === 'OTT'
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
                     @php
-                        $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
+$spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
                     @endphp
                     <div id="chart-loading" class="text-sm text-gray-500 hidden" aria-hidden="true">
                         <div role="status" class="flex items-center gap-2 mr-0.5">
@@ -94,7 +94,7 @@ $selectRingClass = $area === 'OTT'
                     <div class="ml-0 sm:ml-2 mt-0 sm:mt-0 flex items-center gap-2">
                         <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
                             <button type="button" id="exportPdfBtn" onclick="exportChartsPdf(event)"
-                                class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none">
+                                class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 focus:outline-none">
                                 <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
                             </button>
                             <div x-show="open" x-cloak
@@ -111,8 +111,23 @@ $selectRingClass = $area === 'OTT'
                         </div>
 
                         <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                            <button type="button" id="exportCsvBtn" onclick="exportCsv()"
+                                class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 focus:outline-none">
+                                <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+                            </button>
+                            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-75"
+                                class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                role="tooltip">
+                                {{ __('Export CSV') }}
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
                             <button type="button" id="emailExportBtn" onclick="exportMonthlyByEmail(event)"
-                                class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none">
+                                class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 focus:outline-none">
                                 <i class="fa-solid fa-envelope" aria-hidden="true"></i>
                             </button>
                             <div x-show="open" x-cloak
@@ -137,7 +152,7 @@ $selectRingClass = $area === 'OTT'
                 </div>
 
                 @php
-                    $devProtocol = $kpis['device_protocol_percent'] ?? null;
+$devProtocol = $kpis['device_protocol_percent'] ?? null;
                 @endphp
 
                 @if(!empty($devProtocol) && is_array($devProtocol))
@@ -200,172 +215,194 @@ $selectRingClass = $area === 'OTT'
 
 @once
     @push('js')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="/js/downloads-graph.js"></script>
-        <script>
-            const downloadsPdfUrl = "{{ route('admin.downloads.history.pdf') }}";
-            const downloadsDataUrl = "{{ route('admin.downloads.history.data') }}";
-            const downloadsEmailUrl = "{{ route('admin.downloads.history.email') }}";
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="/js/downloads-graph.js"></script>
+            <script>
+                const downloadsPdfUrl = "{{ route('admin.downloads.history.pdf') }}";
+                const downloadsDataUrl = "{{ route('admin.downloads.history.data') }}";
+                const downloadsEmailUrl = "{{ route('admin.downloads.history.email') }}";
 
-            if (window && typeof Livewire !== 'undefined') {
-                try {
-                    Livewire.on('downloads-updated', function(payload) {
-                        window.__downloadsLatest = payload;
-                        console.log('cached downloads-updated payload', payload);
+                if (window && typeof Livewire !== 'undefined') {
+                    try {
+                        Livewire.on('downloads-updated', function(payload) {
+                            window.__downloadsLatest = payload;
+                            console.log('cached downloads-updated payload', payload);
+                        });
+                    } catch (e) {}
+                }
+
+                async function exportChartsPdf(e) {
+                    e && e.preventDefault();
+
+                    const yearSelect = document.querySelector('#select-year');
+                    const deviceSelect = document.querySelector('#select-device');
+                    const params = new URLSearchParams();
+                    if (yearSelect) params.append('year', yearSelect.value);
+                    if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
+
+                    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                    const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
+
+                    console.log('Checking for cached Livewire payload...');
+
+                    let preData = null;
+                    try {
+                        if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                            preData = window.__downloadsLatest;
+                            console.log('Using cached Livewire payload for PDF export', preData);
+                        }
+                    } catch (e) { console.warn(e); }
+
+                    if (!preData) {
+                        console.log('Fetching data from: ' + downloadsDataUrl + '?' + params.toString());
+                        try {
+                            const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
+                            console.log('Data endpoint response status:', resp.status);
+                            if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
+                            preData = await resp.json();
+                            console.log('Prefetched data received:', preData);
+                        } catch (err) {
+                            console.error('Error fetching historical data:', err);
+                            const errMsg1 = (err && err.message) ? String(err.message) : '';
+                            Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg1 ? @json(__('Error fetching historical data from server:')) + ' ' + errMsg1 : @json(__('Error fetching historical data from server')) });
+                            return;
+                        }
+                    }
+
+                    if (!preData || typeof preData !== 'object') {
+                        console.error('Invalid data response (not object):', preData);
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Invalid data response from server')) });
+                        return;
+                    }
+
+                    if (!preData.download_rows || !Array.isArray(preData.download_rows)) {
+                        console.warn('Warning: download_rows not present or not array', preData);
+                    }
+
+                    const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
+                    const pieCanvas = document.getElementById('pieDownloadsChart');
+                    if (!monthlyCanvas || !pieCanvas) {
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Charts not ready')) });
+                        return;
+                    }
+
+                    const monthlyData = monthlyCanvas.toDataURL('image/png');
+                    const pieData = pieCanvas.toDataURL('image/png');
+
+                    const fd = new FormData();
+                    fd.append('charts[monthly]', monthlyData);
+                    fd.append('charts[pie]', pieData);
+                    if (yearSelect) fd.append('year', yearSelect.value);
+                    if (deviceSelect) fd.append('device_id', deviceSelect.value);
+                    fd.append('data', JSON.stringify(preData));
+
+                    console.log('Posting PDF with data, fields:', {
+                        has_year: !!yearSelect?.value,
+                        has_device_id: !!deviceSelect?.value,
+                        data_size: JSON.stringify(preData).length,
+                        download_rows_count: preData.download_rows?.length || 0,
                     });
-                } catch (e) {}
-            }
 
-            async function exportChartsPdf(e) {
-                e && e.preventDefault();
-
-                const yearSelect = document.querySelector('#select-year');
-                const deviceSelect = document.querySelector('#select-device');
-                const params = new URLSearchParams();
-                if (yearSelect) params.append('year', yearSelect.value);
-                if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
-
-                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
-
-                console.log('Checking for cached Livewire payload...');
-
-                let preData = null;
-                try {
-                    if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
-                        preData = window.__downloadsLatest;
-                        console.log('Using cached Livewire payload for PDF export', preData);
-                    }
-                } catch (e) { console.warn(e); }
-
-                if (!preData) {
-                    console.log('Fetching data from: ' + downloadsDataUrl + '?' + params.toString());
                     try {
-                        const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
-                        console.log('Data endpoint response status:', resp.status);
-                        if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
-                        preData = await resp.json();
-                        console.log('Prefetched data received:', preData);
+                        const resp = await fetch(downloadsPdfUrl, { method: 'POST', body: fd, headers });
+                        console.log('PDF endpoint response status:', resp.status);
+                        if (!resp.ok) throw new Error('PDF generation failed with status ' + resp.status);
+                        const blob = await resp.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        (function(){
+                            const now = new Date();
+                            const pad = (n) => String(n).padStart(2, '0');
+                            const filename = `Download History - ${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())} ${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.pdf`;
+                            a.download = filename;
+                        })();
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        URL.revokeObjectURL(url);
+                        console.log('PDF downloaded successfully');
                     } catch (err) {
-                        console.error('Error fetching historical data:', err);
-                        const errMsg1 = (err && err.message) ? String(err.message) : '';
-                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg1 ? @json(__('Error fetching historical data from server:')) + ' ' + errMsg1 : @json(__('Error fetching historical data from server')) });
-                        return;
+                        console.error('Error generating PDF:', err);
+                        const errMsg2 = (err && err.message) ? String(err.message) : '';
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg2 ? @json(__('Error generating PDF:')) + ' ' + errMsg2 : @json(__('Error generating PDF')) });
                     }
                 }
 
-                if (!preData || typeof preData !== 'object') {
-                    console.error('Invalid data response (not object):', preData);
-                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Invalid data response from server')) });
-                    return;
-                }
+                async function exportMonthlyByEmail(e) {
+                    e && e.preventDefault();
 
-                if (!preData.download_rows || !Array.isArray(preData.download_rows)) {
-                    console.warn('Warning: download_rows not present or not array', preData);
-                }
+                    const yearSelect = document.querySelector('#select-year');
+                    const deviceSelect = document.querySelector('#select-device');
+                    const params = new URLSearchParams();
+                    if (yearSelect) params.append('year', yearSelect.value);
+                    if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
 
-                const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
-                const pieCanvas = document.getElementById('pieDownloadsChart');
-                if (!monthlyCanvas || !pieCanvas) {
-                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Charts not ready')) });
-                    return;
-                }
+                    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                    const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
 
-                const monthlyData = monthlyCanvas.toDataURL('image/png');
-                const pieData = pieCanvas.toDataURL('image/png');
-
-                const fd = new FormData();
-                fd.append('charts[monthly]', monthlyData);
-                fd.append('charts[pie]', pieData);
-                if (yearSelect) fd.append('year', yearSelect.value);
-                if (deviceSelect) fd.append('device_id', deviceSelect.value);
-                fd.append('data', JSON.stringify(preData));
-
-                console.log('Posting PDF with data, fields:', {
-                    has_year: !!yearSelect?.value,
-                    has_device_id: !!deviceSelect?.value,
-                    data_size: JSON.stringify(preData).length,
-                    download_rows_count: preData.download_rows?.length || 0,
-                });
-
-                try {
-                    const resp = await fetch(downloadsPdfUrl, { method: 'POST', body: fd, headers });
-                    console.log('PDF endpoint response status:', resp.status);
-                    if (!resp.ok) throw new Error('PDF generation failed with status ' + resp.status);
-                    const blob = await resp.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    (function(){
-                        const now = new Date();
-                        const pad = (n) => String(n).padStart(2, '0');
-                        const filename = `Download History - ${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())} ${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.pdf`;
-                        a.download = filename;
-                    })();
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    URL.revokeObjectURL(url);
-                    console.log('PDF downloaded successfully');
-                } catch (err) {
-                    console.error('Error generating PDF:', err);
-                    const errMsg2 = (err && err.message) ? String(err.message) : '';
-                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg2 ? @json(__('Error generating PDF:')) + ' ' + errMsg2 : @json(__('Error generating PDF')) });
-                }
-            }
-
-            async function exportMonthlyByEmail(e) {
-                e && e.preventDefault();
-
-                const yearSelect = document.querySelector('#select-year');
-                const deviceSelect = document.querySelector('#select-device');
-                const params = new URLSearchParams();
-                if (yearSelect) params.append('year', yearSelect.value);
-                if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
-
-                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
-
-                let preData = null;
-                try {
-                    if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
-                        preData = window.__downloadsLatest;
-                    }
-                } catch (e) { }
-
-                if (!preData) {
+                    let preData = null;
                     try {
-                        const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
-                        if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
-                        preData = await resp.json();
+                        if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                            preData = window.__downloadsLatest;
+                        }
+                    } catch (e) { }
+
+                    if (!preData) {
+                        try {
+                            const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
+                            if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
+                            preData = await resp.json();
+                        } catch (err) {
+                            console.error('Error fetching data for email export:', err);
+                            const errMsg3 = (err && err.message) ? String(err.message) : '';
+                            Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg3 ? @json(__('Error fetching data from server:')) + ' ' + errMsg3 : @json(__('Error fetching data from server')) });
+                            return;
+                        }
+                    }
+
+                    const fd = new FormData();
+                    fd.append('data', JSON.stringify(preData));
+                    if (yearSelect) fd.append('year', yearSelect.value);
+                    if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
+
+                    try {
+                        const resp = await fetch(downloadsEmailUrl, { method: 'POST', body: fd, headers });
+                        if (!resp.ok) {
+                            const txt = await resp.text().catch(()=>null);
+                            throw new Error('Email export failed: ' + (txt || resp.status));
+                        }
+                        const json = await resp.json().catch(()=>null);
+                        Swal.fire({ icon: 'success', title: @json(__('Well done!')), text: (json && json.message) ? json.message : @json(__('Email sent successfully.')) });
                     } catch (err) {
-                        console.error('Error fetching data for email export:', err);
-                        const errMsg3 = (err && err.message) ? String(err.message) : '';
-                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg3 ? @json(__('Error fetching data from server:')) + ' ' + errMsg3 : @json(__('Error fetching data from server')) });
-                        return;
+                        console.error('Error sending email export:', err);
+                        const errMsg4 = (err && err.message) ? String(err.message) : '';
+                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg4 ? @json(__('Error sending email export:')) + ' ' + errMsg4 : @json(__('Error sending email export')) });
                     }
                 }
 
-                const fd = new FormData();
-                fd.append('data', JSON.stringify(preData));
-                if (yearSelect) fd.append('year', yearSelect.value);
-                if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
+                function exportCsv() {
+                    try {
+                        const input = document.getElementById('downloads-datepicker-range');
+                                let start = '';
+                                let end = '';
+                                if (input && input.value) {
+                            const parts = input.value.split(' to ');
+                                start = parts[0] ? parts[0].trim() : '';
+                                end = parts[1] ? parts[1].trim() : start;
+                        }
 
-                try {
-                    const resp = await fetch(downloadsEmailUrl, { method: 'POST', body: fd, headers });
-                    if (!resp.ok) {
-                        const txt = await resp.text().catch(()=>null);
-                        throw new Error('Email export failed: ' + (txt || resp.status));
+                                const base = '{{ route("admin.downloads.history.csv") }}';
+                                const url = new URL(base, window.location.origin);
+                                if (start) url.searchParams.set('start', start);
+                                if (end) url.searchParams.set('end', end);
+                                window.open(url.toString(), '_blank');
+                    } catch (e) {
+                                    console.error('Export CSV failed', e);
+                                alert('Could not start CSV export.');
                     }
-                    const json = await resp.json().catch(()=>null);
-                    Swal.fire({ icon: 'success', title: @json(__('Well done!')), text: (json && json.message) ? json.message : @json(__('Email sent successfully.')) });
-                } catch (err) {
-                    console.error('Error sending email export:', err);
-                    const errMsg4 = (err && err.message) ? String(err.message) : '';
-                    Swal.fire({ icon: 'error', title: @json(__('Error')), text: errMsg4 ? @json(__('Error sending email export:')) + ' ' + errMsg4 : @json(__('Error sending email export')) });
                 }
-            }
-        </script>
+            </script>
     @endpush
 @endonce
 

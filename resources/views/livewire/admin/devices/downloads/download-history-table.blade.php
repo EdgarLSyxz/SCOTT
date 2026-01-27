@@ -99,11 +99,6 @@
             <x-input id="downloads-datepicker-range" x-ref="input" type="text" autocomplete="off" placeholder="{{ __('Select a range time') }}"
                 class="min-w-[16rem] w-full px-3 py-[9px] text-sm border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
         </div>
-            <button type="button" onclick="exportCsv()"
-                class="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
-                <i class="fa-solid fa-file-csv"></i>
-                {{ __('Export CSV') }}
-            </button>
             <button wire:click="resetFilters"
                 class="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                 <i class="fa-solid fa-rotate-left"></i>
@@ -279,27 +274,3 @@
         </div>
     @endif
 </div>
-
-<script>
-    function exportCsv() {
-        try {
-            const input = document.getElementById('downloads-datepicker-range');
-            let start = '';
-            let end = '';
-            if (input && input.value) {
-                const parts = input.value.split(' to ');
-                start = parts[0] ? parts[0].trim() : '';
-                end = parts[1] ? parts[1].trim() : start;
-            }
-
-            const base = '{{ route("admin.downloads.history.csv") }}';
-            const url = new URL(base, window.location.origin);
-            if (start) url.searchParams.set('start', start);
-            if (end) url.searchParams.set('end', end);
-            window.open(url.toString(), '_blank');
-        } catch (e) {
-            console.error('Export CSV failed', e);
-            alert('Could not start CSV export.');
-        }
-    }
-</script>

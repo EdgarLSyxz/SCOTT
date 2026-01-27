@@ -64,20 +64,19 @@ class DownloadExportController extends Controller
             $handle = fopen('php://output', 'w');
             fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            $headerRow = ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at'];
+            $headerRow = ['device_id', 'device_name', 'protocol', 'month', 'year', 'count', 'device_area', 'created_at'];
             fputcsv($handle, $headerRow);
 
             $query->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $r) {
                     $values = [
-                        $r->id ?? '—',
                         $r->device_id ?? '—',
                         $r->device_name ?? '—',
                         $r->protocol ?? '—',
-                        $r->device_area ?? '—',
-                        $r->year ?? '—',
                         $r->month ?? '—',
+                        $r->year ?? '—',
                         $r->count ?? '—',
+                        $r->device_area ?? '—',
                         isset($r->created_at)
                             ? Carbon::parse($r->created_at)->format('Y-m-d H:i:s') . ' UTC-6'
                             : '—',
