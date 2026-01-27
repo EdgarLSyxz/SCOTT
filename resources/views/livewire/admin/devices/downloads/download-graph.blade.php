@@ -42,7 +42,7 @@ $selectRingClass = $area === 'OTT'
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
                     @php
-$spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
+                        $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
                     @endphp
                     <div id="chart-loading" class="text-sm text-gray-500 hidden" aria-hidden="true">
                         <div role="status" class="flex items-center gap-2 mr-0.5">
