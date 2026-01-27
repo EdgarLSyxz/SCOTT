@@ -695,6 +695,13 @@ class DownloadExportController extends Controller
                         $sheet->setCellValue("C{$row}", 0);
                         $row++;
                     }
+
+                    if (empty($deviceId)) {
+                        $sheet->setCellValue("A{$row}", $dateStr);
+                        $sheet->setCellValue("B{$row}", 'Web Client');
+                        $sheet->setCellValue("C{$row}", 'No aplica');
+                        $row++;
+                    }
                 }
             }
 
