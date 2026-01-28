@@ -77,8 +77,14 @@
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Search Packages') }}</h3>
                 <div class="space-y-4">
-                    <input type="text" id="search-input" placeholder="{{ __('Search by package name or ID...') }}"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="{{ __('Search by package name or ID...') }}"
+                            class="w-full px-4 py-2 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <button id="clear-search" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hidden">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="search-results-count" class="text-sm text-gray-600 dark:text-gray-400 hidden"></div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-gray-600 dark:text-gray-400">
@@ -87,7 +93,9 @@
                                     <th class="px-4 py-3 text-left">{{ __('Package ID') }}</th>
                                     <th class="px-4 py-3 text-left">{{ __('Package Name') }}</th>
                                     <th class="px-4 py-3 text-right">{{ __('Customers') }}</th>
-                                    <th class="px-4 py-3 text-left">{{ __('Customer IDs') }}</th>
+                                    <th class="px-4 py-3 text-center w-12">
+                                        <i class="fa-solid fa-hand-pointer text-xs opacity-60" title="{{ __('Click row to view customer IDs') }}"></i>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="packages-table-body">
@@ -108,6 +116,40 @@
                 <i class="fa-solid fa-circle-exclamation mr-2"></i>
                 <span id="error-message"></span>
             </p>
+        </div>
+    </div>
+
+    <div id="customers-modal" class="fixed inset-0 z-50 hidden items-center justify-center transition-opacity duration-300">
+        <div id="customers-modal-backdrop" class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full mx-4 z-50 transform transition-all duration-300 scale-95" id="customers-modal-content">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                    <h4 id="customers-modal-title" class="text-xl font-bold text-gray-900 dark:text-white"></h4>
+                    <p id="customers-modal-count" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
+                </div>
+                <button id="customers-modal-close" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="customers-modal-body" class="p-6">
+                <div class="relative">
+                    <input type="text" id="modal-search" placeholder="{{ __('Filter customer IDs...') }}"
+                        class="w-full px-4 py-2 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
+                <ul id="customers-list" class="space-y-1 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700"></ul>
+            </div>
+            <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+                <span id="copy-feedback" class="text-sm text-green-600 dark:text-green-400 opacity-0 transition-opacity duration-300">
+                    <i class="fa-solid fa-check mr-1"></i>{{ __('Copied!') }}
+                </span>
+                <div class="flex space-x-2">
+                    <button id="customers-modal-copy" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors flex items-center space-x-2">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>{{ __('Copy All') }}</span>
+                    </button>
+                    <button id="customers-modal-close-2" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-medium transition-colors">{{ __('Close') }}</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -237,6 +279,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalPackages = packages.length;
         const totalCustomers = packages.reduce((sum, p) => sum + (p.customers || (p.customers_list ? p.customers_list.length : 0)), 0);
 
+        packageData = packages;
+
         const statsGrid = document.getElementById('stats-grid');
         statsGrid.innerHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20 p-4 rounded-lg">
@@ -262,18 +306,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const count = ids.length || pkg.customers || 0;
 
                 return `
-                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" data-pkg-id="${pkg.id || ''}">
-                    <td class="px-4 py-3">${pkg.id || '-'}</td>
-                    <td class="px-4 py-3 font-semibold">${pkg.name || '-'}</td>
-                    <td class="px-4 py-3 text-right">${count}</td>
-                    <td class="px-4 py-3">${ids.length ? ids.join(', ') : '{{ __('No customer IDs available') }}'}</td>
-                </tr>
-                <tr class="bg-gray-50 dark:bg-gray-800 hidden" data-detail-for="${pkg.id || ''}">
-                    <td class="px-4 py-3" colspan="4">
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
-                            <strong>{{ __('Customer IDs') }}:</strong>
-                            <div class="mt-2 break-words">${ids.length ? ids.join(', ') : '{{ __('No customer IDs available') }}'}</div>
-                        </div>
+                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors group" data-pkg-id="${pkg.id || ''}" title="{{ __('Click to view customer IDs') }}">
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">${pkg.id || '-'}</td>
+                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">${pkg.name || '-'}</td>
+                    <td class="px-4 py-3 text-right">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            ${count}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <i class="fa-solid fa-chevron-right text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-xs"></i>
                     </td>
                 </tr>
                 `;
@@ -281,6 +323,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         fillTable(packages);
+
+        const clearSearchBtn = document.getElementById('clear-search');
+        const searchResultsCount = document.getElementById('search-results-count');
 
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
@@ -291,6 +336,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 (pkg.customers_list && pkg.customers_list.join(' ').toLowerCase().includes(term))
             );
             fillTable(filtered);
+
+            if (term) {
+                clearSearchBtn.classList.remove('hidden');
+                searchResultsCount.classList.remove('hidden');
+                searchResultsCount.textContent = `{{ __('Showing') }} ${filtered.length} {{ __('of') }} ${packages.length} {{ __('packages') }}`;
+            } else {
+                clearSearchBtn.classList.add('hidden');
+                searchResultsCount.classList.add('hidden');
+            }
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            fillTable(packages);
+            clearSearchBtn.classList.add('hidden');
+            searchResultsCount.classList.add('hidden');
         });
 
         tbody.addEventListener('click', (e) => {
@@ -298,8 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!tr) return;
             const pkgId = tr.getAttribute('data-pkg-id');
             if (!pkgId) return;
-            const detail = tbody.querySelector(`tr[data-detail-for="${pkgId}"]`);
-            if (detail) detail.classList.toggle('hidden');
+            const pkg = packageData.find(p => String(p.id) === String(pkgId));
+            if (!pkg) return;
+            openCustomersModal(pkg);
         });
     }
 
@@ -325,16 +387,62 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
                 interaction: {
                     mode: 'index',
                     intersect: false
                 },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                return `{{ __('Customers') }}: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
                         title: {
                             display: true,
-                            text: '{{ __("Customers") }}'
+                            text: '{{ __('Number of Customers') }}',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     }
                 }
@@ -347,6 +455,89 @@ document.addEventListener('DOMContentLoaded', function() {
         errorContainer.classList.remove('hidden');
         resultsContainer.classList.add('hidden');
     }
+
+    const customersModal = document.getElementById('customers-modal');
+    const customersBackdrop = document.getElementById('customers-modal-backdrop');
+    const customersTitle = document.getElementById('customers-modal-title');
+    const customersList = document.getElementById('customers-list');
+    const customersClose = document.getElementById('customers-modal-close');
+    const customersClose2 = document.getElementById('customers-modal-close-2');
+    const customersCopy = document.getElementById('customers-modal-copy');
+
+    const modalContent = document.getElementById('customers-modal-content');
+    const modalSearch = document.getElementById('modal-search');
+    const customersModalCount = document.getElementById('customers-modal-count');
+    const copyFeedback = document.getElementById('copy-feedback');
+    let allCustomerIds = [];
+
+    function openCustomersModal(pkg) {
+        customersTitle.textContent = pkg.name || String(pkg.id);
+        const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
+        allCustomerIds = ids;
+        customersModalCount.textContent = `${ids.length} ${ids.length === 1 ? '{{ __('customer') }}' : '{{ __('customers') }}'}`;
+
+        renderCustomersList(ids);
+        modalSearch.value = '';
+
+        customersModal.classList.remove('hidden');
+        customersModal.classList.add('flex');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCustomersModal() {
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-95');
+        setTimeout(() => {
+            customersModal.classList.add('hidden');
+            customersModal.classList.remove('flex');
+        }, 200);
+        document.body.style.overflow = '';
+    }
+
+    function renderCustomersList(ids) {
+        customersList.innerHTML = ids.length ? ids.map((id, idx) => `
+            <li class="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <span class="text-gray-700 dark:text-gray-300 font-mono text-sm">${id}</span>
+                <span class="text-xs text-gray-400 dark:text-gray-500">#${idx + 1}</span>
+            </li>
+        `).join('') : `<li class="py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No customer IDs available') }}</li>`;
+    }
+
+    modalSearch.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allCustomerIds.filter(id => id.toLowerCase().includes(term));
+        renderCustomersList(filtered);
+    });
+
+    customersClose.addEventListener('click', closeCustomersModal);
+    customersClose2.addEventListener('click', closeCustomersModal);
+    customersBackdrop.addEventListener('click', closeCustomersModal);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !customersModal.classList.contains('hidden')) {
+            closeCustomersModal();
+        }
+    });
+
+    customersCopy.addEventListener('click', () => {
+        const text = allCustomerIds.join('\n');
+        navigator.clipboard.writeText(text).then(() => {
+            copyFeedback.classList.remove('opacity-0');
+            copyFeedback.classList.add('opacity-100');
+            customersCopy.innerHTML = '<i class="fa-solid fa-check"></i><span>{{ __('Copied!') }}</span>';
+            setTimeout(() => {
+                copyFeedback.classList.remove('opacity-100');
+                copyFeedback.classList.add('opacity-0');
+                customersCopy.innerHTML = '<i class="fa-solid fa-copy"></i><span>{{ __('Copy All') }}</span>';
+            }, 2000);
+        }).catch(() => {
+            alert('{{ __('Failed to copy to clipboard') }}');
+        });
+    });
 });
 </script>
 </x-admin-layout>
