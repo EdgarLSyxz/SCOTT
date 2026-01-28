@@ -42,7 +42,7 @@ $selectRingClass = $area === 'OTT'
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
                     @php
-                        $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
+$spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
                     @endphp
                     <div id="chart-loading" class="text-sm text-gray-500 hidden" aria-hidden="true">
                         <div role="status" class="flex items-center gap-2 mr-0.5">
@@ -57,10 +57,10 @@ $selectRingClass = $area === 'OTT'
                         @if(isset($devices) && $devices->count())
                             <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-3 py-1.5 sm:py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto">
                                 <i class="fa-solid fa-hard-drive text-gray-400 mx-2" aria-hidden="true"></i>
-                                <select id="select-device" wire:model="selectedDevice" wire:change="$set('selectedDevice', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:text-gray-100 focus:outline-none cursor-pointer w-full sm:w-[220px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select device') }}">
-                                    <option style="color:#1f2937;" class="dark:text-gray-100" value="">{{ __('All devices') }}</option>
+                                <select id="select-device" wire:model="selectedDevice" wire:change="$set('selectedDevice', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[220px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select device') }}">
+                                    <option value="">{{ __('All devices') }}</option>
                                     @foreach($devices as $d)
-                                        <option style="color:#1f2937;" class="dark:text-gray-100" value="{{ $d->id }}">{{ $d->name }}</option>
+                                        <option value="{{ $d->id }}">{{ $d->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -69,9 +69,9 @@ $selectRingClass = $area === 'OTT'
                         <label for="select-year" class="sr-only">{{ __('Year') }}</label>
                         <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-3 py-1.5 sm:py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto mt-2 md:mt-0">
                             <i class="fa-solid fa-calendar text-gray-400 mx-2" aria-hidden="true"></i>
-                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:text-gray-100 focus:outline-none cursor-pointer w-full sm:min-w-[70px] focus:ring-0 focus:border-0" aria-label="{{ __('Select year') }}">
+                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[90px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select year') }}">
                                 @for($y = date('Y'); $y >= date('Y') - 3; $y--)
-                                    <option style="color:#1f2937;" class="dark:text-gray-100" value="{{ $y }}">{{ $y }}</option>
+                                    <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -152,7 +152,7 @@ $selectRingClass = $area === 'OTT'
                 </div>
 
                 @php
-                    $devProtocol = $kpis['device_protocol_percent'] ?? null;
+$devProtocol = $kpis['device_protocol_percent'] ?? null;
                 @endphp
 
                 @if(!empty($devProtocol) && is_array($devProtocol))
