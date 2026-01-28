@@ -142,4 +142,66 @@ class DeviceController extends Controller
 
         return view('admin.devices.packages');
     }
+
+    public function processPDF(Request $request)
+    {
+        $user = Auth::user();
+
+        $allowedIds = [1, 2, 5, 7, 8];
+
+        if (! ($user && in_array($user->id, $allowedIds, true))) {
+            abort(403);
+        }
+
+        $request->validate([
+            'pdf_file' => 'required|mimes:pdf|max:50000',
+        ]);
+
+        try {
+            $pdfFile = $request->file('pdf_file');
+
+            $pythonResponse = $this->callPythonAPI($pdfFile);
+
+            if (! $pythonResponse) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Error processing PDF via Python API'),
+                ], 500);
+            }
+
+            return response()->json($pythonResponse);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function callPythonAPI($pdfFile)
+    {
+        try {
+            $pythonUrl = config('services.python_packages_api.url', 'http://localhost:5000');
+            $endpoint = $pythonUrl . '/api/process-pdf';
+
+            $client = new \GuzzleHttp\Client();
+
+            $response = $client->post($endpoint, [
+                'multipart' => [
+                    [
+                        'name' => 'file',
+                        'contents' => fopen($pdfFile->getRealPath(), 'r'),
+                        'filename' => $pdfFile->getClientOriginalName(),
+                    ],
+                ],
+                'timeout' => config('services.python_packages_api.timeout', 120),
+            ]);
+
+            return json_decode($response->getBody(), true);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            \Log::error('Python API Error: ' . $e->getMessage());
+
+            return null;
+        }
+    }
 }
