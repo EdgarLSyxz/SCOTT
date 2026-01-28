@@ -20,7 +20,6 @@
     </a>
 
     <div class="w-full mx-auto space-y-6">
-        <!-- Formulario de Carga PDF -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 <i class="fa-solid fa-file-pdf mr-2 text-red-500"></i>
@@ -56,7 +55,6 @@
             </form>
         </div>
 
-        <!-- Indicador de Carga -->
         <div id="loading-indicator" class="hidden bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="animate-spin">
@@ -69,17 +67,13 @@
             </div>
         </div>
 
-        <!-- Contenedor de Resultados -->
         <div id="results-container" class="hidden space-y-6">
-            <!-- Estadísticas Generales -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Summary') }}</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-grid">
-                    <!-- Llenaremos con JS -->
                 </div>
             </div>
 
-            <!-- Búsqueda de Datos -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Search Packages') }}</h3>
                 <div class="space-y-4">
@@ -93,25 +87,21 @@
                                     <th class="px-4 py-3 text-left">{{ __('Package ID') }}</th>
                                     <th class="px-4 py-3 text-left">{{ __('Package Name') }}</th>
                                     <th class="px-4 py-3 text-right">{{ __('Customers') }}</th>
-                                    <th class="px-4 py-3 text-right">{{ __('Revenue') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="packages-table-body">
-                                <!-- Llenaremos con JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Gráfico de Datos -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Package Distribution') }}</h3>
                 <canvas id="packages-chart" class="max-w-full"></canvas>
             </div>
         </div>
 
-        <!-- Mensajes de Error -->
         <div id="error-container" class="hidden bg-red-50 dark:bg-red-900/30 rounded-lg p-4 border border-red-200 dark:border-red-800">
             <p class="text-sm font-semibold text-red-800 dark:text-red-200">
                 <i class="fa-solid fa-circle-exclamation mr-2"></i>
@@ -135,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     let packageData = [];
 
-    // Drag and Drop
     dropZone.addEventListener('click', () => pdfFileInput.click());
 
     dropZone.addEventListener('dragover', (e) => {
@@ -171,7 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Submit Form
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -213,9 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Display Results
     function displayResults(data) {
-        // Mostrar estadísticas
         const statsGrid = document.getElementById('stats-grid');
         statsGrid.innerHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20 p-4 rounded-lg">
@@ -226,16 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="text-gray-600 dark:text-gray-400 text-sm">{{ __('Total Customers') }}</p>
                 <p class="text-3xl font-bold text-green-600 dark:text-green-400">${data.total_customers || 0}</p>
             </div>
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-900/20 p-4 rounded-lg">
-                <p class="text-gray-600 dark:text-gray-400 text-sm">{{ __('Total Revenue') }}</p>
-                <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">$${(data.total_revenue || 0).toFixed(2)}</p>
-            </div>
         `;
 
-        // Renderizar tabla
         renderTable(data.packages || []);
 
-        // Renderizar gráfico
         renderChart(data.packages || []);
     }
 
@@ -243,33 +223,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.getElementById('packages-table-body');
 
         function fillTable(data) {
-            tbody.innerHTML = data.map(pkg => `
-                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+            tbody.innerHTML = data.map(pkg => {
+                const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
+                const count = ids.length || pkg.customers || 0;
+
+                return `
+                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" data-pkg-id="${pkg.id || ''}">
                     <td class="px-4 py-3">${pkg.id || '-'}</td>
                     <td class="px-4 py-3 font-semibold">${pkg.name || '-'}</td>
-                    <td class="px-4 py-3 text-right">${pkg.customers || 0}</td>
-                    <td class="px-4 py-3 text-right">$${(pkg.revenue || 0).toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right">${count}</td>
                 </tr>
-            `).join('');
+                <tr class="bg-gray-50 dark:bg-gray-800 hidden" data-detail-for="${pkg.id || ''}">
+                    <td class="px-4 py-3" colspan="3">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            <strong>{{ __('Customer IDs') }}:</strong>
+                            <div class="mt-2 break-words">${ids.length ? ids.join(', ') : '{{ __('No customer IDs available') }}'}</div>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
         }
 
         fillTable(packages);
 
-        // Search functionality
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = packages.filter(pkg =>
                 (pkg.name && pkg.name.toLowerCase().includes(term)) ||
-                (pkg.id && pkg.id.toString().toLowerCase().includes(term))
+                (pkg.id && pkg.id.toString().toLowerCase().includes(term)) ||
+                (pkg.customer_ids && pkg.customer_ids.join(' ').toLowerCase().includes(term)) ||
+                (pkg.customers_list && pkg.customers_list.join(' ').toLowerCase().includes(term))
             );
             fillTable(filtered);
+        });
+
+        tbody.addEventListener('click', (e) => {
+            const tr = e.target.closest('tr');
+            if (!tr) return;
+            const pkgId = tr.getAttribute('data-pkg-id');
+            if (!pkgId) return;
+            const detail = tbody.querySelector(`tr[data-detail-for="${pkgId}"]`);
+            if (detail) detail.classList.toggle('hidden');
         });
     }
 
     function renderChart(packages) {
         const ctx = document.getElementById('packages-chart');
 
-        // Limitar a top 15 paquetes si hay muchos
         const topPackages = packages.slice(0, 15);
 
         new Chart(ctx, {
@@ -279,15 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [
                     {
                         label: '{{ __("Customers") }}',
-                        data: topPackages.map(pkg => pkg.customers || 0),
-                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: '{{ __("Revenue") }}',
-                        data: topPackages.map(pkg => (pkg.revenue || 0) / 1000), // En miles para escala
-                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                        yAxisID: 'y1'
+                        data: topPackages.map(pkg => {
+                            const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
+                            return ids.length || pkg.customers || 0;
+                        }),
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)'
                     }
                 ]
             },
@@ -299,24 +296,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 scales: {
                     y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
+                        beginAtZero: true,
                         title: {
                             display: true,
                             text: '{{ __("Customers") }}'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: '{{ __("Revenue (thousands)") }}'
-                        },
-                        grid: {
-                            drawOnChartArea: false
                         }
                     }
                 }

@@ -162,11 +162,19 @@ class DeviceController extends Controller
 
             $pythonResponse = $this->callPythonAPI($pdfFile);
 
-            if (! $pythonResponse) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Error processing PDF via Python API'),
-                ], 500);
+            if (is_array($pythonResponse) && isset($pythonResponse['success']) && $pythonResponse['success'] === false) {
+                $message = $pythonResponse['message'] ?? __('Error processing PDF via Python API');
+                $payload = ['success' => false, 'message' => $message];
+
+                if (isset($pythonResponse['status'])) {
+                    $payload['python_status'] = $pythonResponse['status'];
+                }
+
+                if (isset($pythonResponse['body'])) {
+                    $payload['python_body'] = $pythonResponse['body'];
+                }
+
+                return response()->json($payload, 500);
             }
 
             return response()->json($pythonResponse);
@@ -181,15 +189,15 @@ class DeviceController extends Controller
     private function callPythonAPI($pdfFile)
     {
         try {
-            $pythonUrl = config('services.python_packages_api.url', 'http://localhost:5000');
-            $endpoint = $pythonUrl . '/api/process-pdf';
+            $pythonUrl = config('services.python_packages_api.url', 'http://127.0.0.1:8000');
+            $endpoint = rtrim($pythonUrl, '/') . '/api/process-pdf';
 
             $client = new \GuzzleHttp\Client();
 
             $response = $client->post($endpoint, [
                 'multipart' => [
                     [
-                        'name' => 'file',
+                        'name' => 'pdf_file',
                         'contents' => fopen($pdfFile->getRealPath(), 'r'),
                         'filename' => $pdfFile->getClientOriginalName(),
                     ],
@@ -197,11 +205,33 @@ class DeviceController extends Controller
                 'timeout' => config('services.python_packages_api.timeout', 120),
             ]);
 
-            return json_decode($response->getBody(), true);
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            \Log::error('Python API Error: ' . $e->getMessage());
+            $status = $response->getStatusCode();
+            $body = (string) $response->getBody();
 
-            return null;
+            if ($status >= 200 && $status < 300) {
+                return json_decode($body, true);
+            }
+
+            \Log::error('Python API returned non-2xx: ' . $status . ' body: ' . $body);
+
+            return [
+                'success' => false,
+                'message' => 'Python API returned non-2xx response',
+                'status' => $status,
+                'body' => $body,
+            ];
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $resp = $e->getResponse();
+            $body = $resp ? (string) $resp->getBody() : null;
+
+            \Log::error('Python API RequestException: ' . $e->getMessage() . ' response: ' . $body);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'status' => $resp ? $resp->getStatusCode() : null,
+                'body' => $body,
+            ];
         }
     }
 }
