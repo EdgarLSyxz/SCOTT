@@ -87,6 +87,7 @@
                                     <th class="px-4 py-3 text-left">{{ __('Package ID') }}</th>
                                     <th class="px-4 py-3 text-left">{{ __('Package Name') }}</th>
                                     <th class="px-4 py-3 text-right">{{ __('Customers') }}</th>
+                                    <th class="px-4 py-3 text-left">{{ __('Customer IDs') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="packages-table-body">
@@ -202,21 +203,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function displayResults(data) {
+        const raw = data.packages || data || [];
+        let packages = [];
+
+        function normalizeItem(key, item) {
+            const ids = item.customers || item.customers_list || item.customer_ids || [];
+            const count = item.customers_count || (Array.isArray(ids) ? ids.length : (item.customers || 0));
+
+            return {
+                id: item.service_id || item.service_id === 0 ? String(item.service_id) : String(key),
+                name: item.name || item.title || '',
+                customers: count,
+                customers_list: Array.isArray(ids) ? ids : [],
+            };
+        }
+
+        if (Array.isArray(raw)) {
+            packages = raw.map((it, idx) => {
+                if (it.customers_list || it.customer_ids || Array.isArray(it.customers)) {
+                    return {
+                        id: it.id || it.service_id || String(idx),
+                        name: it.name || it.title || '',
+                        customers: it.customers_count || (Array.isArray(it.customers) ? it.customers.length : it.customers || 0),
+                        customers_list: it.customers_list || it.customer_ids || (Array.isArray(it.customers) ? it.customers : []),
+                    };
+                }
+                return normalizeItem(idx, it);
+            });
+        } else if (raw && typeof raw === 'object') {
+            packages = Object.keys(raw).map(key => normalizeItem(key, raw[key]));
+        }
+
+        const totalPackages = packages.length;
+        const totalCustomers = packages.reduce((sum, p) => sum + (p.customers || (p.customers_list ? p.customers_list.length : 0)), 0);
+
         const statsGrid = document.getElementById('stats-grid');
         statsGrid.innerHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20 p-4 rounded-lg">
                 <p class="text-gray-600 dark:text-gray-400 text-sm">{{ __('Total Packages') }}</p>
-                <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">${data.total_packages || 0}</p>
+                <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">${totalPackages}</p>
             </div>
             <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-900/20 p-4 rounded-lg">
                 <p class="text-gray-600 dark:text-gray-400 text-sm">{{ __('Total Customers') }}</p>
-                <p class="text-3xl font-bold text-green-600 dark:text-green-400">${data.total_customers || 0}</p>
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400">${totalCustomers}</p>
             </div>
         `;
 
-        renderTable(data.packages || []);
-
-        renderChart(data.packages || []);
+        renderTable(packages);
+        renderChart(packages);
     }
 
     function renderTable(packages) {
@@ -232,9 +266,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="px-4 py-3">${pkg.id || '-'}</td>
                     <td class="px-4 py-3 font-semibold">${pkg.name || '-'}</td>
                     <td class="px-4 py-3 text-right">${count}</td>
+                    <td class="px-4 py-3">${ids.length ? ids.join(', ') : '{{ __('No customer IDs available') }}'}</td>
                 </tr>
                 <tr class="bg-gray-50 dark:bg-gray-800 hidden" data-detail-for="${pkg.id || ''}">
-                    <td class="px-4 py-3" colspan="3">
+                    <td class="px-4 py-3" colspan="4">
                         <div class="text-sm text-gray-700 dark:text-gray-300">
                             <strong>{{ __('Customer IDs') }}:</strong>
                             <div class="mt-2 break-words">${ids.length ? ids.join(', ') : '{{ __('No customer IDs available') }}'}</div>
