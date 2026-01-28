@@ -129,4 +129,17 @@ class DeviceController extends Controller
 
         return view('admin.devices.monthly-downloads', compact('devices'));
     }
+
+    public function packages()
+    {
+        $user = Auth::user();
+
+        $allowedIds = [1, 2, 5, 7, 8];
+
+        if (! ($user && in_array($user->id, $allowedIds, true))) {
+            abort(403);
+        }
+
+        return view('admin.devices.packages');
+    }
 }

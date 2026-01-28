@@ -23,6 +23,10 @@ Route::resource('/channels', ChannelController::class)
 Route::resource('/stages', StageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Stage']);
 
+Route::get('devices/packages', [DeviceController::class, 'packages'])
+    ->name('admin.devices.packages')
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+
 Route::get('devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
     ->name('admin.devices.monthly-downloads')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
