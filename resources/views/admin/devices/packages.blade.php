@@ -183,9 +183,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                     </div>
                 </div>
                 <div>
-                    <div id="search-results-count" class="text-sm text-gray-600 dark:text-gray-400 hidden"></div>
-
-                    <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-gray-300/50 dark:border-none">
+                    <div id="packages-table-card" class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-gray-300/50 dark:border-none">
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-gray-600 dark:text-gray-400">
                                 <thead class="text-xs dark:text-white uppercase dark:bg-gray-600 shadow-2xl">
@@ -209,6 +207,13 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <div id="packages-empty-message" class="hidden p-8 text-center">
+                        <p class="flex items-center text-gray-600 dark:text-gray-400 justify-center">
+                            <i class="fa-solid fa-circle-info mr-2"></i>
+                            {{ __('No packages match your search.') }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -531,21 +536,37 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 const tbody = document.getElementById('packages-table-body');
 
                 function fillTable(data) {
+                    const tableCard = document.getElementById('packages-table-card');
+                    const emptyMsg = document.getElementById('packages-empty-message');
+
+                    if (!data || data.length === 0) {
+                        if (tableCard) tableCard.classList.add('hidden');
+                        if (emptyMsg) emptyMsg.classList.remove('hidden');
+                        return;
+                    }
+
+                    if (tableCard) tableCard.classList.remove('hidden');
+                    if (emptyMsg) emptyMsg.classList.add('hidden');
+
                     tbody.innerHTML = data.map(pkg => {
                         const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
                         const count = ids.length || pkg.customers || 0;
 
                         return `
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer" data-pkg-id="${pkg.id || ''}" title="{{ __('Click to view customer IDs') }}">
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group" data-pkg-id="${pkg.id || ''}" title="{{ __('Click to view customer IDs') }}">
                             <td class="px-4 py-3 text-gray-700 dark:text-gray-300">${pkg.id || '-'}</td>
                             <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">${pkg.name || '-'}</td>
                             <td class="px-4 py-3 text-right">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
                                     ${count}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <i class="fa-solid fa-chevron-right text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-xs"></i>
+                                <span class="flex items-center h-full justify-center"
+                                style="height: 100%; min-height: 24px;">
+                                <i class="fa-solid fa-chevron-right transition-colors text-gray-300 group-hover:text-gray-700 dark:text-gray-500 dark:group-hover:text-gray-400"
+                                style="vertical-align: middle; font-size: 1.1em; line-height: 1;"></i>
+                            </span>
                             </td>
                         </tr>
                         `;
@@ -555,7 +576,6 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 fillTable(packages);
 
                 const clearSearchBtn = document.getElementById('clear-search');
-                const searchResultsCount = document.getElementById('search-results-count');
 
                 searchInput.addEventListener('input', (e) => {
                     const term = e.target.value.toLowerCase();
@@ -569,11 +589,8 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
 
                     if (term) {
                         clearSearchBtn.classList.remove('hidden');
-                        searchResultsCount.classList.remove('hidden');
-                        searchResultsCount.textContent = `{{ __('Showing') }} ${filtered.length} {{ __('of') }} ${packages.length} {{ __('packages') }}`;
                     } else {
                         clearSearchBtn.classList.add('hidden');
-                        searchResultsCount.classList.add('hidden');
                     }
                 });
 
@@ -581,7 +598,6 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                     searchInput.value = '';
                     fillTable(packages);
                     clearSearchBtn.classList.add('hidden');
-                    searchResultsCount.classList.add('hidden');
                 });
 
                 tbody.addEventListener('click', (e) => {

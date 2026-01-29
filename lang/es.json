@@ -860,5 +860,6 @@
     "Package name": "Nombre del paquete",
     "Customers": "Clientes",
     "Click to view customer IDs": "Haga clic para ver los ID de clientes",
-    "Package distribution": "Distribución de paquetes"
+    "Package distribution": "Distribución de paquetes",
+    "No packages match your search.": "Ningún paquete coincide con su búsqueda."
 }
