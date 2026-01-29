@@ -732,6 +732,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
             const customersModalCount = document.getElementById('customers-modal-count');
             const copyFeedback = document.getElementById('copy-feedback');
             let allCustomerIds = [];
+            let displayedCustomerIds = [];
 
             function openCustomersModal(pkg) {
                 customersTitle.textContent = pkg.name || String(pkg.id);
@@ -741,6 +742,8 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
 
                 renderCustomersList(ids);
                 modalSearch.value = '';
+                displayedCustomerIds = ids.slice();
+                if (modalClearBtn) modalClearBtn.classList.add('hidden');
 
                 customersModal.classList.remove('hidden');
                 customersModal.classList.add('flex');
@@ -777,6 +780,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 const term = e.target.value.toLowerCase();
                 const filtered = allCustomerIds.filter(id => id.toLowerCase().includes(term));
                 renderCustomersList(filtered);
+                displayedCustomerIds = filtered.slice();
                 if (modalClearBtn) {
                     if (term) modalClearBtn.classList.remove('hidden'); else modalClearBtn.classList.add('hidden');
                 }
@@ -786,6 +790,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 modalClearBtn.addEventListener('click', () => {
                     modalSearch.value = '';
                     renderCustomersList(allCustomerIds);
+                    displayedCustomerIds = allCustomerIds.slice();
                     modalClearBtn.classList.add('hidden');
                     modalSearch.focus();
                 });
@@ -801,18 +806,41 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 }
             });
 
+            function copyToClipboard(text) {
+                if (!text) return Promise.reject(new Error('No text to copy'));
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(text);
+                }
+
+                return new Promise((resolve, reject) => {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.focus();
+                        ta.select();
+                        const ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        if (ok) resolve(); else reject(new Error('execCommand failed'));
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            }
+
             customersCopy.addEventListener('click', () => {
-                const text = allCustomerIds.join('\n');
-                navigator.clipboard.writeText(text).then(() => {
-                    copyFeedback.classList.remove('opacity-0');
-                    copyFeedback.classList.add('opacity-100');
-                    customersCopy.innerHTML = '<i class="fa-solid fa-check"></i><span>{{ __('Copied!') }}</span>';
+                const listToCopy = (displayedCustomerIds && displayedCustomerIds.length) ? displayedCustomerIds : allCustomerIds;
+                const text = listToCopy.join('\n');
+                const originalHTML = customersCopy.innerHTML;
+                copyToClipboard(text).then(() => {
+                    customersCopy.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>{{ __('Copied!') }}</span>';
                     setTimeout(() => {
-                        copyFeedback.classList.remove('opacity-100');
-                        copyFeedback.classList.add('opacity-0');
-                        customersCopy.innerHTML = '<i class="fa-solid fa-copy"></i><span>{{ __('Copy All') }}</span>';
+                        customersCopy.innerHTML = originalHTML;
                     }, 2000);
-                }).catch(() => {
+                }).catch((err) => {
+                    console.warn('Copy failed', err);
                     alert('{{ __('Failed to copy to clipboard') }}');
                 });
             });
