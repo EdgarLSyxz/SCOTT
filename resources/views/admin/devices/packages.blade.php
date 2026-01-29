@@ -254,8 +254,21 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
             </div>
             <div id="customers-modal-body" class="p-6">
                 <div class="relative">
-                    <input type="text" id="modal-search" placeholder="{{ __('Filter customer IDs...') }}"
-                        class="w-full px-4 py-2 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <form class="flex items-center" onsubmit="event.preventDefault();">
+                            <label for="modal-search" class="sr-only">Search</label>
+                            <div class="relative w-full mb-4">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="modal-search" placeholder="{{ __('Search customer ID...') }}" autocomplete="off"
+                                    class="bg-white border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-2 focus:ring-{{ $color }}-500 focus:border-transparent transition" />
+                                <button id="modal-clear-search" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hidden">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                        </form>
                 </div>
                 <ul id="customers-list"
                     class="space-y-1 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
@@ -267,14 +280,17 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                     class="text-sm text-green-600 dark:text-green-400 opacity-0 transition-opacity duration-300">
                     <i class="fa-solid fa-check mr-1"></i>{{ __('Copied!') }}
                 </span>
-                <div class="flex space-x-2">
+                <div class="flex space-x-4">
                     <button id="customers-modal-copy"
-                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors flex items-center space-x-2">
+                        class="px-4 py-2 rounded-lg bg-{{ $color }}-600 hover:bg-{{ $color }}-700 text-white text-sm font-medium transition-colors flex items-center space-x-2">
                         <i class="fa-solid fa-copy"></i>
-                        <span>{{ __('Copy All') }}</span>
+                        <span>{{ __('Copy all') }}</span>
                     </button>
                     <button id="customers-modal-close-2"
-                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-medium transition-colors">{{ __('Close') }}</button>
+                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-medium transition-colors flex items-center">
+                        <i class="fa-solid fa-circle-xmark mr-2"></i>
+                        {{ __('Close') }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -712,6 +728,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
 
             const modalContent = document.getElementById('customers-modal-content');
             const modalSearch = document.getElementById('modal-search');
+            const modalClearBtn = document.getElementById('modal-clear-search');
             const customersModalCount = document.getElementById('customers-modal-count');
             const copyFeedback = document.getElementById('copy-feedback');
             let allCustomerIds = [];
@@ -720,7 +737,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                 customersTitle.textContent = pkg.name || String(pkg.id);
                 const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
                 allCustomerIds = ids;
-                customersModalCount.textContent = `${ids.length} ${ids.length === 1 ? '{{ __('customer') }}' : '{{ __('customers') }}'}`;
+                customersModalCount.textContent = `${ids.length} ${ids.length === 1 ? '{{ __('Customer') }}' : '{{ __('Customers') }}'}`;
 
                 renderCustomersList(ids);
                 modalSearch.value = '';
@@ -750,14 +767,29 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                     <span class="text-gray-700 dark:text-gray-300 font-mono text-sm">${id}</span>
                     <span class="text-xs text-gray-400 dark:text-gray-500">#${idx + 1}</span>
                 </li>
-            `).join('') : `<li class="py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No customer IDs available') }}</li>`;
+            `).join('') : `<li class="py-4 text-center text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                    <i class="fa-solid fa-info-circle mr-2"></i>
+                    {{ __('No customer IDs available.') }}
+                 </li>`;
             }
 
             modalSearch.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
                 const filtered = allCustomerIds.filter(id => id.toLowerCase().includes(term));
                 renderCustomersList(filtered);
+                if (modalClearBtn) {
+                    if (term) modalClearBtn.classList.remove('hidden'); else modalClearBtn.classList.add('hidden');
+                }
             });
+
+            if (modalClearBtn) {
+                modalClearBtn.addEventListener('click', () => {
+                    modalSearch.value = '';
+                    renderCustomersList(allCustomerIds);
+                    modalClearBtn.classList.add('hidden');
+                    modalSearch.focus();
+                });
+            }
 
             customersClose.addEventListener('click', closeCustomersModal);
             customersClose2.addEventListener('click', closeCustomersModal);
