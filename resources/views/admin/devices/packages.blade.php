@@ -19,43 +19,75 @@
         {{ __('Go back') }}
     </a>
 
-    <div class="w-full mx-auto space-y-6">
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                <i class="fa-solid fa-file-pdf mr-2 text-red-500"></i>
-                {{ __('Upload Package Data PDF') }}
-            </h2>
+    @php
+        $area = auth()->user()->area ?? session('area') ?? 'OTT';
+        $color = $area === 'DTH' ? 'secondary' : 'primary';
+    @endphp
 
-            <form id="pdf-upload-form" class="space-y-4">
+    <div class="w-full mx-auto space-y-6">
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+            <form id="pdf-upload-form" class="p-8">
                 @csrf
-                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition"
-                     id="drop-zone">
-                    <input type="file" id="pdf-file" name="pdf_file" accept=".pdf" class="hidden" />
-                    <div class="space-y-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400"></i>
-                        <p class="text-gray-600 dark:text-gray-400">
-                            {{ __('Drag and drop your PDF here or click to select') }}
-                        </p>
-                        <p class="text-sm text-gray-500">
-                            {{ __('PDF file with package and customer information') }}
-                        </p>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>{{ __('Upload PDF') }}</span>
+                    </h2>
+                </div>
+
+                <div class="relative group">
+                    <div class="border-3 border-dashed border-{{ $color }}-300 dark:border-{{ $color }}-600 rounded-xl p-12 text-center cursor-pointer transition-all duration-300 hover:border-{{ $color }}-500 dark:hover:border-{{ $color }}-400 hover:bg-{{ $color }}-100 dark:hover:bg-gray-700/50"
+                         id="drop-zone">
+                        <input type="file" id="pdf-file" name="pdf_file" accept=".pdf" class="hidden" />
+
+                        <div class="space-y-4 transition-all duration-300" id="upload-prompt">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-{{ $color }}-200 dark:bg-{{ $color }}-900 text-{{ $color }}-600 dark:text-{{ $color }}-300">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ __('Drop your PDF here') }}
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    {{ __('or click to browse') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="hidden space-y-3" id="upload-info">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-200 dark:bg-green-900 text-green-600 dark:text-green-300">
+                                <i class="fa-solid fa-check text-3xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('Ready to process') }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" id="file-name-display"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="upload-progress" class="hidden mt-4 space-y-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ __('Processing...') }}</span>
+                            <span id="progress-percent" class="text-gray-500 dark:text-gray-400">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar" class="bg-gradient-to-r from-{{ $color }}-500 to-{{ $color }}-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="file-info" class="hidden p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    <p class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ __('Selected file:') }} <strong id="file-name"></strong>
-                    </p>
-                </div>
-
-                <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-4 py-2">
-                    <i class="fa-solid fa-arrow-up mr-2"></i>
-                    {{ __('Process PDF') }}
+                <button type="submit" class="w-full mt-6 bg-gradient-to-r from-{{ $color }}-600 to-{{ $color }}-700 hover:from-{{ $color }}-700 hover:to-{{ $color }}-800 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" id="submit-btn" disabled>
+                    <i class="fa-solid fa-arrow-up text-lg"></i>
+                    <span>{{ __('Process PDF') }}</span>
                 </button>
+
+                <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-4">
+                    {{ __('Maximum file size: 50 MB') }}
+                </p>
             </form>
         </div>
 
-        <div id="loading-indicator" class="hidden bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+        <div id="loading-indicator" class="hidden bg-{{ $color }}-50 dark:bg-{{ $color }}-900/30 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="animate-spin">
                     <i class="fa-solid fa-spinner text-blue-600 text-2xl"></i>
@@ -166,6 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
     const searchInput = document.getElementById('search-input');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const uploadInfo = document.getElementById('upload-info');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const submitBtn = document.getElementById('submit-btn');
     let packageData = [];
 
     dropZone.addEventListener('click', () => pdfFileInput.click());
@@ -196,10 +235,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateFileInfo() {
         if (pdfFileInput.files.length > 0) {
-            fileName.textContent = pdfFileInput.files[0].name;
-            fileInfo.classList.remove('hidden');
+            const file = pdfFileInput.files[0];
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            fileNameDisplay.textContent = `${file.name} (${sizeMB} MB)`;
+            uploadPrompt.classList.add('hidden');
+            uploadInfo.classList.remove('hidden');
+            submitBtn.disabled = false;
         } else {
-            fileInfo.classList.add('hidden');
+            uploadPrompt.classList.remove('hidden');
+            uploadInfo.classList.add('hidden');
+            submitBtn.disabled = true;
         }
     }
 
@@ -215,9 +260,20 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('pdf_file', pdfFileInput.files[0]);
         formData.append('_token', document.querySelector('input[name="_token"]').value);
 
-        loadingIndicator.classList.remove('hidden');
+        submitBtn.disabled = true;
+        uploadProgress.classList.remove('hidden');
         errorContainer.classList.add('hidden');
         resultsContainer.classList.add('hidden');
+
+        // Simular progreso
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 30;
+                progressBar.style.width = Math.min(progress, 90) + '%';
+                progressPercent.textContent = Math.floor(Math.min(progress, 90)) + '%';
+            }
+        }, 200);
 
         try {
             const response = await fetch('{{ route("admin.devices.process-pdf") }}', {
@@ -230,6 +286,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
 
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+
             if (!response.ok) {
                 throw new Error(data.message || '{{ __("Error processing PDF") }}');
             }
@@ -237,10 +297,21 @@ document.addEventListener('DOMContentLoaded', function() {
             packageData = data.packages || [];
             displayResults(data);
             resultsContainer.classList.remove('hidden');
+
+            setTimeout(() => {
+                uploadProgress.classList.add('hidden');
+                uploadPrompt.classList.remove('hidden');
+                uploadInfo.classList.add('hidden');
+                pdfFileInput.value = '';
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
+                submitBtn.disabled = false;
+            }, 1500);
         } catch (error) {
+            clearInterval(progressInterval);
+            uploadProgress.classList.add('hidden');
+            submitBtn.disabled = false;
             showError(error.message);
-        } finally {
-            loadingIndicator.classList.add('hidden');
         }
     });
 

@@ -841,5 +841,13 @@
     "Email sent successfully.": "Correo enviado con éxito.",
     "Devices Count": "Recuento de dispositivos",
     "Selected All": "Seleccionado todo",
-    "Packages": "Paquetes"
+    "Packages": "Paquetes",
+    "Upload PDF": "Subir PDF",
+    "Drop your PDF here": "Suelta tu PDF aquí",
+    "or click to browse": "o haz clic para buscar",
+    "Ready to process": "Listo para procesar",
+    "Processing...": "Procesando...",
+    "Maximum file size: 50 MB": "Tamaño máximo de archivo: 50 MB",
+    "Processing PDF...": "Procesando PDF...",
+    "Extracting package and customer information": "Extrayendo información de paquetes y clientes"
 }
