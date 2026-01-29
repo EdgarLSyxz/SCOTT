@@ -849,5 +849,6 @@
     "Processing...": "Procesando...",
     "Maximum file size: 50 MB": "Tamaño máximo de archivo: 50 MB",
     "Processing PDF...": "Procesando PDF...",
-    "Extracting package and customer information": "Extrayendo información de paquetes y clientes"
+    "Extracting package and customer information": "Extrayendo información de paquetes y clientes",
+    "Process PDF": "Procesar PDF"
 }
