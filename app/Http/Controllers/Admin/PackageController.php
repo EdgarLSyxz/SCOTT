@@ -95,4 +95,24 @@ class PackageController extends Controller
             return response()->json(['ok' => false, 'error' => 'Server error'], 500);
         }
     }
+
+    /**
+     * Return saved package uploads for the current user as JSON.
+     */
+    public function apiList(Request $request)
+    {
+        $user = Auth::user();
+
+        $allowedIds = [1, 2, 5, 7, 8];
+
+        if (! ($user && in_array($user->id, $allowedIds, true))) {
+            return response()->json(['ok' => false, 'error' => 'Forbidden'], 403);
+        }
+
+        $uploads = Package::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'filename', 'data', 'created_at']);
+
+        return response()->json(['ok' => true, 'uploads' => $uploads], 200);
+    }
 }

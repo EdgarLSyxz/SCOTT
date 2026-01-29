@@ -32,6 +32,10 @@ Route::post('devices/process-pdf', [DeviceController::class, 'processPDF'])
     ->name('admin.devices.process-pdf')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
+Route::get('devices/packages/data', [PackageController::class, 'apiList'])
+    ->name('admin.devices.packages.data')
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+
 Route::resource('/packages', PackageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 

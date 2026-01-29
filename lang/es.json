@@ -850,5 +850,15 @@
     "Maximum file size: 50 MB": "Tamaño máximo de archivo: 50 MB",
     "Processing PDF...": "Procesando PDF...",
     "Extracting package and customer information": "Extrayendo información de paquetes y clientes",
-    "Process PDF": "Procesar PDF"
+    "Process PDF": "Procesar PDF",
+    "Uploaded files on the server": "Archivos cargados en el servidor",
+    "No saved uploads found.": "No se encontraron archivos guardados.",
+    "Summary": "Resumen",
+    "Total packages": "Paquetes totales",
+    "Total customers": "Clientes totales",
+    "Search by package name or customer ID...": "Buscar por nombre de paquete o ID de cliente...",
+    "Package name": "Nombre del paquete",
+    "Customers": "Clientes",
+    "Click to view customer IDs": "Haga clic para ver los ID de clientes",
+    "Package distribution": "Distribución de paquetes"
 }
