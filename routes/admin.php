@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ChannelController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\GrafanaController;
+use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
 use App\Http\Controllers\Admin\DownloadExportController;
 use App\Http\Controllers\Admin\StageController;
@@ -29,6 +30,9 @@ Route::get('devices/packages', [DeviceController::class, 'packages'])
 
 Route::post('devices/process-pdf', [DeviceController::class, 'processPDF'])
     ->name('admin.devices.process-pdf')
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+
+Route::resource('/packages', PackageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
 Route::get('devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])

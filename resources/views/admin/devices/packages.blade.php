@@ -100,14 +100,22 @@
         </div>
 
         <div id="results-container" class="hidden space-y-6">
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Summary') }}</h3>
+            <div class="bg-white/90 dark:bg-gray-800/80 shadow-lg rounded-xl p-6 border border-gray-200/70 dark:border-gray-700/60">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-simple text-{{ $color }}-600 dark:text-{{ $color }}-400"></i>
+                        <span>{{ __('Summary') }}</span>
+                    </h3>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-grid">
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Search Packages') }}</h3>
+            <div class="bg-white/90 dark:bg-gray-800/80 shadow-lg rounded-xl p-6 border border-gray-200/70 dark:border-gray-700/60">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-{{ $color }}-600 dark:text-{{ $color }}-400"></i>
+                    <span>{{ __('Search Packages') }}</span>
+                </h3>
                 <div class="space-y-4">
                     <div class="relative">
                         <input type="text" id="search-input" placeholder="{{ __('Search by package name or ID...') }}"
@@ -137,8 +145,11 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Package Distribution') }}</h3>
+            <div class="bg-white/90 dark:bg-gray-800/80 shadow-lg rounded-xl p-6 border border-gray-200/70 dark:border-gray-700/60">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-{{ $color }}-600 dark:text-{{ $color }}-400"></i>
+                    <span>{{ __('Package Distribution') }}</span>
+                </h3>
                 <canvas id="packages-chart" class="max-w-full"></canvas>
             </div>
         </div>

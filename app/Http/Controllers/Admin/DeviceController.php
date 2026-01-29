@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Device;
+use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -175,6 +176,16 @@ class DeviceController extends Controller
                 }
 
                 return response()->json($payload, 500);
+            }
+
+            try {
+                $package = new Package();
+                $package->user_id = $user->id;
+                $package->filename = $pdfFile->getClientOriginalName();
+                $package->data = $pythonResponse['packages'] ?? $pythonResponse;
+                $package->save();
+            } catch (\Exception $e) {
+                \Log::warning('Failed to save package data: ' . $e->getMessage());
             }
 
             return response()->json($pythonResponse);
