@@ -266,7 +266,7 @@
                         <td>
                             {{ $detail->channel->number }}
                             <span class="channel-name">
-                                {{ $detail->channel->name }}
+                                {{ strtoupper($detail->channel->name) }} ({{ strtoupper($detail->channel->origin) }})
                             </span>
                         </td>
                         <td class="stage-protocol">

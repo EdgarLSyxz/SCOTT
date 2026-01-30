@@ -4,7 +4,6 @@ namespace App\Mail\Reports;
 
 use App\Models\Report;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -37,8 +36,13 @@ class ReportResolvedMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $area = strtoupper($this->report->area ?? '');
+        $prefix = $area ? "[{$area}] " : '';
+
+        $subject = '✅ ' . $prefix . __('Report Resolved Notification');
+
         return new Envelope(
-            subject: __('✅ Report Resolved Notification'),
+            subject: $subject,
         );
     }
 

@@ -226,18 +226,26 @@
             <table>
                 <tr>
                     <th>{{ __('Channel') }}</th>
-                    <th>{{ __('Stage and Protocol') }}</th>
+                    <th>
+                        @if(($report->area ?? '') === \App\Models\Report::AREA_DTH)
+                            {{ __('Stage') }}
+                        @else
+                            {{ __('Stage and Protocol') }}
+                        @endif
+                    </th>
                     <th>{{ __('Problem') }}</th>
                 </tr>
                 @foreach ($channels->sortBy('channel.number') as $detail)
                     <tr>
                         <td>
                             {{ $detail->channel->number }}
-                            <span class="channel-name">{{ $detail->channel->name }}</span>
+                            <span class="channel-name">{{ strtoupper($detail->channel->name) }}</span>
                         </td>
                         <td class="stage-protocol">
                             {{ $detail->stage->name }}
-                            <span class="protocol">({{ $detail->protocol }})</span>
+                            @if(($report->area ?? '') !== \App\Models\Report::AREA_DTH)
+                                <span class="protocol">({{ $detail->protocol }})</span>
+                            @endif
                         </td>
                         <td>{{ $detail->media }}</td>
                     </tr>
