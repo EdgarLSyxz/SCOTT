@@ -165,11 +165,17 @@ class EditMomentlyReport extends Component
             'reportData.channels' => __('channels')
         ]);
 
+        $userArea = $this->report->area ?? Report::AREA_OTT;
+
         foreach ($this->reportData['channels'] as $index => $channel) {
+            $protocolRule = $userArea === Report::AREA_DTH
+                ? 'nullable'
+                : 'required|in:' . implode(',', $this->protocols);
+
             $this->validate([
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
                 "reportData.channels.$index.stage" => 'required|exists:stages,id',
-                "reportData.channels.$index.protocol" => 'required|in:' . implode(',', $this->protocols),
+                "reportData.channels.$index.protocol" => $protocolRule,
                 "reportData.channels.$index.media" => 'required|in:' . implode(',', $this->mediaOptions),
                 "reportData.channels.$index.description" => 'required|string',
             ], [], [
@@ -189,10 +195,13 @@ class EditMomentlyReport extends Component
 
     public function render()
     {
+        $userArea = $this->report->area ?? Report::AREA_OTT;
+
         return view('livewire.app.reports.edit.edit-momently-report', [
             'channels' => Channel::where('status', '1')->orderBy('number')->get(),
             'stages' => $this->stages,
             'report' => $this->report,
+            'userArea' => $userArea,
         ]);
     }
 }

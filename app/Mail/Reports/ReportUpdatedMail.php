@@ -3,7 +3,6 @@
 namespace App\Mail\Reports;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -31,8 +30,11 @@ class ReportUpdatedMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $area = strtoupper($this->report->area ?? '');
+        $prefix = $area ? "[{$area}] " : '';
+
         return new Envelope(
-            subject: __('📢 Report Updated'),
+            subject: $prefix . __('📢 Report Updated'),
         );
     }
 
