@@ -1,21 +1,21 @@
 <div
     class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-2xl shadow-2xl w-full max-w-6xl mx-auto mt-8 md:mt-0 flex flex-col md:min-h-[80vh] ml-0.5">
     @php
-$userArea = Auth::user()?->area ?? ($selectedReport->area ?? null);
-$isOtt = $userArea === 'OTT';
-$isDth = $userArea === 'DTH';
+        $userArea = Auth::user()?->area ?? ($selectedReport->area ?? null);
+        $isOtt = $userArea === 'OTT';
+        $isDth = $userArea === 'DTH';
 
-$iconMainClass = $isOtt ? 'text-primary-200' : ($isDth ? 'text-secondary-200' : 'text-gray-800 dark:text-white');
+        $iconMainClass = $isOtt ? 'text-primary-200' : ($isDth ? 'text-secondary-200' : 'text-gray-800 dark:text-white');
 
-$channelsBadgeClasses = $isOtt
-    ? 'bg-primary-100 text-primary-800'
-    : ($isDth ? 'bg-secondary-100 text-secondary-800' : 'bg-primary-100 text-primary-800');
+        $channelsBadgeClasses = $isOtt
+            ? 'bg-primary-100 text-primary-800'
+            : ($isDth ? 'bg-secondary-100 text-secondary-800' : 'bg-primary-100 text-primary-800');
 
-$statIconBg = $isOtt ? 'bg-white text-primary-700 dark:bg-primary-700 dark:text-primary-200' : ($isDth ? 'bg-white text-secondary-700 dark:bg-secondary-700 dark:text-secondary-200' : 'bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300');
+        $statIconBg = $isOtt ? 'bg-white text-primary-700 dark:bg-primary-700 dark:text-primary-200' : ($isDth ? 'bg-white text-secondary-700 dark:bg-secondary-700 dark:text-secondary-200' : 'bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300');
 
-$btnPrimary = $isOtt ? 'py-2 px-4 bg-primary-600 hover:bg-primary-700' : ($isDth ? 'py-2 px-4 bg-secondary-600 hover:bg-secondary-700' : 'py-2 px-4 bg-primary-600 hover:bg-primary-700');
+        $btnPrimary = $isOtt ? 'py-2 px-4 bg-primary-600 hover:bg-primary-700' : ($isDth ? 'py-2 px-4 bg-secondary-600 hover:bg-secondary-700' : 'py-2 px-4 bg-primary-600 hover:bg-primary-700');
 
-$discardHover = $isOtt ? 'hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-400 dark:hover:bg-gray-700' : ($isDth ? 'hover:border-secondary-600 hover:text-secondary-600 dark:hover:text-secondary-400 dark:hover:bg_gray-700' : 'hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-400 dark:hover:bg-gray-700');
+        $discardHover = $isOtt ? 'hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-400 dark:hover:bg-gray-700' : ($isDth ? 'hover:border-secondary-600 hover:text-secondary-600 dark:hover:text-secondary-400 dark:hover:bg_gray-700' : 'hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-400 dark:hover:bg-gray-700');
     @endphp
     <div
         class="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start gap-4 mb-6 overflow-x-auto">
@@ -30,11 +30,11 @@ $discardHover = $isOtt ? 'hover:border-primary-600 hover:text-primary-600 dark:h
                 <div class="flex flex-wrap justify-between sm:justify-start items-center gap-2">
                     @php $area = $selectedReport->area ?? null; @endphp
                     @php
-$areaBadge = $area === 'DTH'
-    ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
-    : ($area === 'OTT'
-        ? 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200'
-        : 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200');
+                        $areaBadge = $area === 'DTH'
+                            ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
+                            : ($area === 'OTT'
+                            ? 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200'
+                            : 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200');
                     @endphp
 
                     <span
@@ -50,7 +50,7 @@ $areaBadge = $area === 'DTH'
                     </span>
 
                     @php
-$type = $selectedReport->type ?? '';
+                        $type = $selectedReport->type ?? '';
                     @endphp
                     @if($type === 'Momentary')
                         <span

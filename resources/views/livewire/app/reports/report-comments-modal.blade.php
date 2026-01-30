@@ -1,14 +1,14 @@
 <div class="w-full max-w-full md:w-[500px] h-[60vh] md:h-[70vh] min-h-[300px] flex flex-col bg-white dark:bg-gray-900 rounded-xl shadow-xl mt-4 md:mt-0 mb-4 ml-0.5"
     wire:ignore.self>
     @php
-$area = Auth::user()?->area ?? '';
-$isOtt = $area === 'OTT';
-$isDth = $area === 'DTH';
-$currentUserBubble = $isOtt ? 'bg-primary-600 text-white rounded-br-none' : ($isDth ? 'bg-secondary-600 text-white rounded-br-none' : 'bg-primary-600 text-white rounded-br-none');
-$otherBubble = $isOtt ? 'bg-primary-100 dark:bg-primary-800 text-gray-900 dark:text-gray-100 rounded-bl-none' : ($isDth ? 'bg-secondary-100 dark:bg-secondary-800 text-gray-900 dark:text-gray-100 rounded-bl-none' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none');
-$focusRing = $isOtt ? 'focus:ring-primary-500' : ($isDth ? 'focus:ring-secondary-500' : 'focus:ring-primary-500');
-$btnPrimary = $isOtt ? 'bg-primary-600 hover:bg-primary-700' : ($isDth ? 'bg-secondary-600 hover:bg-secondary-700' : 'bg-primary-600 hover:bg-primary-700');
-$iconAccent = $isOtt ? 'text-primary-600' : ($isDth ? 'text-secondary-600' : 'text-primary-600');
+        $area = Auth::user()?->area ?? '';
+        $isOtt = $area === 'OTT';
+        $isDth = $area === 'DTH';
+        $currentUserBubble = $isOtt ? 'bg-primary-600 text-white rounded-br-none' : ($isDth ? 'bg-secondary-600 text-white rounded-br-none' : 'bg-primary-600 text-white rounded-br-none');
+        $otherBubble = $isOtt ? 'bg-primary-100 dark:bg-primary-800 text-gray-900 dark:text-gray-100 rounded-bl-none' : ($isDth ? 'bg-secondary-100 dark:bg-secondary-800 text-gray-900 dark:text-gray-100 rounded-bl-none' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none');
+        $focusRing = $isOtt ? 'focus:ring-primary-500' : ($isDth ? 'focus:ring-secondary-500' : 'focus:ring-primary-500');
+        $btnPrimary = $isOtt ? 'bg-primary-600 hover:bg-primary-700' : ($isDth ? 'bg-secondary-600 hover:bg-secondary-700' : 'bg-primary-600 hover:bg-primary-700');
+        $iconAccent = $isOtt ? 'text-primary-600' : ($isDth ? 'text-secondary-600' : 'text-primary-600');
     @endphp
     <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-start justify-center items-center gap-2">
         <i class="fa-regular fa-comments text-gray-800 dark:text-gray-100 text-2xl"></i>
@@ -19,7 +19,7 @@ $iconAccent = $isOtt ? 'text-primary-600' : ($isDth ? 'text-secondary-600' : 'te
         style="scroll-behavior: smooth;">
         @forelse ($comments as $comment)
             @php
-    $isCurrentUser = $comment->user_id === auth()->id();
+                $isCurrentUser = $comment->user_id === auth()->id();
             @endphp
             <div class="flex {{ $isCurrentUser ? 'justify-end' : 'justify-start' }}">
                 <div class="flex items-end gap-2 max-w-[90%]">
