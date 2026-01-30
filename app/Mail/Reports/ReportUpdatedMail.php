@@ -33,8 +33,10 @@ class ReportUpdatedMail extends Mailable
         $area = strtoupper($this->report->area ?? '');
         $prefix = $area ? "[{$area}] " : '';
 
+        $subject = '📢 ' . $prefix . __('Report Updated');
+
         return new Envelope(
-            subject: $prefix . __('📢 Report Updated'),
+            subject: $subject,
         );
     }
 

@@ -35,8 +35,10 @@ class ReportCreatedMail extends Mailable
         $area = strtoupper($this->report->area ?? '');
         $prefix = $area ? "[{$area}] " : '';
 
+        $subject = '⚠️ ' . $prefix . __('New Report Created');
+
         return new Envelope(
-            subject: $prefix . __('⚠️ New Report Created'),
+            subject: $subject,
         );
     }
 
