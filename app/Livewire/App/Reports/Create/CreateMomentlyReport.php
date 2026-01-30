@@ -65,9 +65,12 @@ class CreateMomentlyReport extends Component
         try {
             $this->validateReportData();
 
+            $userArea = Auth::user()->area ?? Report::AREA_OTT;
+
             foreach ($this->reportData['channels'] as $channel) {
                 $existingChannel = ReportDetail::where('channel_id', $channel['channel_id'])
                     ->where('status', 'Revision')
+                    ->whereHas('report', fn($q) => $q->where('area', $userArea))
                     ->exists();
 
                 if ($existingChannel) {

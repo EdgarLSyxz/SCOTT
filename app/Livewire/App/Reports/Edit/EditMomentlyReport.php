@@ -147,9 +147,12 @@ class EditMomentlyReport extends Component
             ]);
         }
 
-        $conflictingChannels = ReportDetail::where('status', __('Revision'))
+        $userArea = $this->report->area ?? Report::AREA_OTT;
+
+        $conflictingChannels = ReportDetail::where('status', 'Revision')
             ->whereNot('report_id', $this->report->id)
             ->whereIn('channel_id', $channelIds)
+            ->whereHas('report', fn($q) => $q->where('area', $userArea))
             ->pluck('channel_id')
             ->unique();
 
