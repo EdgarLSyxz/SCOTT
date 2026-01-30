@@ -242,27 +242,27 @@
                                 <div class="flex flex-col items-center tooltip"
                                     title="{{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have video') : __('The channel has video') }}">
                                     <i
-                                        class="fa-solid {{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-video-slash text-red-500' : 'fa-video text-green-500' }} text-xl"></i>
-                                    <span class="text-[10px] mt-1 text-gray-500 dark:text-gray-300">VIDEO</span>
+                                        class="fa-solid mt-2 {{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-video-slash text-red-500' : 'fa-video text-green-500' }} text-xl"></i>
+                                    <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">VIDEO</span>
                                 </div>
                                 <div class="flex flex-col items-center tooltip"
                                     title="{{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have audio') : __('The channel has audio') }}">
                                     <i
-                                        class="fa-solid {{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-volume-xmark text-red-500' : 'fa-volume-up text-green-500' }} text-xl"></i>
-                                    <span class="text-[10px] mt-1 text-gray-500 dark:text-gray-300">AUDIO</span>
+                                        class="fa-solid mt-2 {{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-volume-xmark text-red-500' : 'fa-volume-up text-green-500' }} text-xl"></i>
+                                    <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">AUDIO</span>
                                 </div>
                                 @if ($selectedReport->area !== 'DTH')
                                     <div class="flex flex-col items-center tooltip"
                                         title="{{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? __('Not working on Web Client (DASH)') : __('Working on Web Client (DASH)') }}">
                                         <i
-                                            class="fa-solid fa-computer {{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-1 text-gray-500 dark:text-gray-300">DASH</span>
+                                            class="fa-solid mt-2 fa-computer {{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
+                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">DASH</span>
                                     </div>
                                     <div class="flex flex-col items-center tooltip"
                                         title="{{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? __('Not working on Set Up Box (HLS)') : __('Working on Set Up Box (HLS)') }}">
                                         <i
-                                            class="fa-solid fa-tv {{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-1 text-gray-500 dark:text-gray-300">HLS</span>
+                                            class="fa-solid mt-2 fa-tv {{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
+                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">HLS</span>
                                     </div>
                                 @endif
                             </div>
