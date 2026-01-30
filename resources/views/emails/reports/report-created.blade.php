@@ -109,6 +109,16 @@
             color: #fff;
         }
 
+        .badge-area-ott {
+            background: #7C2899;
+            color: #fff;
+        }
+
+        .badge-area-dth {
+            background: #FFC629;
+            color: #fff;
+        }
+
         .footer {
             text-align: center;
             font-size: 14px;
@@ -186,6 +196,17 @@
                 </tr>
                 <tr>
                     <th>
+                        {{ __('Area') }}
+                    </th>
+                    <td>
+                        @php $areaLabel = $report->area ?? ''; @endphp
+                        <span class="badge {{ ($areaLabel === \App\Models\Report::AREA_DTH) ? 'badge-area-dth' : 'badge-area-ott' }}">
+                            {{ $areaLabel }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
                         {{ __('Status') }}
                     </th>
                     <td>
@@ -230,7 +251,11 @@
                         {{ __('Channel') }}
                     </th>
                     <th>
-                        {{ __('Stage and Protocol') }}
+                        @if(($report->area ?? '') === \App\Models\Report::AREA_DTH)
+                            {{ __('Stage') }}
+                        @else
+                            {{ __('Stage and Protocol') }}
+                        @endif
                     </th>
                     <th>
                         {{ __('Problem') }}
@@ -246,9 +271,11 @@
                         </td>
                         <td class="stage-protocol">
                             {{ $detail->stage->name }}
-                            <span class="protocol">
-                                ({{ $detail->protocol }})
-                            </span>
+                            @if(($report->area ?? '') !== \App\Models\Report::AREA_DTH)
+                                <span class="protocol">
+                                    ({{ $detail->protocol }})
+                                </span>
+                            @endif
                         </td>
                         <td>
                             {{ $detail->media }}

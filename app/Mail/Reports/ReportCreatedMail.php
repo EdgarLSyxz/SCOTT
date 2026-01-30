@@ -3,7 +3,6 @@
 namespace App\Mail\Reports;
 
 use App\Models\Report;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -33,8 +32,11 @@ class ReportCreatedMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $area = strtoupper($this->report->area ?? '');
+        $prefix = $area ? "[{$area}] " : '';
+
         return new Envelope(
-            subject: __('⚠️ New Report Created'),
+            subject: $prefix . __('⚠️ New Report Created'),
         );
     }
 
