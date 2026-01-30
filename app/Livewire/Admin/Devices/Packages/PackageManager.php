@@ -39,10 +39,21 @@ class PackageManager extends Component
             return;
         }
 
-        $this->uploads = Package::where('user_id', $user->id)
+        $models = Package::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->get(['id', 'user_id', 'filename', 'data', 'created_at'])
-            ->toArray();
+            ->get(['id', 'user_id', 'filename', 'data', 'created_at']);
+
+        $this->uploads = $models->map(function ($m) {
+            $attrs = $m->getAttributes();
+            return [
+                'id' => $m->id,
+                'user_id' => $m->user_id,
+                'filename' => $m->filename,
+                'data' => $m->data,
+                'created_at' => $m->created_at ? $m->created_at->format('Y-m-d H:i:s') : ($attrs['created_at'] ?? null),
+                'created_at_raw' => $attrs['created_at'] ?? null,
+            ];
+        })->toArray();
 
         if (!empty($this->uploads)) {
             $this->selectedUploadId = $this->uploads[0]['id'];
@@ -131,6 +142,9 @@ class PackageManager extends Component
             $this->packages = [];
             $this->totalPackages = 0;
             $this->totalCustomers = 0;
+            $this->dispatch('package-upload-deleted', [
+                'message' => __('Upload removed successfully'),
+            ]);
         }
     }
 

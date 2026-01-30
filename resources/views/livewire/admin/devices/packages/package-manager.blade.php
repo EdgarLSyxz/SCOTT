@@ -363,4 +363,16 @@
             }
         });
     }
+
+    window.addEventListener('package-upload-deleted', function (e) {
+        const msg = (e && e.detail && e.detail.message) ? e.detail.message : '{{ __('Deleted') }}';
+        Swal.fire({
+            icon: 'success',
+            title: msg,
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-right'
+        });
+    });
 </script>

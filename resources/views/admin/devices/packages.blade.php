@@ -154,6 +154,7 @@
                 uploadProgress.classList.add('hidden');
                 progressBar.style.width = '0%';
                 progressPercent.textContent = '0%';
+                if (fileNameDisplay) fileNameDisplay.textContent = '';
             }
 
             dropZone.addEventListener('click', () => pdfFileInput.click());
@@ -190,7 +191,18 @@
                     resetForm();
                     return;
                 }
-                fileNameDisplay.textContent = file.name;
+                function humanFileSize(bytes) {
+                    const thresh = 1024;
+                    if (Math.abs(bytes) < thresh) return bytes + ' B';
+                    const units = ['KB','MB','GB','TB','PB','EB','ZB','YB'];
+                    let u = -1;
+                    do {
+                        bytes /= thresh;
+                        ++u;
+                    } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+                    return bytes.toFixed(1) + ' ' + units[u];
+                }
+                fileNameDisplay.textContent = file.name + ' (' + humanFileSize(file.size) + ')';
                 uploadPrompt.classList.add('hidden');
                 uploadInfo.classList.remove('hidden');
                 submitBtn.disabled = false;
@@ -211,27 +223,50 @@
                     const xhr = new XMLHttpRequest();
                     xhr.upload.addEventListener('progress', e => {
                         if (e.lengthComputable) {
-                            const percentComplete = (e.loaded / e.total) * 100;
+                            // Cap upload progress at 90% - remaining 10% for server processing
+                            const percentComplete = Math.min((e.loaded / e.total) * 90, 90);
                             progressBar.style.width = percentComplete + '%';
                             progressPercent.textContent = Math.round(percentComplete) + '%';
                         }
                     });
 
                     xhr.addEventListener('load', async () => {
-                        if (xhr.status === 200) {
-                            const json = JSON.parse(xhr.responseText);
-                            if (json.ok) {
-                                resetForm();
-                                loadingIndicator.classList.add('hidden');
-                                errorContainer.classList.add('hidden');
-                                Livewire.dispatch('refresh-uploads');
+                        try {
+                            if (xhr.status === 200) {
+                                progressBar.style.width = '95%';
+                                progressPercent.textContent = '95%';
+
+                                let json = null;
+                                try { json = JSON.parse(xhr.responseText); } catch (e) { }
+
+                                const success = json && (json.ok === true || json.success === true || json.id || json.upload_id || json.filename) || (!json && xhr.responseText && xhr.responseText.length > 0);
+
+                                if (success) {
+                                    progressBar.style.width = '100%';
+                                    progressPercent.textContent = '100%';
+
+                                    setTimeout(() => {
+                                        resetForm();
+                                        loadingIndicator.classList.add('hidden');
+                                        errorContainer.classList.add('hidden');
+                                        Livewire.dispatch('refresh-uploads');
+                                        if (window.Swal) {
+                                            Swal.fire({ icon: 'success', title: '{{ __('Processed') }}', timer: 1500, showConfirmButton: false, toast: true, position: 'top-right' });
+                                        }
+                                    }, 300);
+                                } else {
+                                    const msg = (json && (json.error || json.message)) || xhr.responseText || '{{ __('Failed to process PDF') }}';
+                                    showError(msg);
+                                    submitBtn.disabled = false;
+                                    uploadProgress.classList.add('hidden');
+                                }
                             } else {
-                                showError(json.error || json.message || '{{ __('Failed to process PDF') }}');
+                                showError(xhr.statusText || '{{ __('Upload failed') }}');
                                 submitBtn.disabled = false;
                                 uploadProgress.classList.add('hidden');
                             }
-                        } else {
-                            showError(xhr.statusText || '{{ __('Upload failed') }}');
+                        } catch (err) {
+                            showError(err.message || '{{ __('Upload failed') }}');
                             submitBtn.disabled = false;
                             uploadProgress.classList.add('hidden');
                         }
