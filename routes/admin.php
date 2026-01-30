@@ -24,38 +24,35 @@ Route::resource('/channels', ChannelController::class)
 Route::resource('/stages', StageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Stage']);
 
-Route::get('devices/packages', [DeviceController::class, 'packages'])
+Route::get('admin/devices/packages', [DeviceController::class, 'packages'])
     ->name('admin.devices.packages')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::post('devices/process-pdf', [DeviceController::class, 'processPDF'])
+Route::post('admin/devices/process-pdf', [DeviceController::class, 'processPDF'])
     ->name('admin.devices.process-pdf')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::get('devices/packages/data', [PackageController::class, 'apiList'])
+Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
     ->name('admin.devices.packages.data')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::resource('/packages', PackageController::class)
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
-
-Route::get('devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
+Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
     ->name('admin.devices.monthly-downloads')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::get('devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
+Route::get('admin/devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
     ->name('admin.downloads.history.csv')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::post('devices/downloads/history.pdf', [DownloadExportController::class, 'historyPDF'])
+Route::post('admin/devices/downloads/history.pdf', [DownloadExportController::class, 'historyPDF'])
     ->name('admin.downloads.history.pdf')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::post('devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
+Route::post('admin/devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
     ->name('admin.downloads.history.email')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
-Route::get('devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
+Route::get('admin/devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
     ->name('admin.downloads.history.data')
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 

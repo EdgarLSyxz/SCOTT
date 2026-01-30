@@ -866,5 +866,8 @@
     "Search customer ID...": "Buscar ID de cliente...",
     "Copy all": "Copiar todo",
     "Copied!": "¡Copiado!",
-    "No customer IDs available.": "No hay ID de clientes disponibles."
+    "No customer IDs available.": "No hay ID de clientes disponibles.",
+    "Number of Customers": "Número de Clientes",
+    "Delete package upload?": "¿Eliminar carga de paquetes?",
+    "This action cannot be undone.": "Esta acción no se puede deshacer."
 }
