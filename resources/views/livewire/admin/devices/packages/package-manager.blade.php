@@ -29,6 +29,41 @@
         </div>
     @endif
 
+    @if ($totalPackages || $totalCustomers)
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700 p-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-simple text-primary-400"></i>
+                    <span>{{ __('Summary') }}</span>
+                </h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="stats-grid">
+                <div class="p-4 rounded-lg md:col-span-1 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 mr-4">
+                            <i class="fa-solid fa-boxes-packing text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Total packages') }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $totalPackages }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 rounded-lg md:col-span-1 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-900/20">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-300 mr-4">
+                            <i class="fa-solid fa-user-group text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Total customers') }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $totalCustomers }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if (!empty($packages))
             <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700">
                 <div class="flex items-center justify-between p-8">
@@ -314,7 +349,7 @@
 
     function confirmDelete() {
         Swal.fire({
-            title: '{{ __("Delete package upload?") }}',
+            title: '{{ __("Delete selected package?") }}',
             text: '{{ __("This action cannot be undone.") }}',
             icon: 'warning',
             showCancelButton: true,

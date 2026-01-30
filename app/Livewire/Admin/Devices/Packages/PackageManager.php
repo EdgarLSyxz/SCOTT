@@ -12,6 +12,8 @@ class PackageManager extends Component
     public $uploads = [];
     public $selectedUploadId = null;
     public $packages = [];
+    public $totalPackages = 0;
+    public $totalCustomers = 0;
     public $searchTerm = '';
     public $selectedPackage = null;
     public $modalOpen = false;
@@ -98,6 +100,17 @@ class PackageManager extends Component
         }
 
         $this->packages = $packages;
+
+        $this->totalPackages = count($packages);
+        $this->totalCustomers = array_reduce($packages, function ($carry, $p) {
+            $count = 0;
+            if (isset($p['customers']) && is_numeric($p['customers'])) {
+                $count = (int)$p['customers'];
+            } elseif (!empty($p['customers_list']) && is_array($p['customers_list'])) {
+                $count = count($p['customers_list']);
+            }
+            return $carry + $count;
+        }, 0);
     }
 
     public function deleteUpload()
@@ -116,6 +129,8 @@ class PackageManager extends Component
             $this->loadUploads();
             $this->selectedPackage = null;
             $this->packages = [];
+            $this->totalPackages = 0;
+            $this->totalCustomers = 0;
         }
     }
 

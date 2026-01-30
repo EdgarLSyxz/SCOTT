@@ -868,6 +868,6 @@
     "Copied!": "¡Copiado!",
     "No customer IDs available.": "No hay ID de clientes disponibles.",
     "Number of Customers": "Número de Clientes",
-    "Delete package upload?": "¿Eliminar carga de paquetes?",
+    "Delete selected package?": "¿Eliminar paquete seleccionado?",
     "This action cannot be undone.": "Esta acción no se puede deshacer."
 }
