@@ -224,7 +224,7 @@
                                 <div class="flex items-center gap-2 w-full min-w-0">
                                     <div class="w-10 h-10 flex-shrink-0">
                                         <img src="{{ $detail->channel->image }}" alt="{{ $detail->channel->name }}"
-                                            title="{{ $detail->channel->number }} {{ $detail->channel->name }}"
+                                            title="{{ $detail->channel->number }} {{ strtoupper($detail->channel->name) }} ({{ strtoupper($detail->channel->origin) }})"
                                             class="w-10 h-10 object-contain object-center">
                                     </div>
                                     <div class="flex-1 flex flex-col justify-center text-end min-w-0">

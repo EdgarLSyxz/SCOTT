@@ -89,7 +89,7 @@
                                         <div class="relative w-8 h-8 overflow-hidden">
                                             <img class="w-full h-full object-contain object-center"
                                                 src="{{ $detail->channel->image }}" alt="{{ $detail->channel->name }}"
-                                                title="{{ $detail->channel->number }} {{ $detail->channel->name }}">
+                                                title="{{ $detail->channel->number }} {{ strtoupper($detail->channel->name) }} ({{ strtoupper($detail->channel->origin) }})">
                                         </div>
                                     @endforeach
                                     @if ($report->reportDetails->count() > 3)
