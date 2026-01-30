@@ -10,6 +10,7 @@ use App\Models\Channel;
 use Livewire\Component;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use App\Models\User;
 
 class EditMomentlyReport extends Component
@@ -33,7 +34,11 @@ class EditMomentlyReport extends Component
         }
 
         $this->report = $report;
-        $this->stages = Stage::where('status', '1')->get();
+        $userArea = $report->area ?? Report::AREA_OTT;
+
+        $this->stages = Stage::where('status', '1')
+            ->when($userArea, fn($q) => $q->where('area', $userArea))
+            ->get();
 
         $this->reportData = [
             'category' => $report->category,
@@ -174,7 +179,12 @@ class EditMomentlyReport extends Component
 
             $this->validate([
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
-                "reportData.channels.$index.stage" => 'required|exists:stages,id',
+                "reportData.channels.$index.stage" => [
+                    'required',
+                    Rule::exists('stages', 'id')->where(function ($query) use ($userArea) {
+                        $query->where('status', '1')->when($userArea, fn($q) => $q->where('area', $userArea));
+                    }),
+                ],
                 "reportData.channels.$index.protocol" => $protocolRule,
                 "reportData.channels.$index.media" => 'required|in:' . implode(',', $this->mediaOptions),
                 "reportData.channels.$index.description" => 'required|string',

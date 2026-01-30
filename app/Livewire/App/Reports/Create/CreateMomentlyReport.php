@@ -9,6 +9,7 @@ use App\Models\ReportDetail;
 use App\Models\Stage;
 use App\Models\Channel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
@@ -22,7 +23,12 @@ class CreateMomentlyReport extends Component
 
     public function mount()
     {
-        $this->stages = Stage::where('status', '1')->get();
+        $userArea = Auth::user()->area ?? Report::AREA_OTT;
+        $stagesQuery = Stage::where('status', '1');
+        if ($userArea) {
+            $stagesQuery->where('area', $userArea);
+        }
+        $this->stages = $stagesQuery->orderBy('name')->get();
         $this->reportData = [
             'type' => 'Momentary',
             'category' => '',
@@ -154,6 +160,11 @@ class CreateMomentlyReport extends Component
 
         $userArea = Auth::user()->area ?? Report::AREA_OTT;
 
+        $baseStageRule = Rule::exists('stages', 'id')->where('status', '1');
+        if ($userArea) {
+            $baseStageRule = $baseStageRule->where('area', $userArea);
+        }
+
         foreach ($this->reportData['channels'] as $index => $channel) {
             $protocolRule = $userArea === Report::AREA_DTH
                 ? 'nullable'
@@ -161,7 +172,7 @@ class CreateMomentlyReport extends Component
 
             $this->validate([
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
-                "reportData.channels.$index.stage" => 'required|exists:stages,id',
+                "reportData.channels.$index.stage" => ['required', $baseStageRule],
                 "reportData.channels.$index.protocol" => $protocolRule,
                 "reportData.channels.$index.media" => 'required|in:' . implode(',', $this->mediaOptions),
                 "reportData.channels.$index.description" => 'required|string',
@@ -194,9 +205,15 @@ class CreateMomentlyReport extends Component
 
         $channels = $channelsQuery->orderBy('number')->get();
 
+        $stagesQuery = Stage::where('status', '1');
+        if ($userArea) {
+            $stagesQuery->where('area', $userArea);
+        }
+        $stages = $stagesQuery->orderBy('name')->get();
+
         return view('livewire.app.reports.create.create-momently-report', [
             'channels' => $channels,
-            'stages' => Stage::all(),
+            'stages' => $stages,
             'userArea' => $userArea,
         ]);
     }
