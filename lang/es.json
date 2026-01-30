@@ -870,5 +870,7 @@
     "Number of Customers": "Número de Clientes",
     "Delete selected package?": "¿Eliminar paquete seleccionado?",
     "This action cannot be undone.": "Esta acción no se puede deshacer.",
-    "Deleted": "Eliminado"
+    "Deleted": "Eliminado",
+    "User can now switch area.": "El usuario ahora puede cambiar de área.",
+    "User can no longer switch area.": "El usuario ya no puede cambiar de área."
 }

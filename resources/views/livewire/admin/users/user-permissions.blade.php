@@ -99,13 +99,11 @@
                     $isSelf = $auth->id === $user->id;
                     $isFirstMaster = $user->id === 1;
 
-                    $canSave =
-                        ($isFirstMaster && $isSelf) ||
-                        (!$isFirstMaster &&
-                            ($isAuthMaster ||
-                                ($isAuthAdmin && $isTargetUser && !$isSelf) ||
-                                ($isAuthAdmin && $isSelf) ||
-                                ($isAuthUser && $isSelf)));
+                    $canSave = ($isFirstMaster && $isSelf)
+                        || $isAuthMaster
+                        || ($isAuthAdmin && $isTargetUser && !$isSelf)
+                        || ($isAuthAdmin && $isSelf)
+                        || ($isAuthUser && $isSelf);
                 @endphp
                 <div class="w-full flex justify-center sm:justify-start mt-5 sm:mt-3">
                     @php
@@ -257,12 +255,15 @@
                 <div class="relative" x-data="{ tip: false }">
                     @php $canSwitch = $user->can_switch_area ?? false; @endphp
                     <span @mouseenter="tip = true" @mouseleave="tip = false"
-                        class="{{ $smallBadgeBase }} {{ $canSwitch ? $canSwitchTrueClasses : $canSwitchFalseClasses }}">
+                        @if($canEditPermissions) wire:click="toggleCanSwitch" @endif
+                        role="button"
+                        aria-pressed="{{ $canSwitch ? 'true' : 'false' }}"
+                        class="{{ $smallBadgeBase }} {{ $canSwitch ? $canSwitchTrueClasses : $canSwitchFalseClasses }} {{ $canEditPermissions ? 'cursor-pointer' : '' }}">
                         <i class="fa-solid {{ $canSwitch ? 'fa-repeat' : 'fa-lock' }} text-xs" aria-hidden="true"></i>
                     </span>
                     <div x-show="tip" x-cloak x-transition:enter="transition ease-out duration-150"
                         x-transition:enter-start="opacity-0 scale-95"
-                        x-tranFsition:enter-end="opacity-100 scale-100"
+                        x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100"
                         x-transition:leave-end="opacity-0 scale-95"

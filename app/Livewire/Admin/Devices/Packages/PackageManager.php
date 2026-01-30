@@ -179,6 +179,11 @@ class PackageManager extends Component
             ->toArray();
     }
 
+    public function updatedModalSearchTerm($value)
+    {
+        $this->filterModalSearch($value ?? '');
+    }
+
     public function getFilteredPackages()
     {
         $term = strtolower($this->searchTerm);

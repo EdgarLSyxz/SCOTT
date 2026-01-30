@@ -336,6 +336,29 @@ class UserPermissions extends Component
         $this->dispatch('userAreaChanged', ['userId' => $this->user->id, 'area' => $new]);
     }
 
+    public function toggleCanSwitch()
+    {
+        $auth = auth()->user();
+
+        if (! ($this->canEditPermissions || ($auth && $auth->hasRole('master')))) {
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => __('Access denied'),
+                'text' => __('You are not authorized to change this setting.'),
+            ]);
+            return;
+        }
+
+        $this->user->can_switch_area = ! ($this->user->can_switch_area ?? false);
+        $this->user->save();
+
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => $this->user->can_switch_area ? __('User can now switch area.') : __('User can no longer switch area.'),
+        ]);
+    }
+
     public function render()
     {
         return view('livewire.admin.users.user-permissions');
