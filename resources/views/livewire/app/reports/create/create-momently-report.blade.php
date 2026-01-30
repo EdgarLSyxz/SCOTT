@@ -4,6 +4,10 @@ use App\Enums\ChannelReviewer;
 
 ?>
 
+@php
+    $brand = (($userArea ?? null) === \App\Models\Report::AREA_DTH) ? 'secondary' : 'primary';
+@endphp
+
 <div>
     <form wire:submit.prevent="saveReport" class="space-y-5">
         <div x-data="{
@@ -16,7 +20,7 @@ use App\Enums\ChannelReviewer;
                 <div class="flex flex-wrap items-center justify-between cursor-pointer"
                     @click="if (!editingName) open = !open">
                     <div class="flex items-center gap-3 min-w-0">
-                        <button type="button" class="text-primary-600 flex-shrink-0" @click.stop="open = !open">
+                        <button type="button" class="text-{{ $brand }}-600 flex-shrink-0" @click.stop="open = !open">
                             <i :class="open ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
                         </button>
                         <div class="dark:text-white text-lg font-semibold relative min-w-0">
@@ -35,7 +39,7 @@ use App\Enums\ChannelReviewer;
                     </div>
                     <div class="flex items-center gap-3 transition-all duration-300"
                         :class="(categoryName.length > 4 || editingName) ? 'mt-4 sm:mt-0' : 'mt-0'">
-                        <span class="bg-primary-100 text-primary-800 text-sm font-medium py-1 px-3 rounded-full">
+                        <span class="bg-{{ $brand }}-100 text-{{ $brand }}-800 text-sm font-medium py-1 px-3 rounded-full">
                             {{ __('Contains') }} {{ $this->getChannelCount(0) }}
                             {{ $this->getChannelCount(0) === 1 ? __('Channel') : __('Channels') }}
                         </span>
@@ -53,7 +57,7 @@ use App\Enums\ChannelReviewer;
                                     <i class="fas fa-times-circle mr-1"></i> {{ __('Remove channel') }}
                                 </button>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="{{ ($userArea ?? null) === \App\Models\Report::AREA_DTH ? 'grid grid-cols-1 md:grid-cols-3 gap-6' : 'grid grid-cols-1 md:grid-cols-2 gap-6' }}">
                                 <div x-data="{
                                     open: false,
                                     search: '',
@@ -62,7 +66,8 @@ use App\Enums\ChannelReviewer;
                                         'id' => $c->id,
                                         'number' => $c->number,
                                         'name' => $c->name,
-                                        'image' => $c->image
+                                        'image' => $c->image,
+                                        'origin' => $c->origin ?? $c->category ?? ''
                                     ])),
                                     get filteredChannels() {
                                         if (this.open && this.selectedChannel && this.search === (this.selectedChannel.number + ' ' + this.selectedChannel.name)) {
@@ -71,9 +76,10 @@ use App\Enums\ChannelReviewer;
                                         if (this.search === '') return this.channels;
                                         const term = this.search.toLowerCase();
                                         return this.channels.filter(c => {
-                                            const combined = (c.number + ' ' + c.name).toLowerCase();
+                                            const combined = (c.number + ' ' + c.name + ' ' + (c.origin || '')).toLowerCase();
                                             return c.name.toLowerCase().includes(term)
                                                 || c.number.toString().includes(term)
+                                                || (c.origin && c.origin.toLowerCase().includes(term))
                                                 || combined.includes(term);
                                         });
                                     },
@@ -84,7 +90,7 @@ use App\Enums\ChannelReviewer;
                                         $wire.set('reportData.channels.{{ $channelIndex }}.channel_id', channel.id);
                                     },
                                     init() {
-                                        this.$nextTick(() => {
+                                            this.$nextTick(() => {
                                             const selectedId = $wire.get('reportData.channels.{{ $channelIndex }}.channel_id');
                                             if (selectedId) {
                                                 const found = this.channels.find(c => c.id == selectedId);
@@ -106,21 +112,28 @@ use App\Enums\ChannelReviewer;
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         <i class="fa-solid fa-tv mr-1.5"></i> {{ __('Channel') }}
                                     </label>
-                                    <div class="relative flex-1">
+                                        <div class="relative flex-1">
                                         <img x-show="selectedChannel && search === (selectedChannel.number + ' ' + selectedChannel.name)" :src="selectedChannel?.image"
                                             class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 object-contain rounded bg-white dark:bg-gray-700">
                                         <input type="text" x-model="search" @focus="open = true" @click="open = true"
                                             @input="open = true" @click.away="open = false" placeholder="{{ __('Search channel...') }}"
-                                            class="w-full pl-12 pr-2 py-3 rounded-lg bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all cursor-pointer"
+                                            class="w-full pl-12 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-{{ $brand }}-500 focus:border-{{ $brand }}-500 text-sm transition-all cursor-pointer"
                                             autocomplete="off">
+                                        <span x-show="selectedChannel && selectedChannel.origin" x-cloak
+                                              class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-xs pointer-events-none"
+                                              x-text="'(' + (selectedChannel.origin || '') + ')'">
+                                        </span>
                                         <div x-show="open"
                                             class="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-2xl dark:bg-gray-700 dark:border-gray-600">
                                             <ul class="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
                                                 <template x-for="channel in filteredChannels" :key="channel.id">
                                                     <li @click="selectChannel(channel)"
                                                         class="cursor-pointer px-3 py-1.5 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition">
-                                                        <img :src="channel.image" class="w-6 h-6 object-contain rounded border-gray-200 dark:border-gray-700">
-                                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate max-w-[280px] block" x-text="channel.number + ' ' + channel.name" :title="channel.number + ' ' + channel.name"></span>
+                                                        <img :src="channel.image" class="w-6 h-6 object-contain rounded border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                                        <div class="flex-1 flex items-center justify-between min-w-0">
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate" x-text="channel.number + ' ' + channel.name" :title="channel.number + ' ' + channel.name"></span>
+                                                            <span class="ml-3 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0" x-text="channel.origin ? '(' + channel.origin + ')' : ''"></span>
+                                                        </div>
                                                     </li>
                                                 </template>
                                             </ul>
@@ -135,7 +148,7 @@ use App\Enums\ChannelReviewer;
                                         {{ __('Stage') }}
                                     </label>
                                     <select wire:model="reportData.channels.{{ $channelIndex }}.stage"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500">
                                         <option disabled selected value="">
                                             {{ __('Select a stage') }}
                                         </option>
@@ -144,13 +157,14 @@ use App\Enums\ChannelReviewer;
                                         @endforeach
                                     </select>
                                 </div>
+                                @if(($userArea ?? null) !== \App\Models\Report::AREA_DTH)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         <i class="fa-solid fa-server mr-1.5"></i>
                                         {{ __('Protocol') }}
                                     </label>
                                     <select wire:model="reportData.channels.{{ $channelIndex }}.protocol"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500">
                                         <option value="" disabled selected>
                                             {{ __('Select a protocol') }}
                                         </option>
@@ -159,13 +173,14 @@ use App\Enums\ChannelReviewer;
                                         @endforeach
                                     </select>
                                 </div>
+                                @endif
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         <i class="fa-solid fa-forward mr-1.5"></i>
                                         {{ __('Audiovisual') }}
                                     </label>
                                     <select wire:model="reportData.channels.{{ $channelIndex }}.media"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500">
                                         <option value="" disabled selected>
                                             {{ __('Select an audiovisual problem') }}
                                         </option>
@@ -174,13 +189,13 @@ use App\Enums\ChannelReviewer;
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-span-1 md:col-span-2">
+                                <div class="{{ ($userArea ?? null) === \App\Models\Report::AREA_DTH ? 'col-span-1 md:col-span-3' : 'col-span-1 md:col-span-2' }}">
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         <i class="fa-solid fa-comment mr-1.5"></i>
                                         {{ __('Description') }}
                                     </label>
                                     <textarea wire:model="reportData.channels.{{ $channelIndex }}.description" rows="3"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500"
                                         placeholder="{{ __('Enter a description of the problem') }}"></textarea>
                                 </div>
                             </div>
@@ -197,7 +212,7 @@ use App\Enums\ChannelReviewer;
                         {{ __('Under review by') }}
                     </label>
                     <select wire:model="reportData.reviewed_by"
-                        class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                        class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500">
                         <option disabled selected value="">
                             {{ __('Select a reviewer') }}
                         </option>
@@ -208,11 +223,11 @@ use App\Enums\ChannelReviewer;
                 </div>
                 <div class="flex flex-col md:flex-row justify-end gap-4 mt-6">
                     <button type="submit"
-                        class="w-full md:w-auto py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold text-base">
+                        class="w-full md:w-auto py-2 px-4 bg-{{ $brand }}-600 hover:bg-{{ $brand }}-700 text-white rounded-lg font-bold text-base">
                         <i class="fas fa-file-lines mr-1.5"></i> {{ __('Generate report') }}
                     </button>
                     <button data-modal-hide="create-momently-report-modal" type="button"
-                        class="py-2 px-4 text-base font-bold text-gray-700 bg-white rounded-lg border border-gray-400 hover:border-primary-600 hover:text-primary-600 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:hover:text-primary-400 dark:hover:bg-gray-700">
+                        class="py-2 px-4 text-base font-bold text-gray-700 bg-white rounded-lg border border-gray-400 hover:border-{{ $brand }}-600 hover:text-{{ $brand }}-600 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:hover:text-{{ $brand }}-400 dark:hover:bg-gray-700">
                         <i class="fa-solid fa-xmark"></i>
                         {{ __('Discard') }}
                     </button>
