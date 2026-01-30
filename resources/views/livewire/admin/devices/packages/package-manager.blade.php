@@ -59,7 +59,7 @@
                 <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-gray-300/50 dark:border-none">
                     <div class="overflow-x-auto">
                     @php
-    $filteredPackages = $this->getFilteredPackages();
+                        $filteredPackages = $this->getFilteredPackages();
                     @endphp
                     </div>
                     @if (!empty($filteredPackages))
@@ -102,13 +102,13 @@
     @endif
 
     @if (!empty($packages))
-        <div x-data="packagesChart(@entangle('packages'))" x-init="init()"
+        <div wire:ignore x-data="packagesChart(@entangle('packages'))" x-init="init()"
             class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700 p-8">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-primary-400"></i>
                 <span>{{ __('Package distribution') }}</span>
             </h3>
-            <canvas x-ref="chartCanvas" class="max-w-full"></canvas>
+            <canvas id="packages-chart" x-ref="chartCanvas" class="max-w-full"></canvas>
         </div>
     @endif
 
@@ -189,112 +189,88 @@
 @endonce
 
 <script>
+    let __packagesChartInstance = null;
+
+    function renderChart(packages) {
+        const canvas = document.getElementById('packages-chart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const data = Array.isArray(packages) ? packages : [];
+        const topPackages = data.slice(0, 15);
+        const labels = topPackages.map(pkg => pkg.name || 'Unknown');
+        const values = topPackages.map(pkg => {
+            const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
+            return ids.length || pkg.customers || 0;
+        });
+
+        canvas.style.display = 'block';
+        canvas.style.width = '100%';
+        canvas.style.height = '160px';
+        canvas.height = 160;
+
+        if (__packagesChartInstance) {
+            try { __packagesChartInstance.destroy(); } catch (e) { }
+            __packagesChartInstance = null;
+        }
+
+        __packagesChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: '{{ __('Customers') }}',
+                        data: values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function (context) {
+                                return `{{ __('Customers') }}: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { usePointStyle: true, padding: 15 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 },
+                        title: { display: true, text: '{{ __('Number of Customers') }}', font: { size: 12, weight: 'bold' } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }
+                }
+            }
+        });
+    }
+
     function packagesChart(packages) {
         return {
             packages,
-            chart: null,
             init() {
-                this.renderChart();
-                this.$watch('packages', () => this.renderChart());
-            },
-            renderChart() {
-                this.$nextTick(() => {
-                    const data = Array.isArray(this.packages) ? this.packages : [];
-                    const topPackages = data.slice(0, 15);
-                    const labels = topPackages.map(pkg => pkg.name || 'Unknown');
-                    const values = topPackages.map(pkg => {
-                        const ids = Array.isArray(pkg.customers_list) ? pkg.customers_list : [];
-                        return ids.length || pkg.customers || 0;
-                    });
-
-                    if (!this.$refs.chartCanvas) return;
-                    const canvas = this.$refs.chartCanvas;
-                    const ctx = canvas.getContext('2d');
-
-                    canvas.style.pointerEvents = 'auto';
-                    canvas.style.display = 'block';
-                    canvas.style.height = '320px';
-
-                    if (this.chart) {
-                        try { this.chart.destroy(); } catch (e) { /* ignore */ }
-                    }
-
-                    this.chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels,
-                            datasets: [
-                                {
-                                    label: '{{ __('Customers') }}',
-                                    data: values,
-                                    backgroundColor: 'rgba(59, 130, 246, 0.8)'
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                                mode: 'nearest',
-                                intersect: true
-                            },
-                            onHover: (event, elements, chart) => {
-                                try {
-                                    if (chart && chart.canvas) chart.canvas.style.cursor = elements && elements.length ? 'pointer' : 'default';
-                                } catch (e) { }
-                            },
-                            onClick: (evt, elements) => {
-                                if (elements && elements.length) {
-                                    const idx = elements[0].index;
-                                    console.debug('chart:bar:click', idx, labels[idx], values[idx]);
-                                }
-                            },
-                            plugins: {
-                                tooltip: {
-                                    enabled: true,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    padding: 12,
-                                    titleFont: {
-                                        size: 14,
-                                        weight: 'bold'
-                                    },
-                                    bodyFont: {
-                                        size: 13
-                                    },
-                                    callbacks: {
-                                        label: function (context) {
-                                            return `{{ __('Customers') }}: ${context.parsed.y}`;
-                                        }
-                                    }
-                                },
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                    labels: {
-                                        usePointStyle: true,
-                                        padding: 15
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: { precision: 0 },
-                                    title: {
-                                        display: true,
-                                        text: '{{ __('Number of Customers') }}',
-                                        font: { size: 12, weight: 'bold' }
-                                    },
-                                    grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                                },
-                                x: {
-                                    grid: { display: false },
-                                    ticks: { maxRotation: 45, minRotation: 45 }
-                                }
-                            }
-                        }
-                    });
-                });
+                renderChart(this.packages);
+                this.$watch('packages', (v) => renderChart(v));
+                this.$watch('$wire.modalOpen', () => renderChart(this.packages));
             }
         };
     }
