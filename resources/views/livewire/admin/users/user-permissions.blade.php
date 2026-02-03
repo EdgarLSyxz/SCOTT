@@ -125,13 +125,21 @@
                             class="mt-2 bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 space-y-4 border dark:border-gray-600 absolute z-10 w-full sm:w-72 left-0 sm:left-auto sm:right-0">
                             <form wire:submit.prevent="saveReportPreferences" class="space-y-3">
                                 @php
+                                    $authForPrefs = auth()->user();
                                     $reportMailsList = [
                                         'report_created' => __('Report Created'),
                                         'report_updated' => __('Report Updated'),
                                         'report_resolved' => __('Report Resolved'),
-                                        'report_functions_created' => __('Report Functions Created'),
-                                        'report_general_created' => __('General Report Created'),
                                     ];
+
+                                    $showFunctionsPref = $authForPrefs && (
+                                        $authForPrefs->id === 1 ||
+                                        strtoupper(trim($authForPrefs->area ?? '')) === 'OTT'
+                                    );
+
+                                    if ($showFunctionsPref) {
+                                        $reportMailsList['report_functions_created'] = __('Report Functions Created');
+                                    }
                                 @endphp
                                 @foreach ($reportMailsList as $key => $label)
                                     <x-label class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">

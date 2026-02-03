@@ -30,7 +30,6 @@ class UserPermissions extends Component
             'report_updated' => false,
             'report_resolved' => false,
             'report_functions_created' => false,
-            'report_general_created' => false,
         ];
 
         $userPreferences = [];
@@ -115,16 +114,32 @@ class UserPermissions extends Component
             return;
         }
 
+        $auth = auth()->user();
+
         $reportMailOptions = [
             'report_created',
             'report_updated',
             'report_resolved',
-            'report_functions_created',
-            'report_general_created',
         ];
 
-        $finalPreferences = [];
+        if ($auth && ($auth->id === 1 || strtoupper(trim($auth->area ?? '')) === 'OTT')) {
+            $reportMailOptions[] = 'report_functions_created';
+        }
 
+        $existingRaw = $this->user->report_mail_preferences;
+        $existingPrefs = [];
+        if (is_string($existingRaw)) {
+            $decoded = json_decode($existingRaw, true);
+            if (is_array($decoded)) {
+                $existingPrefs = $decoded;
+            }
+        } elseif (is_array($existingRaw)) {
+            $existingPrefs = $existingRaw;
+        } elseif (is_object($existingRaw)) {
+            $existingPrefs = (array) $existingRaw;
+        }
+
+        $finalPreferences = $existingPrefs;
         foreach ($reportMailOptions as $option) {
             $finalPreferences[$option] = $this->reportMails[$option] ?? false;
         }
