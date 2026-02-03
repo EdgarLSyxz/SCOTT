@@ -12,8 +12,10 @@ class MonthlyDownloadsReport extends Component
 {
     public $year;
     public $month;
+    public $day;
     public $years = [];
     public $months = [];
+    public $days = [];
     public $devices;
     public $counts = [];
     public $successMessage = null;
@@ -21,6 +23,7 @@ class MonthlyDownloadsReport extends Component
     protected $rules = [
         'year' => 'required|integer|min:1900',
         'month' => 'required|integer|min:1|max:12',
+        'day' => 'required|integer|min:1|max:31',
         'counts' => 'array',
         'counts.*' => 'integer|min:0',
     ];
@@ -33,6 +36,7 @@ class MonthlyDownloadsReport extends Component
 
         $this->year = (int) date('Y');
         $this->month = (int) date('n');
+        $this->day = (int) date('j');
         $exclude = ['Web Client', 'Android Mobile', 'Android TV'];
         $this->devices = Device::whereNotIn('name', $exclude)->orderBy('name')->get();
 
@@ -72,6 +76,8 @@ class MonthlyDownloadsReport extends Component
         for ($m = 1; $m <= $maxMonth; $m++) {
             $this->months[] = $m;
         }
+
+        $this->buildDays();
     }
 
     public function getTotalProperty()
@@ -89,10 +95,17 @@ class MonthlyDownloadsReport extends Component
     {
         $this->year = (int) $this->year;
         $this->buildMonths();
+        $this->buildDays();
         $this->loadCounts();
     }
 
     public function updatedMonth()
+    {
+        $this->buildDays();
+        $this->loadCounts();
+    }
+
+    public function updatedDay()
     {
         $this->loadCounts();
     }
@@ -117,6 +130,31 @@ class MonthlyDownloadsReport extends Component
 
         if (! in_array((int) $this->month, $this->months)) {
             $this->month = (int) (end($this->months) ?: $currentMonth);
+        }
+    }
+
+    protected function buildDays()
+    {
+        $current = (int) date('Y');
+        $currentMonth = (int) date('n');
+        $currentDay = (int) date('j');
+
+        $selectedYear = (int) $this->year;
+        $selectedMonth = (int) $this->month;
+
+        if ($selectedYear >= $current && $selectedMonth >= $currentMonth) {
+            $maxDay = $currentDay;
+        } else {
+            $maxDay = cal_days_in_month(CAL_GREGORIAN, $selectedMonth, $selectedYear);
+        }
+
+        $this->days = [];
+        for ($d = 1; $d <= $maxDay; $d++) {
+            $this->days[] = $d;
+        }
+
+        if (! in_array((int) $this->day, $this->days)) {
+            $this->day = (int) (end($this->days) ?: $currentDay);
         }
     }
 
@@ -146,6 +184,7 @@ class MonthlyDownloadsReport extends Component
                 $download->device_id = $device->id;
                 $download->year = $this->year;
                 $download->month = $this->month;
+                $download->day = $this->day;
                 $download->count = $value;
                 $download->save();
             }
@@ -168,7 +207,9 @@ class MonthlyDownloadsReport extends Component
 
         $this->year = (int) date('Y');
         $this->month = (int) date('n');
+        $this->day = (int) date('j');
         $this->buildMonths();
+        $this->buildDays();
         $this->loadCounts();
 
         try { $this->dispatch('close-monthly-report-modal'); } catch (\Exception $e) {}

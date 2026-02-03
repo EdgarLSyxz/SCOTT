@@ -13,12 +13,14 @@ class Download extends Model
         'device_id',
         'year',
         'month',
+        'day',
         'count',
     ];
 
     protected $casts = [
         'year' => 'integer',
         'month' => 'integer',
+        'day' => 'integer',
         'count' => 'integer',
     ];
 
@@ -27,10 +29,10 @@ class Download extends Model
         return $this->belongsTo(Device::class);
     }
 
-    public static function addToMonth(int $deviceId, int $year, int $month, int $count = 0)
+    public static function addToMonth(int $deviceId, int $year, int $month, int $day = 1, int $count = 0)
     {
         $download = static::firstOrCreate(
-            ['device_id' => $deviceId, 'year' => $year, 'month' => $month],
+            ['device_id' => $deviceId, 'year' => $year, 'month' => $month, 'day' => $day],
             ['count' => 0]
         );
 

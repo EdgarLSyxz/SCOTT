@@ -2,6 +2,16 @@
     <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
         <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div class="flex items-center gap-2 w-full sm:w-32">
+                    <label class="sr-only">{{ __('Day') }}</label>
+                    <select aria-label="Day" wire:model.live="day" class="cursor-pointer bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        @foreach($days as $d)
+                            <option value="{{ $d }}">{{ $d }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="flex items-center gap-2 w-full sm:w-44">
                     <label class="sr-only">{{ __('Month') }}</label>
                     <select aria-label="Month" wire:model.live="month" class="cursor-pointer bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
