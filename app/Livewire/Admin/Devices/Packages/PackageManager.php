@@ -110,7 +110,12 @@ class PackageManager extends Component
             }
         }
 
-        $this->packages = $packages;
+        $this->packages = collect($packages)
+            ->sortBy(function ($p) {
+                return is_numeric($p['id']) ? (int) $p['id'] : $p['id'];
+            })
+            ->values()
+            ->toArray();
 
         $this->totalPackages = count($packages);
         $this->totalCustomers = array_reduce($packages, function ($carry, $p) {
@@ -192,6 +197,9 @@ class PackageManager extends Component
                 return strpos(strtolower($pkg['name']), $term) !== false ||
                        strpos(strtolower((string)$pkg['id']), $term) !== false ||
                        collect($pkg['customers_list'])->contains(fn($id) => strpos(strtolower($id), $term) !== false);
+            })
+            ->sortBy(function ($p) {
+                return is_numeric($p['id']) ? (int) $p['id'] : $p['id'];
             })
             ->values()
             ->toArray();

@@ -39,7 +39,7 @@
             <div class="relative mt-3">
                 <span
                     class="px-4 py-1 text-xs font-semibold rounded-full {{ $bgBadge }} {{ $textBadge }} shadow-sm uppercase tracking-wider">
-                    {{ __('Version') }} 2.1
+                    {{ __('Version') }} 2.0
                 </span>
             </div>
 
@@ -73,7 +73,7 @@
                     </span>
                     <div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ __('Last update') }}</p>
-                        <p class="text-gray-900 dark:text-gray-100 font-medium">{{ __('January') }} 2026</p>
+                        <p class="text-gray-900 dark:text-gray-100 font-medium">{{ __('February') }} 2026</p>
                     </div>
                 </div>
             </div>

@@ -103,7 +103,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left"><i class="fa-solid fa-id-card mr-1.5 text-xs"></i>{{ __('ID') }}</th>
                                     <th class="px-4 py-3 text-left"><i class="fa-solid fa-boxes-packing mr-1.5 text-xs"></i>{{ __('Package name') }}</th>
-                                    <th class="px-4 py-3 text-right"><i class="fa-solid fa-user-group mr-1.5 text-xs"></i>{{ __('Customers') }}</th>
+                                    <th class="px-4 py-3 text-right inline-flex"><i class="fa-solid fa-user-group mr-1.5 text-xs"></i>{{ __('Customers') }}</th>
                                     <th class="px-4 py-3 text-center w-12"></th>
                                 </tr>
                             </thead>
@@ -183,7 +183,7 @@
                         @endif
                     </div>
 
-                    <ul class="space-y-1 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <ul id="package-customers-list" class="space-y-1 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                         @forelse ($filteredCustomerIds as $id)
                             <li
                                 class="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -311,18 +311,15 @@
     }
 
     function copyToClipboard() {
-        const ids = @json($filteredCustomerIds);
+        const list = document.getElementById('package-customers-list');
+        if (!list) return;
+        const spans = list.querySelectorAll('li > span:first-child');
+        const ids = Array.from(spans).map(s => s.textContent.trim()).filter(Boolean);
         const text = ids.join('\n');
+        if (!text) return;
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(() => {
-                const feedback = document.getElementById('copy-feedback');
-                feedback.classList.remove('opacity-0');
-                feedback.classList.add('opacity-100');
-                setTimeout(() => {
-                    feedback.classList.add('opacity-0');
-                    feedback.classList.remove('opacity-100');
-                }, 2000);
-            });
+            navigator.clipboard.writeText(text).then(() => showCopyFeedback());
         } else {
             const ta = document.createElement('textarea');
             ta.value = text;
@@ -333,18 +330,23 @@
             ta.select();
             try {
                 document.execCommand('copy');
-                const feedback = document.getElementById('copy-feedback');
-                feedback.classList.remove('opacity-0');
-                feedback.classList.add('opacity-100');
-                setTimeout(() => {
-                    feedback.classList.add('opacity-0');
-                    feedback.classList.remove('opacity-100');
-                }, 2000);
+                showCopyFeedback();
             } catch (err) {
                 console.warn('Copy failed', err);
             }
             document.body.removeChild(ta);
         }
+    }
+
+    function showCopyFeedback() {
+        const feedback = document.getElementById('copy-feedback');
+        if (!feedback) return;
+        feedback.classList.remove('opacity-0');
+        feedback.classList.add('opacity-100');
+        setTimeout(() => {
+            feedback.classList.add('opacity-0');
+            feedback.classList.remove('opacity-100');
+        }, 2000);
     }
 
     function confirmDelete() {
