@@ -644,7 +644,7 @@ class DownloadExportController extends Controller
                 $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
 
                 $query = DB::table('downloads')
-                    ->selectRaw('DAY(downloads.created_at) as day, devices.name as device_name, SUM(downloads.count) as total')
+                    ->selectRaw('downloads.day, devices.name as device_name, SUM(downloads.count) as total')
                     ->join('devices', 'downloads.device_id', '=', 'devices.id')
                     ->where('downloads.year', $year)
                     ->where('downloads.month', $month);
@@ -657,8 +657,8 @@ class DownloadExportController extends Controller
                     $query->where('downloads.device_id', $deviceId);
                 }
 
-                $dailyDownloads = $query->groupBy(DB::raw('DAY(downloads.created_at)'), 'devices.name', 'downloads.device_id')
-                    ->orderBy(DB::raw('DAY(downloads.created_at)'), 'asc')
+                $dailyDownloads = $query->groupBy('downloads.day', 'devices.name', 'downloads.device_id')
+                    ->orderBy('downloads.day', 'asc')
                     ->orderBy('devices.name', 'asc')
                     ->get();
 
@@ -689,17 +689,17 @@ class DownloadExportController extends Controller
                             $sheet->setCellValue("C{$row}", $total);
                             $row++;
                         }
+
+                        if (empty($deviceId)) {
+                            $sheet->setCellValue("A{$row}", $dateStr);
+                            $sheet->setCellValue("B{$row}", 'Web Client');
+                            $sheet->setCellValue("C{$row}", 'No aplica');
+                            $row++;
+                        }
                     } else {
                         $sheet->setCellValue("A{$row}", $dateStr);
                         $sheet->setCellValue("B{$row}", '—');
                         $sheet->setCellValue("C{$row}", 0);
-                        $row++;
-                    }
-
-                    if (empty($deviceId)) {
-                        $sheet->setCellValue("A{$row}", $dateStr);
-                        $sheet->setCellValue("B{$row}", 'Web Client');
-                        $sheet->setCellValue("C{$row}", 'No aplica');
                         $row++;
                     }
                 }
