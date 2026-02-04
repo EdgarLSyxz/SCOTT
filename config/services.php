@@ -42,7 +42,7 @@ return [
     ],
 
     'python_packages_api' => [
-        'url' => env('PYTHON_PACKAGES_API_URL', 'http://127.0.0.1:8000'),
+        'url' => env('PYTHON_PACKAGES_API_URL', 'http://172.16.100.81:8000'),
         'timeout' => env('PYTHON_PACKAGES_API_TIMEOUT', 120),
     ],
 
