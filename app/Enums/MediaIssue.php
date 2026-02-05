@@ -50,21 +50,21 @@ enum MediaIssue: string
 
             self::NO_VIDEO->value => ['color' => 'blue', 'group' => 'video'],
             self::VIDEO_LAG->value => ['color' => 'blue', 'group' => 'video'],
-            self::INTERMITTENCY->value => ['color' => 'blue', 'group' => 'video'],
             self::FREEZING->value => ['color' => 'blue', 'group' => 'video'],
             self::PIXELATION->value => ['color' => 'blue', 'group' => 'video'],
             self::FLICKERING->value => ['color' => 'blue', 'group' => 'video'],
             self::IMAGE_IN_BLACKS->value => ['color' => 'blue', 'group' => 'video'],
             self::DIGITIZED_IMAGE->value => ['color' => 'blue', 'group' => 'video'],
 
+            self::WRONG_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
+            self::NO_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
+
             self::PHASE_GAP_IN_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
             self::WRONG_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
             self::NO_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
             self::NO_EPG_AND_CHANNEL_ICON->value => ['color' => 'emerald', 'group' => 'epg'],
 
-            self::WRONG_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
-            self::NO_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
-
+            self::INTERMITTENCY->value => ['color' => 'rose', 'group' => 'other'],
             self::NO_AV->value => ['color' => 'rose', 'group' => 'other'],
             self::OUT_OF_SERVICE->value => ['color' => 'rose', 'group' => 'other'],
         ];

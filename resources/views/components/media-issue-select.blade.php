@@ -58,7 +58,7 @@
         <ul class="max-h-60 overflow-y-auto rounded-lg">
             <div class="p-2">
                 @php
-                    $groups = ['audio' => __('AUDIO'), 'video' => __('VIDEO'), 'epg' => __('EPG'), 'ui' => __('LOGO'), 'other' => __('OTHER')];
+                    $groups = ['audio' => __('AUDIO'), 'video' => __('VIDEO'), 'ui' => __('LOGO'), 'epg' => __('EPG'), 'other' => __('OTHER')];
                     $grouped = [];
                     foreach ($options as $optValue => $opt) {
                         $g = $opt['group'] ?? 'other';
@@ -73,10 +73,10 @@
                                     <i class="fa-solid fa-volume-high text-xs"></i>
                                 @elseif($gKey === 'video')
                                     <i class="fa-solid fa-video text-xs"></i>
-                                @elseif($gKey === 'epg')
-                                    <i class="fa-solid fa-calendar-days text-xs"></i>
                                 @elseif($gKey === 'ui')
                                     <i class="fa-solid fa-image text-xs"></i>
+                                @elseif($gKey === 'epg')
+                                    <i class="fa-solid fa-calendar-days text-xs"></i>
                                 @else
                                     <i class="fa-solid fa-circle-info text-xs"></i>
                                 @endif
