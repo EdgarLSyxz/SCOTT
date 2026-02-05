@@ -184,15 +184,15 @@ use App\Enums\ChannelReviewer;
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         <i class="fa-solid fa-forward mr-1.5"></i>
-                                        {{ __('Audiovisual') }}
+                                        {{ __('Problem') }}
                                     </label>
                                     <select wire:model="reportData.channels.{{ $channelIndex }}.media"
                                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500 cursor-pointer">
                                         <option value="" disabled selected>
-                                            {{ __('Select an audiovisual problem') }}
+                                            {{ __('Select a problem') }}
                                         </option>
                                         @foreach ($mediaOptions as $media)
-                                            <option value="{{ $media }}">{{ ucfirst($media) }}</option>
+                                            <option value="{{ $media }}">{{ __($media) }}</option>
                                         @endforeach
                                     </select>
                                 </div>

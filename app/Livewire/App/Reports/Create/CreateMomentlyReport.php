@@ -2,6 +2,7 @@
 
 namespace App\Livewire\App\Reports\Create;
 
+use App\Enums\MediaIssue;
 use App\Mail\Reports\ReportCreatedMail;
 use Livewire\Component;
 use App\Models\Report;
@@ -19,7 +20,7 @@ class CreateMomentlyReport extends Component
     public $reportData;
     public $stages;
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
-    public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
+    public $mediaOptions = [];
 
     public function mount()
     {
@@ -36,6 +37,8 @@ class CreateMomentlyReport extends Component
             'reviewed_by' => '',
             'channels' => [$this->initializeChannel()],
         ];
+
+        $this->mediaOptions = MediaIssue::values();
     }
 
     public function addChannel()
