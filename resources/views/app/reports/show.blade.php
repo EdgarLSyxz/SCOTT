@@ -16,7 +16,7 @@
     ]">
 
     @php
-        $brand = (auth()->user()?->area === 'OTT') ? 'primary' : 'secondary';
+$brand = (auth()->user()?->area === 'OTT') ? 'primary' : 'secondary';
     @endphp
 
     <div class="px-6 mx-auto h-auto">
@@ -36,18 +36,18 @@
                         class="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                         <div class="flex flex-nowrap sm:flex-wrap justify-between sm:justify-start items-center gap-2">
                             @php
-                                $areaIcon = null;
-                                if ($report->area === 'DTH') {
-                                    $areaIcon = 'fa-satellite-dish';
-                                } elseif ($report->area === 'OTT') {
-                                    $areaIcon = 'fa-cube';
-                                }
-                                $areaBadgeClass = 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
-                                if ($report->area === 'DTH') {
-                                    $areaBadgeClass = 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200';
-                                } elseif ($report->area === 'OTT') {
-                                    $areaBadgeClass = 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200';
-                                }
+$areaIcon = null;
+if ($report->area === 'DTH') {
+    $areaIcon = 'fa-satellite-dish';
+} elseif ($report->area === 'OTT') {
+    $areaIcon = 'fa-cube';
+}
+$areaBadgeClass = 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
+if ($report->area === 'DTH') {
+    $areaBadgeClass = 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200';
+} elseif ($report->area === 'OTT') {
+    $areaBadgeClass = 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200';
+}
                             @endphp
 
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md md:rounded-lg {{ $areaBadgeClass }} text-[10px] font-medium uppercase tracking-wide md:px-3 md:py-1.5 md:text-xs md:mr-2 flex-shrink-0" aria-label="Area {{ $report->area ?? '' }}">
@@ -238,39 +238,26 @@
                                             class="text-base font-semibold text-gray-900 dark:text-white leading-tight truncate leading-tight">
                                             {{ $detail->channel->number }} {{ strtoupper($detail->channel->name) }} ({{ strtoupper($detail->channel->origin) }})
                                         </p>
-                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            {{ $detail->stage->name }}
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate leading-tight">
+                                            @if(($report->area ?? null) !== 'DTH')
+                                                {{ $detail->stage->name }} ({{ $detail->protocol }})
+                                            @else
+                                                {{ $detail->stage->name }}
+                                            @endif
                                         </p>
                                     </div>
                                 </div>
+                            <div class="flex-none mt-3">
                                 <div
-                                    class="flex justify-around items-center gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
-                                    <div class="flex flex-col items-center tooltip"
-                                        title="{{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have video') : __('The channel has video') }}">
-                                        <i
-                                            class="fa-solid mt-2 {{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-video-slash text-red-500' : 'fa-video text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">VIDEO</span>
-                                    </div>
-                                    <div class="flex flex-col items-center tooltip"
-                                        title="{{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have audio') : __('The channel has audio') }}">
-                                        <i
-                                            class="fa-solid mt-2 {{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-volume-xmark text-red-500' : 'fa-volume-up text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">AUDIO</span>
-                                    </div>
-                                    @if ($report->area !== 'DTH')
-                                        <div class="flex flex-col items-center tooltip"
-                                            title="{{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? __('Not working on Web Client (DASH)') : __('Working on Web Client (DASH)') }}">
-                                            <i
-                                                class="fa-solid mt-2 fa-computer {{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                            <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">DASH</span>
+                                    class="flex justify-center items-end gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                                    @php
+                                        $mediaLabel = __($detail->media ?? 'N/A');
+                                    @endphp
+                                        <div class="flex justify-center items-center tooltip" title="{{ $mediaLabel }}">
+                                            <i class="fa-solid fa-exclamation-triangle text-yellow-400 mr-1.5"></i>
+                                            <span class="text-gray-500 dark:text-gray-300">{{ $mediaLabel }}</span>
                                         </div>
-                                        <div class="flex flex-col items-center tooltip"
-                                            title="{{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? __('Not working on Set Up Box (HLS)') : __('Working on Set Up Box (HLS)') }}">
-                                            <i
-                                                class="fa-solid mt-2 fa-tv {{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                            <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">HLS</span>
-                                        </div>
-                                    @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -303,16 +290,16 @@
                 <x-report-profile-table :report="$report" />
             @else
                 @php
-                    $fixedCategories = [];
-                    if ($report->type === 'Hourly') {
-                        $fixedCategories = ['CDN TELMEX', 'CDN CEF+', 'STINGRAY'];
-                    } elseif ($report->type === 'Functions') {
-                        $fixedCategories = ['RESTART', 'CUTV', 'EPG', 'PC'];
-                    }
+    $fixedCategories = [];
+    if ($report->type === 'Hourly') {
+        $fixedCategories = ['CDN TELMEX', 'CDN CEF+', 'STINGRAY'];
+    } elseif ($report->type === 'Functions') {
+        $fixedCategories = ['RESTART', 'CUTV', 'EPG', 'PC'];
+    }
 
-                    $dynamicCategories = $report->reportDetails->pluck('subcategory')->unique()->toArray();
+    $dynamicCategories = $report->reportDetails->pluck('subcategory')->unique()->toArray();
 
-                    $allCategories = collect($fixedCategories)->merge($dynamicCategories)->unique()->values()->toArray();
+    $allCategories = collect($fixedCategories)->merge($dynamicCategories)->unique()->values()->toArray();
                 @endphp
                 @if ($report->type === 'Hourly' || $report->type === 'Functions')
                     @foreach ($allCategories as $fixedCategory)
@@ -334,8 +321,10 @@
                                 </div>
                                 <span
                                     class="bg-{{ $brand }}-100 text-{{ $brand }}-800 text-sm font-medium py-1 px-3 rounded-full text-center sm:text-left w-full sm:w-auto">
-                                    @if (in_array($fixedCategory, $allCategories) &&
-                                        $report->reportDetails->where('subcategory', $fixedCategory)->count() > 0)
+                                    @if (
+                in_array($fixedCategory, $allCategories) &&
+                $report->reportDetails->where('subcategory', $fixedCategory)->count() > 0
+            )
                                         {{ $report->reportDetails->where('subcategory', $fixedCategory)->count() }}
                                         {{ $report->reportDetails->where('subcategory', $fixedCategory)->count() === 1 ? __('Channel') : __('Channels') }}
                                     @else
@@ -467,18 +456,18 @@
                                                         <tbody>
                                                             @foreach ($detail->reportContentLosses as $loss)
                                                                 @php
-                                                                    $start = \Carbon\Carbon::parse(
-                                                                        $loss->start_time,
-                                                                    );
-                                                                    $end = \Carbon\Carbon::parse($loss->end_time);
-                                                                    $diff = $start->diff($end);
-                                                                    $days = $diff->format('%a');
-                                                                    $hours = $diff->format('%H');
-                                                                    $minutes = $diff->format('%I');
+                            $start = \Carbon\Carbon::parse(
+                                $loss->start_time,
+                            );
+                            $end = \Carbon\Carbon::parse($loss->end_time);
+                            $diff = $start->diff($end);
+                            $days = $diff->format('%a');
+                            $hours = $diff->format('%H');
+                            $minutes = $diff->format('%I');
 
-                                                                    $duration =
-                                                                        ($days > 0 ? "{$days}d " : '') .
-                                                                        "{$hours}h {$minutes}m";
+                            $duration =
+                                ($days > 0 ? "{$days}d " : '') .
+                                "{$hours}h {$minutes}m";
                                                                 @endphp
                                                                 <tr
                                                                     class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
