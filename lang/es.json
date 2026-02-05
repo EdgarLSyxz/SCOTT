@@ -901,5 +901,6 @@
     "OUT OF SERVICE": "FUERA DE SERVICIO",
     "Select a problem": "Selecciona un problema",
     "Problem": "Problema",
-    "OTHER": "OTRO"
+    "OTHER": "OTRO",
+    "INTERMITTENCY": "INTERMITENCIA"
 }

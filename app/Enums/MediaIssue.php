@@ -15,6 +15,7 @@ enum MediaIssue: string
     case NO_SUBTITLES = 'NO SUBTITLES';
     case AUDIO_LAG = 'AUDIO LAG';
     case LYP_SYNC = 'LYP SYNC';
+    case INTERMITTENCY = 'INTERMITTENCY';
     case VIDEO_LAG = 'VIDEO LAG';
     case FREEZING = 'FREEZING';
     case PIXELATION = 'PIXELATION';
@@ -49,6 +50,7 @@ enum MediaIssue: string
 
             self::NO_VIDEO->value => ['color' => 'blue', 'group' => 'video'],
             self::VIDEO_LAG->value => ['color' => 'blue', 'group' => 'video'],
+            self::INTERMITTENCY->value => ['color' => 'blue', 'group' => 'video'],
             self::FREEZING->value => ['color' => 'blue', 'group' => 'video'],
             self::PIXELATION->value => ['color' => 'blue', 'group' => 'video'],
             self::FLICKERING->value => ['color' => 'blue', 'group' => 'video'],
