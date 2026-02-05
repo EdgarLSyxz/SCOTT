@@ -63,12 +63,12 @@ use App\Enums\ChannelReviewer;
                                     search: '',
                                     selectedChannel: undefined,
                                     channels: @js($channels->map(fn($c) => [
-                                        'id' => $c->id,
-                                        'number' => $c->number,
-                                        'name' => $c->name,
-                                        'image' => $c->image,
-                                        'origin' => $c->origin ?? $c->category ?? ''
-                                    ])),
+                                    'id' => $c->id,
+                                    'number' => $c->number,
+                                    'name' => $c->name,
+                                    'image' => $c->image,
+                                    'origin' => $c->origin ?? $c->category ?? ''
+                                ])),
                                     clearSelection() {
                                         this.selectedChannel = undefined;
                                         this.search = '';
@@ -127,8 +127,8 @@ use App\Enums\ChannelReviewer;
                                             class="w-full pl-12 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-{{ $brand }}-500 focus:border-{{ $brand }}-500 text-sm transition-all cursor-pointer focus:cursor-text"
                                             autocomplete="off">
                                         <span x-show="selectedChannel && selectedChannel.origin" x-cloak
-                                              class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-xs pointer-events-none"
-                                              x-text="'(' + (selectedChannel.origin || '') + ')'">
+                                                class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-xs pointer-events-none"
+                                                x-text="'(' + (selectedChannel.origin || '') + ')'">
                                         </span>
                                         <div x-show="open"
                                             class="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-2xl dark:bg-gray-700 dark:border-gray-600">
@@ -183,18 +183,15 @@ use App\Enums\ChannelReviewer;
                                 @endif
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        <i class="fa-solid fa-forward mr-1.5"></i>
+                                        <i class="fa-solid fa-exclamation-triangle mr-1.5"></i>
                                         {{ __('Problem') }}
                                     </label>
-                                    <select wire:model="reportData.channels.{{ $channelIndex }}.media"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500 cursor-pointer">
-                                        <option value="" disabled selected>
-                                            {{ __('Select a problem') }}
-                                        </option>
-                                        @foreach ($mediaOptions as $media)
-                                            <option value="{{ $media }}">{{ __($media) }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-media-issue-select
+                                        :name="'reportData.channels.' . $channelIndex . '.media'"
+                                        :value="$channel['media'] ?? ''"
+                                        :options="$mediaOptions"
+                                        :placeholder="__('Select a problem')"
+                                    />
                                 </div>
                                 <div class="{{ ($userArea ?? null) === \App\Models\Report::AREA_DTH ? 'col-span-1 md:col-span-3' : 'col-span-1 md:col-span-2' }}">
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

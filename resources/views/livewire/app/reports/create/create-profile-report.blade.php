@@ -46,55 +46,55 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div x-data="{
-                                                        open: false,
-                                                        search: '',
-                                                        selectedChannel: undefined,
-                                                        channels: @js(collect($channels)->map(fn($c) => [
-                                                            'id' => is_array($c) ? $c['id'] : $c->id,
-                                                            'number' => is_array($c) ? $c['number'] : $c->number,
-                                                            'name' => is_array($c) ? $c['name'] : $c->name,
-                                                            'image' => is_array($c) ? $c['image'] : $c->image,
-                                                            'profiles' => is_array($c) ? ($c['profiles'] ?? null) : ($c->profiles ?? null),
-                                                        ])),
-                                                        get filteredChannels() {
-                                                            if (this.open && this.selectedChannel && this.search === (this.selectedChannel.number + ' ' + this.selectedChannel.name)) {
-                                                                return this.channels;
-                                                            }
-                                                            if (this.search === '') return this.channels;
-                                                            const term = this.search.toLowerCase();
-                                                            return this.channels.filter(c => {
-                                                                const combined = (c.number + ' ' + c.name).toLowerCase();
-                                                                return c.name.toLowerCase().includes(term)
-                                                                    || c.number.toString().includes(term)
-                                                                    || combined.includes(term);
-                                                            });
-                                                        },
-                                                        selectChannel(channel) {
-                                                            this.selectedChannel = channel;
-                                                            this.search = channel.number + ' ' + channel.name;
-                                                            this.open = false;
-                                                            $wire.set('reportData.channels.{{ $index }}.channel_id', channel.id);
-                                                        },
-                                                        init() {
-                                                            this.$nextTick(() => {
-                                                                const selectedId = $wire.get('reportData.channels.{{ $index }}.channel_id');
-                                                                if (selectedId) {
-                                                                    const found = this.channels.find(c => c.id == selectedId);
-                                                                    if (found) {
-                                                                        this.selectedChannel = found;
-                                                                        this.search = found.number + ' ' + found.name;
-                                                                    }
-                                                                }
-                                                                this.$watch(() => $wire.get('reportData.channels.{{ $index }}.channel_id'), (id) => {
-                                                                    const found = this.channels.find(c => c.id == id);
-                                                                    this.selectedChannel = found || undefined;
-                                                                    if (found) {
-                                                                        this.search = found.number + ' ' + found.name;
-                                                                    }
-                                                                });
-                                                            });
-                                                        }
-                                                    }" x-init="init()">
+                                        open: false,
+                                        search: '',
+                                        selectedChannel: undefined,
+                                        channels: @js(collect($channels)->map(fn($c) => [
+                                            'id' => is_array($c) ? $c['id'] : $c->id,
+                                            'number' => is_array($c) ? $c['number'] : $c->number,
+                                            'name' => is_array($c) ? $c['name'] : $c->name,
+                                            'image' => is_array($c) ? $c['image'] : $c->image,
+                                            'profiles' => is_array($c) ? ($c['profiles'] ?? null) : ($c->profiles ?? null),
+                                        ])),
+                                        get filteredChannels() {
+                                            if (this.open && this.selectedChannel && this.search === (this.selectedChannel.number + ' ' + this.selectedChannel.name)) {
+                                                return this.channels;
+                                            }
+                                            if (this.search === '') return this.channels;
+                                            const term = this.search.toLowerCase();
+                                            return this.channels.filter(c => {
+                                                const combined = (c.number + ' ' + c.name).toLowerCase();
+                                                return c.name.toLowerCase().includes(term)
+                                                    || c.number.toString().includes(term)
+                                                    || combined.includes(term);
+                                            });
+                                        },
+                                        selectChannel(channel) {
+                                            this.selectedChannel = channel;
+                                            this.search = channel.number + ' ' + channel.name;
+                                            this.open = false;
+                                            $wire.set('reportData.channels.{{ $index }}.channel_id', channel.id);
+                                        },
+                                        init() {
+                                            this.$nextTick(() => {
+                                                const selectedId = $wire.get('reportData.channels.{{ $index }}.channel_id');
+                                                if (selectedId) {
+                                                    const found = this.channels.find(c => c.id == selectedId);
+                                                    if (found) {
+                                                        this.selectedChannel = found;
+                                                        this.search = found.number + ' ' + found.name;
+                                                    }
+                                                }
+                                                this.$watch(() => $wire.get('reportData.channels.{{ $index }}.channel_id'), (id) => {
+                                                    const found = this.channels.find(c => c.id == id);
+                                                    this.selectedChannel = found || undefined;
+                                                    if (found) {
+                                                        this.search = found.number + ' ' + found.name;
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    }" x-init="init()">
                                     <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                                         <i class="fa-solid fa-tv mr-1.5"></i> {{ __('Channel') }}
                                     </label>

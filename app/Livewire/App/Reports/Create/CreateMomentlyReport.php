@@ -38,7 +38,7 @@ class CreateMomentlyReport extends Component
             'channels' => [$this->initializeChannel()],
         ];
 
-        $this->mediaOptions = MediaIssue::values();
+        $this->mediaOptions = MediaIssue::optionsWithColors();
     }
 
     public function addChannel()
@@ -180,7 +180,7 @@ class CreateMomentlyReport extends Component
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
                 "reportData.channels.$index.stage" => ['required', $baseStageRule],
                 "reportData.channels.$index.protocol" => $protocolRule,
-                "reportData.channels.$index.media" => 'required|in:' . implode(',', $this->mediaOptions),
+                "reportData.channels.$index.media" => 'required|in:' . implode(',', array_keys($this->mediaOptions)),
                 "reportData.channels.$index.description" => 'required|string',
             ], [], [
                 "reportData.channels.$index.channel_id" => __('channel'),

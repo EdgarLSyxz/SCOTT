@@ -34,6 +34,53 @@ enum MediaIssue: string
         return array_map(fn(MediaIssue $m) => $m->value, self::cases());
     }
 
+    public static function optionsWithColors(): array
+    {
+        $config = [
+            self::NO_AUDIO->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_ONLY->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_SATURATED->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_DISTORTED->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_DOLBY->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_IN_ENGLISH->value => ['color' => 'amber', 'group' => 'audio'],
+            self::NO_SUBTITLES->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_LAG->value => ['color' => 'amber', 'group' => 'audio'],
+            self::LYP_SYNC->value => ['color' => 'amber', 'group' => 'audio'],
+
+            self::NO_VIDEO->value => ['color' => 'blue', 'group' => 'video'],
+            self::VIDEO_LAG->value => ['color' => 'blue', 'group' => 'video'],
+            self::FREEZING->value => ['color' => 'blue', 'group' => 'video'],
+            self::PIXELATION->value => ['color' => 'blue', 'group' => 'video'],
+            self::FLICKERING->value => ['color' => 'blue', 'group' => 'video'],
+            self::IMAGE_IN_BLACKS->value => ['color' => 'blue', 'group' => 'video'],
+            self::DIGITIZED_IMAGE->value => ['color' => 'blue', 'group' => 'video'],
+
+            self::PHASE_GAP_IN_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
+            self::WRONG_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
+            self::NO_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
+            self::NO_EPG_AND_CHANNEL_ICON->value => ['color' => 'emerald', 'group' => 'epg'],
+
+            self::WRONG_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
+            self::NO_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
+
+            self::NO_AV->value => ['color' => 'rose', 'group' => 'other'],
+            self::OUT_OF_SERVICE->value => ['color' => 'rose', 'group' => 'other'],
+        ];
+
+        $options = [];
+        foreach (self::cases() as $case) {
+            $value = $case->value;
+            $cfg = $config[$value] ?? ['color' => 'gray', 'group' => 'other'];
+            $options[$value] = [
+                'label' => $value,
+                'color' => $cfg['color'],
+                'group' => $cfg['group'],
+            ];
+        }
+
+        return $options;
+    }
+
     public static function optionsForSelect(): array
     {
         $vals = self::values();
