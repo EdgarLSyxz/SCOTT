@@ -18,7 +18,7 @@ class ReportDetailModal extends Component
 
     public function markAsSolved()
     {
-        $this->dispatch('markAsSolvedFromModal', reporteId: $this->reporteId);
+        $this->dispatch('markAsSolvedFromModal', $this->reporteId);
     }
 
     public function closeReportDetails()
