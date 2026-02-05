@@ -186,7 +186,7 @@
             @if (isset($selectedReport) && $selectedReport)
                 @foreach ($selectedReport->reportDetails->sortBy(fn($detail) => $detail->channel->number) as $detail)
                     <div
-                        class="relative overflow-visible flex flex-col px-3 py-3 sm:px-4 sm:py-4 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-xl space-y-3 text-sm min-w-0 h-auto max-h-[190px]">
+                        class="relative overflow-visible flex flex-col px-3 py-3 sm:px-4 sm:py-4 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-xl space-y-3 text-sm min-w-0 h-full max-h-[190px]">
                         @if ($detail->description)
                             <div x-data="{ openModal: false }" class="absolute -top-3 -right-3 h-6 w-6"
                                 :class="{ 'z-[60]': openModal, 'z-50': !openModal }">
@@ -219,7 +219,7 @@
                             </div>
                         @endif
                         <div @click.stop="downloadM3U('{{ $detail->channel->url }}', '{{ $detail->channel->number }}', '{{ $detail->channel->name }}');"
-                            class="cursor-pointer">
+                            class="cursor-pointer flex-1">
                             <div class="flex items-start gap-2">
                                 <div class="flex items-center gap-2 w-full min-w-0">
                                     <div class="w-10 h-10 flex-shrink-0">
@@ -232,39 +232,26 @@
                                             {{ $detail->channel->number }} {{ $detail->channel->name }} ({{ $detail->channel->origin }})
                                         </p>
                                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate leading-tight">
-                                            {{ $detail->stage->name }}
+                                            @if(($selectedReport->area ?? null) !== 'DTH')
+                                                {{ $detail->stage->name }} ({{ $detail->protocol }})
+                                            @else
+                                                {{ $detail->stage->name }}
+                                            @endif
                                         </p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="flex-none mt-3">
                             <div
-                                class="flex justify-around items-center gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg mt-5">
-                                <div class="flex flex-col items-center tooltip"
-                                    title="{{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have video') : __('The channel has video') }}">
-                                    <i
-                                        class="fa-solid mt-2 {{ $detail->media === 'VIDEO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-video-slash text-red-500' : 'fa-video text-green-500' }} text-xl"></i>
-                                    <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">VIDEO</span>
+                                class="flex justify-center items-end gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                                @php
+                                    $mediaLabel = __($detail->media ?? 'N/A');
+                                @endphp
+                                <div class="flex justify-center items-center tooltip" title="{{ $mediaLabel }}">
+                                    <i class="fa-solid fa-exclamation-triangle text-yellow-400 mr-1.5"></i>
+                                    <span class="text-gray-500 dark:text-gray-300">{{ $mediaLabel }}</span>
                                 </div>
-                                <div class="flex flex-col items-center tooltip"
-                                    title="{{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? __('The channel does not have audio') : __('The channel has audio') }}">
-                                    <i
-                                        class="fa-solid mt-2 {{ $detail->media === 'AUDIO' || $detail->media === 'AUDIO/VIDEO' ? 'fa-volume-xmark text-red-500' : 'fa-volume-up text-green-500' }} text-xl"></i>
-                                    <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">AUDIO</span>
-                                </div>
-                                @if ($selectedReport->area !== 'DTH')
-                                    <div class="flex flex-col items-center tooltip"
-                                        title="{{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? __('Not working on Web Client (DASH)') : __('Working on Web Client (DASH)') }}">
-                                        <i
-                                            class="fa-solid mt-2 fa-computer {{ $detail->protocol === 'DASH' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">DASH</span>
-                                    </div>
-                                    <div class="flex flex-col items-center tooltip"
-                                        title="{{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? __('Not working on Set Up Box (HLS)') : __('Working on Set Up Box (HLS)') }}">
-                                        <i
-                                            class="fa-solid mt-2 fa-tv {{ $detail->protocol === 'HLS' || $detail->protocol === 'HLS/DASH' ? 'text-red-500' : 'text-green-500' }} text-xl"></i>
-                                        <span class="text-[10px] mt-2 text-gray-500 dark:text-gray-300">HLS</span>
-                                    </div>
-                                @endif
                             </div>
                         </div>
                     </div>
