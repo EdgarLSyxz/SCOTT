@@ -181,18 +181,15 @@ use App\Enums\ChannelReviewer;
                                 @endif
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        <i class="fa-solid fa-forward mr-1.5"></i>
-                                        {{ __('Audiovisual') }}
+                                        <i class="fa-solid fa-exclamation-triangle mr-1.5"></i>
+                                        {{ __('Problem') }}
                                     </label>
-                                    <select wire:model="reportData.channels.{{ $channelIndex }}.media"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-{{ $brand }}-600 focus:border-{{ $brand }}-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-{{ $brand }}-500 dark:focus:border-{{ $brand }}-500 cursor-pointer">
-                                        <option value="" disabled selected>
-                                            {{ __('Select an audiovisual problem') }}
-                                        </option>
-                                        @foreach ($mediaOptions as $media)
-                                            <option value="{{ $media }}">{{ ucfirst($media) }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-media-issue-select
+                                        name="reportData.channels.{{ $channelIndex }}.media"
+                                        :value="$channel['media']"
+                                        :options="$mediaOptions"
+                                        :placeholder="__('Select a problem')"
+                                    />
                                 </div>
                                 <div class="col-span-1 {{ ($userArea ?? null) === \App\Models\Report::AREA_DTH ? 'md:col-span-3' : 'md:col-span-2' }}">
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

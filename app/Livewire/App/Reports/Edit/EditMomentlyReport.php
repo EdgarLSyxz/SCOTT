@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use App\Models\User;
+use App\Enums\MediaIssue;
 
 class EditMomentlyReport extends Component
 {
@@ -19,7 +20,7 @@ class EditMomentlyReport extends Component
     public $reportData = [];
     public $stages;
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
-    public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
+    public $mediaOptions = [];
 
     public function mount(Report $report)
     {
@@ -57,6 +58,9 @@ class EditMomentlyReport extends Component
                 ];
             })->toArray(),
         ];
+
+        // Populate media options from enum with colors/groups
+        $this->mediaOptions = MediaIssue::optionsWithColors();
     }
 
     public function addChannel()
@@ -189,7 +193,7 @@ class EditMomentlyReport extends Component
                     }),
                 ],
                 "reportData.channels.$index.protocol" => $protocolRule,
-                "reportData.channels.$index.media" => 'required|in:' . implode(',', $this->mediaOptions),
+                "reportData.channels.$index.media" => 'required|in:' . implode(',', array_keys($this->mediaOptions)),
                 "reportData.channels.$index.description" => 'required|string',
             ], [], [
                 "reportData.channels.$index.channel_id" => __('channel'),
