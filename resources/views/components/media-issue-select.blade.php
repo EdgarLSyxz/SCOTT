@@ -54,7 +54,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
     </button>
-    <div x-show="open" @click.away="open = false" class="absolute z-20 mt-1 w-full rounded-lg shadow-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <div x-show="open" @click.away="open = false" class="absolute z-20 mt-1 w-full rounded-lg shadow-2xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
         <ul class="max-h-60 overflow-y-auto rounded-lg">
             <div class="p-2">
                 @php
@@ -87,7 +87,7 @@
                                 <li>
                                     <button type="button"
                                         @click="$wire.set('{{ $name }}', '{{ $optValue }}'); selected = '{{ $optValue }}'; open = false"
-                                        class="w-full text-left px-4 py-2 transition-all duration-100 flex items-center gap-3 border-0 bg-transparent hover:font-semibold hover:shadow-sm text-gray-900 dark:text-white">
+                                        class="w-full text-left px-4 py-2 transition-all duration-100 flex items-center gap-3 border-0 bg-transparent hover:font-bold hover:shadow-sm hover:rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white">
                                         <span class="inline-flex items-center justify-center w-3 h-3 rounded-full {{ $badge }} flex-shrink-0" aria-hidden="true"></span>
                                         <span class="flex-1 truncate {{ $labelColor }}">{{ __($opt['label']) }}</span>
                                         <span x-show="selected === '{{ $optValue }}'" class="ml-2 text-emerald-600 dark:text-emerald-400">
