@@ -219,7 +219,7 @@
                         <div class="max-h-[70vh] overflow-y-auto space-y-2 sm:space-y-3 pr-2 sm:pr-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                             @foreach($detailsGrouped as $ts => $items)
                                 @php
-                                    $dt = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $ts);
+                                    $dt = \Carbon\Carbon::createFromFormat('Y-m-d', $ts);
                                     $totalDownloads = array_sum(array_column($items, 'count'));
                                 @endphp
                                 <div x-data="{ open: false }" class="group border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-200" :class="open ? '{{ $isDTH ? 'border-secondary-300 dark:border-secondary-500 shadow-lg bg-gradient-to-br from-secondary-50 to-white dark:from-gray-700/50 dark:to-gray-800' : 'border-primary-300 dark:border-primary-500 shadow-lg bg-gradient-to-br from-primary-50 to-white dark:from-gray-700/50 dark:to-gray-800' }}' : 'hover:border-{{ $accentColor }}-300 dark:hover:border-{{ $accentColor }}-500'">
@@ -232,7 +232,6 @@
                                                 <div class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white group-hover:{{ $isDTH ? 'text-secondary-600' : 'text-primary-600' }} dark:group-hover:{{ $isDTH ? 'text-secondary-300' : 'text-primary-300' }} transition-colors">
                                                     {{ $dt->format('d/m/Y') }}
                                                 </div>
-                                                <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg">{{ $dt->format('H:i A') }}</span>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">

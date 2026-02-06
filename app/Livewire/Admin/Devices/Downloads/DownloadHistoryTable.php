@@ -76,11 +76,13 @@ class DownloadHistoryTable extends Component
             }
         }
 
-        $downloads = $query->orderByDesc('created_at')->get();
+        $downloads = $query->orderBy('created_at')->get();
 
         $grouped = $downloads->groupBy(function ($d) {
-            return $d->created_at->format('Y-m-d H:i:s');
+            return sprintf('%04d-%02d-%02d', $d->year, $d->month, $d->day);
         });
+
+        $grouped = $grouped->sortKeys();
 
         $this->detailsGrouped = $grouped->map(function ($items) {
             $arr = $items->map(function ($i) {
