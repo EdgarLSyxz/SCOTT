@@ -180,17 +180,9 @@ class MonthlyDownloadsReport extends Component
             foreach ($this->devices as $device) {
                 $value = isset($this->counts[$device->id]) ? (int) $this->counts[$device->id] : 0;
 
-                Download::updateOrCreate(
-                    [
-                        'device_id' => $device->id,
-                        'year' => $this->year,
-                        'month' => $this->month,
-                        'day' => $this->day,
-                    ],
-                    [
-                        'count' => $value,
-                    ]
-                );
+                if ($value > 0) {
+                    Download::addToMonth($device->id, $this->year, $this->month, $this->day, $value);
+                }
             }
         });
 

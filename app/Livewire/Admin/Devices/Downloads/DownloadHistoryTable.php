@@ -57,6 +57,15 @@ class DownloadHistoryTable extends Component
         return $query;
     }
 
+    public function render()
+    {
+        $query = $this->aggregatesQuery();
+        $query->orderBy('year', 'desc')->orderBy('month', 'desc');
+        $aggregates = $query->paginate(10);
+
+        return view('livewire.admin.devices.downloads.download-history-table', compact('aggregates'));
+    }
+
     public function showMonthDetails($year, $month)
     {
         $this->detailsYear = (int) $year;
@@ -76,10 +85,10 @@ class DownloadHistoryTable extends Component
             }
         }
 
-        $downloads = $query->orderBy('created_at')->get();
+        $downloads = $query->orderBy('day')->get();
 
         $grouped = $downloads->groupBy(function ($d) {
-            return sprintf('%04d-%02d-%02d', $d->year, $d->month, $d->day);
+            return sprintf('%04d-%02d-%02d', (int) $d->year, (int) $d->month, (int) $d->day);
         });
 
         $grouped = $grouped->sortKeys();
@@ -95,10 +104,11 @@ class DownloadHistoryTable extends Component
                     'device_name' => optional($first->device)->name,
                     'protocol' => optional($first->device)->protocol ?? '',
                     'image' => optional($first->device)->thumbnail ?? optional($first->device)->image ?? optional($first->device)->icon ?? null,
-                    'count' => $group->sum('count'),
+                    'count' => (int) $group->sum('count'),
                     'created_at' => $first->created_at->format('Y-m-d H:i:s'),
                 ];
             })->values()->toArray();
+
             $arr = array_values(array_filter($arr, function ($item) {
                 return isset($item['count']) && (int) $item['count'] > 0;
             }));
@@ -123,19 +133,5 @@ class DownloadHistoryTable extends Component
         })->toArray();
 
         $this->showDetailsModal = true;
-    }
-
-    public function render()
-    {
-        $query = $this->aggregatesQuery();
-        $query->orderBy('year', 'desc')->orderBy('month', 'desc');
-        $aggregates = $query->paginate(10);
-
-        return view('livewire.admin.devices.downloads.download-history-table', compact('aggregates'));
-    }
-
-    public function onDownloadsUpdated($payload = null)
-    {
-        $this->resetPage();
     }
 }
