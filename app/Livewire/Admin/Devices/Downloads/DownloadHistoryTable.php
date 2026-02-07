@@ -85,9 +85,7 @@ class DownloadHistoryTable extends Component
         $grouped = $grouped->sortKeys();
 
         $this->detailsGrouped = $grouped->map(function ($items) {
-            $byDevice = $items->groupBy('device_id')->filter(function ($grp) {
-                return $grp->sum('count') > 0;
-            });
+            $byDevice = $items->groupBy('device_id');
 
             $arr = $byDevice->map(function ($group, $deviceId) {
                 $first = $group->first();
@@ -101,6 +99,9 @@ class DownloadHistoryTable extends Component
                     'created_at' => $first->created_at->format('Y-m-d H:i:s'),
                 ];
             })->values()->toArray();
+            $arr = array_values(array_filter($arr, function ($item) {
+                return isset($item['count']) && (int) $item['count'] > 0;
+            }));
 
             usort($arr, function ($a, $b) {
                 $order = ['HLS' => 0, 'DASH' => 1];
