@@ -85,7 +85,9 @@ class DownloadHistoryTable extends Component
         $grouped = $grouped->sortKeys();
 
         $this->detailsGrouped = $grouped->map(function ($items) {
-            $byDevice = $items->groupBy('device_id');
+            $byDevice = $items->groupBy('device_id')->filter(function ($grp) {
+                return $grp->sum('count') > 0;
+            });
 
             $arr = $byDevice->map(function ($group, $deviceId) {
                 $first = $group->first();
