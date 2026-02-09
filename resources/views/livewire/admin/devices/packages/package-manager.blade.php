@@ -109,12 +109,12 @@
                             </thead>
                             <tbody>
                                 @foreach ($filteredPackages as $pkg)
-                                    <tr @click="$wire.openModal('{{ $pkg['id'] }}')" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group transition" title="{{ __('Click to view customer IDs') }}">
+                                    <tr @click="$wire.openModal('{{ $pkg['data_key'] ?? $pkg['id'] }}', '{{ $pkg['id'] }}')" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group transition" title="{{ __('Click to view customer IDs') }}">
                                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $pkg['id'] }}</td>
                                         <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">{{ $pkg['name'] }}</td>
                                         <td class="px-4 py-3 text-right">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                                                {{ count($pkg['customers_list'] ?? []) }}
+                                                {{ $pkg['customers'] ?? 0 }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-center">
@@ -150,7 +150,7 @@
     <div x-show="$wire.modalOpen" x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300"
         style="display: none">
-        <div @click="$wire.closeModal()" class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div @click="$wire.closeModal()" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40"></div>
 
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full mx-4 z-50 transform transition-all duration-300">
             @if ($selectedPackage)
@@ -158,7 +158,7 @@
                     <div>
                         <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ $selectedPackage['name'] ?? '' }}</h4>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {{ count($allCustomerIds) }} {{ count($allCustomerIds) === 1 ? __('Customer') : __('Customers') }}
+                            {{ $allCustomerIdsCount }} {{ $allCustomerIdsCount === 1 ? __('Customer') : __('Customers') }}
                         </p>
                     </div>
                     <button @click="$wire.closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -183,7 +183,7 @@
                         @endif
                     </div>
 
-                    <ul id="package-customers-list" class="space-y-1 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <ul id="package-customers-list" class="space-y-1 max-h-80 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                         @forelse ($filteredCustomerIds as $id)
                             <li
                                 class="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -197,6 +197,15 @@
                             </li>
                         @endforelse
                     </ul>
+                    @if($modalHasMore)
+                        <div class="py-2 text-center">
+                            <button wire:click="loadMoreCustomers"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 mt-4 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                                <span>{{ __('Load more') }}</span>
+                            </button>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">

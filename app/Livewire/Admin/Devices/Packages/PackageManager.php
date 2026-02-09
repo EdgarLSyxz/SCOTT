@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Devices\Packages;
 
 use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
 
@@ -17,8 +18,13 @@ class PackageManager extends Component
     public $searchTerm = '';
     public $selectedPackage = null;
     public $modalOpen = false;
-    public $allCustomerIds = [];
+    public $allCustomerIdsCount = 0;
     public $filteredCustomerIds = [];
+    public $currentPackageId = null;
+    public $currentUploadId = null;
+    public $customerPage = 1;
+    public $customerPageSize = 200;
+    public $modalHasMore = false;
     public $modalSearchTerm = '';
 
     public function mount()
@@ -49,7 +55,6 @@ class PackageManager extends Component
                 'id' => $m->id,
                 'user_id' => $m->user_id,
                 'filename' => $m->filename,
-                'data' => $m->data,
                 'created_at' => $m->created_at ? $m->created_at->format('Y-m-d H:i:s') : ($attrs['created_at'] ?? null),
                 'created_at_raw' => $attrs['created_at'] ?? null,
             ];
@@ -87,11 +92,16 @@ class PackageManager extends Component
                 if (is_array($item)) {
                     $ids = $item['customers'] ?? $item['customers_list'] ?? $item['customer_ids'] ?? [];
                     $count = $item['customers_count'] ?? (is_array($ids) ? count($ids) : ($item['customers'] ?? 0));
+                    $preview = [];
+                    if (is_array($ids)) {
+                        $preview = array_slice($ids, 0, 5);
+                    }
                     $packages[] = [
                         'id' => $item['id'] ?? $item['service_id'] ?? (string)$idx,
+                        'data_key' => (string)$idx,
                         'name' => $item['name'] ?? $item['title'] ?? '',
                         'customers' => $count,
-                        'customers_list' => is_array($ids) ? $ids : [],
+                        'customers_preview' => $preview,
                     ];
                 }
             }
@@ -102,6 +112,7 @@ class PackageManager extends Component
                     $count = $item['customers_count'] ?? (is_array($ids) ? count($ids) : ($item['customers'] ?? 0));
                     $packages[] = [
                         'id' => $item['id'] ?? $item['service_id'] ?? (string)$key,
+                        'data_key' => (string)$key,
                         'name' => $item['name'] ?? $item['title'] ?? '',
                         'customers' => $count,
                         'customers_list' => is_array($ids) ? $ids : [],
@@ -153,35 +164,108 @@ class PackageManager extends Component
         }
     }
 
-    public function openModal($packageId)
+    public function openModal($dataKey, $packageId = null)
     {
-        $pkg = collect($this->packages)->firstWhere('id', $packageId);
-        if ($pkg) {
-            $this->selectedPackage = $pkg;
-            $this->allCustomerIds = $pkg['customers_list'] ?? [];
-            $this->filteredCustomerIds = $this->allCustomerIds;
-            $this->modalSearchTerm = '';
-            $this->modalOpen = true;
+        $user = Auth::user();
+        if (! $user) {
+            return;
         }
+
+        $uploadId = $this->selectedUploadId;
+        if (! $uploadId) {
+            return;
+        }
+
+        $upload = Package::where('id', $uploadId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $upload) {
+            return;
+        }
+
+        $data = $upload->data;
+        $item = null;
+        if (is_array($data) && array_key_exists((string)$dataKey, $data)) {
+            $item = $data[(string)$dataKey];
+        }
+
+        if (! $item) {
+            $item = $this->findPackageItem($data, $packageId ?? $dataKey);
+        }
+        if (! $item) {
+            return;
+        }
+
+        $ids = $item['customers'] ?? $item['customers_list'] ?? $item['customer_ids'] ?? [];
+        if (! is_array($ids)) {
+            $ids = [];
+        }
+
+        $cacheKey = 'pkg_customers_' . $uploadId . '_' . ($packageId ?? $dataKey) . '_' . $user->id;
+        Cache::put($cacheKey, $ids, now()->addMinutes(10));
+
+        $this->currentPackageId = $packageId ?? $dataKey;
+        $this->currentUploadId = $uploadId;
+        $this->selectedPackage = [
+            'id' => $item['id'] ?? $item['service_id'] ?? ($packageId ?? $dataKey),
+            'name' => $item['name'] ?? $item['title'] ?? '',
+            'customers' => is_array($ids) ? count($ids) : 0,
+        ];
+        $this->allCustomerIdsCount = count($ids);
+        $this->customerPage = 1;
+        $this->modalSearchTerm = '';
+        $this->modalHasMore = $this->allCustomerIdsCount > $this->customerPageSize;
+        $this->filteredCustomerIds = array_slice($ids, 0, $this->customerPageSize);
+        $this->modalOpen = true;
     }
 
     public function closeModal()
     {
+        if ($this->currentPackageId && $this->currentUploadId) {
+            $user = Auth::user();
+            $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . ($user?->id ?? '');
+            Cache::forget($cacheKey);
+        }
+
         $this->modalOpen = false;
         $this->selectedPackage = null;
-        $this->allCustomerIds = [];
+        $this->allCustomerIdsCount = 0;
         $this->filteredCustomerIds = [];
         $this->modalSearchTerm = '';
+        $this->currentPackageId = null;
+        $this->currentUploadId = null;
+        $this->customerPage = 1;
+        $this->modalHasMore = false;
     }
 
     public function filterModalSearch($term)
     {
         $this->modalSearchTerm = $term;
         $term = strtolower($term);
-        $this->filteredCustomerIds = collect($this->allCustomerIds)
-            ->filter(fn($id) => strpos(strtolower($id), $term) !== false)
-            ->values()
-            ->toArray();
+
+        if (! $this->currentPackageId || ! $this->currentUploadId) {
+            $this->filteredCustomerIds = [];
+            return;
+        }
+
+        $user = Auth::user();
+        $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . $user->id;
+        $ids = Cache::get($cacheKey, []);
+
+        if ($term === '') {
+            $this->customerPage = 1;
+            $this->modalHasMore = count($ids) > $this->customerPageSize;
+            $this->filteredCustomerIds = array_slice($ids, 0, $this->customerPageSize);
+            return;
+        }
+
+        $filtered = array_values(array_filter($ids, function ($id) use ($term) {
+            return strpos(strtolower((string)$id), $term) !== false;
+        }));
+
+        $this->filteredCustomerIds = $filtered;
+        $this->modalHasMore = false;
     }
 
     public function updatedModalSearchTerm($value)
@@ -189,14 +273,63 @@ class PackageManager extends Component
         $this->filterModalSearch($value ?? '');
     }
 
+    public function loadMoreCustomers()
+    {
+        if (! $this->currentPackageId || ! $this->currentUploadId) return;
+        $user = Auth::user();
+        $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . $user->id;
+        $ids = Cache::get($cacheKey, []);
+        if (empty($ids)) return;
+
+        $this->customerPage++;
+        $offset = ($this->customerPage - 1) * $this->customerPageSize;
+        $next = array_slice($ids, $offset, $this->customerPageSize);
+        if (! empty($next)) {
+            $this->filteredCustomerIds = array_merge($this->filteredCustomerIds, $next);
+        }
+        $this->modalHasMore = count($ids) > ($this->customerPage * $this->customerPageSize);
+    }
+
+    protected function findPackageItem($data, $packageId)
+    {
+        $search = function ($node) use (&$search, $packageId) {
+            if (is_array($node)) {
+                foreach ($node as $idx => $item) {
+                    if (is_array($item) || is_object($item)) {
+                        $arr = is_array($item) ? $item : (array)$item;
+                        $id = $arr['id'] ?? $arr['service_id'] ?? null;
+                        if ((string)$id === (string)$packageId) return $arr;
+                        if ((string)$idx === (string)$packageId) return is_array($item) ? $item : (array)$item;
+                        $res = $search($item);
+                        if ($res !== null) return $res;
+                    }
+                }
+            }
+            return null;
+        };
+
+        return $search($data);
+    }
+
     public function getFilteredPackages()
     {
         $term = strtolower($this->searchTerm);
         return collect($this->packages)
             ->filter(function ($pkg) use ($term) {
-                return strpos(strtolower($pkg['name']), $term) !== false ||
-                       strpos(strtolower((string)$pkg['id']), $term) !== false ||
-                       collect($pkg['customers_list'])->contains(fn($id) => strpos(strtolower($id), $term) !== false);
+                $nameMatch = strpos(strtolower($pkg['name'] ?? ''), $term) !== false;
+                $idMatch = strpos(strtolower((string)($pkg['id'] ?? '')), $term) !== false;
+                $customers = $pkg['customers_list'] ?? $pkg['customers_preview'] ?? [];
+                $customerMatch = false;
+                if (! empty($customers) && is_array($customers)) {
+                    foreach ($customers as $cid) {
+                        if (strpos(strtolower((string)$cid), $term) !== false) {
+                            $customerMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                return $nameMatch || $idMatch || $customerMatch;
             })
             ->sortBy(function ($p) {
                 return is_numeric($p['id']) ? (int) $p['id'] : $p['id'];
