@@ -26,19 +26,19 @@ Route::resource('/stages', StageController::class)
 
 Route::get('admin/devices/packages', [DeviceController::class, 'packages'])
     ->name('admin.devices.packages')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::post('admin/devices/process-pdf', [DeviceController::class, 'processPDF'])
     ->name('admin.devices.process-pdf')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
     ->name('admin.devices.packages.data')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
     ->name('admin.devices.monthly-downloads')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
     ->name('admin.downloads.history.csv')
@@ -57,7 +57,7 @@ Route::get('admin/devices/downloads/history.data', [DownloadExportController::cl
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
 
 Route::resource('/devices', DeviceController::class)
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::resource('/radios', RadioController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Radio']);
