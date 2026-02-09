@@ -38,7 +38,7 @@ class DeviceController extends Controller
     public function create()
     {
         $userId = Auth::id();
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             $this->authorize('create', Device::class);
@@ -104,7 +104,7 @@ class DeviceController extends Controller
     {
         $userId = Auth::id();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);
@@ -119,7 +119,7 @@ class DeviceController extends Controller
     {
         $userId = Auth::id();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);
@@ -133,7 +133,7 @@ class DeviceController extends Controller
         $userId = Auth::id();
         $user = Auth::user();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);

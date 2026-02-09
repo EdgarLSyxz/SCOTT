@@ -1,6 +1,6 @@
 <div>
     @php
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
         $userId = Auth::id();
         $isAllowedId = $userId && in_array((int) $userId, $allowedIds, true);
     @endphp
