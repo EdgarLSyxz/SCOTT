@@ -42,19 +42,19 @@ Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthly
 
 Route::get('admin/devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
     ->name('admin.downloads.history.csv')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::post('admin/devices/downloads/history.pdf', [DownloadExportController::class, 'historyPDF'])
     ->name('admin.downloads.history.pdf')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::post('admin/devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
     ->name('admin.downloads.history.email')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
     ->name('admin.downloads.history.data')
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Device']);
+    ->middleware(['auth', 'verified']);
 
 Route::resource('/devices', DeviceController::class)
     ->middleware(['auth', 'verified']);

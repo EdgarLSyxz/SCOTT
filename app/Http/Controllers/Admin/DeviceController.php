@@ -37,12 +37,7 @@ class DeviceController extends Controller
 
     public function create()
     {
-        $userId = Auth::id();
-        $allowedIds = [1, 2, 3, 5, 7, 8];
-
-        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
-            $this->authorize('create', Device::class);
-        }
+        $this->authorize('create', Device::class);
 
         return view('admin.devices.create');
     }
