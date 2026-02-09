@@ -8,7 +8,7 @@
         <div class="flex items-center space-x-3">
             <a href="{{ route('admin.devices.index') }}"
                 class="hidden lg:block w-full sm:w-auto justify-center items-center text-white bg-gray-600 hover:bg-gray-500 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 text-center">
-        <i class="fa-solid fa-arrow-left mr-1.5"></i>
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>
                 {{ __('Go back') }}
             </a>
             <button type="button" data-modal-target="create-momently-report-modal" data-modal-toggle="create-momently-report-modal"
