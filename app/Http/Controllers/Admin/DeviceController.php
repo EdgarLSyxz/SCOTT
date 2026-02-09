@@ -14,9 +14,6 @@ class DeviceController extends Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $user = Auth::user();
@@ -38,9 +35,6 @@ class DeviceController extends Controller
         return view('admin.devices.index', compact('devices'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $this->authorize('create', Device::class);
@@ -48,17 +42,11 @@ class DeviceController extends Controller
         return view('admin.devices.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Device $device)
     {
         if ($device->id === 10 && (! Auth::user() || Auth::id() !== 1)) {
@@ -70,9 +58,6 @@ class DeviceController extends Controller
         return view('admin.devices.show', compact('device'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Device $device)
     {
         if ($device->id === 10 && (! Auth::user() || Auth::id() !== 1)) {
@@ -84,17 +69,11 @@ class DeviceController extends Controller
         return view('admin.devices.edit', compact('device'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Device $device)
     {
         if ($device->id === 10 && (! Auth::user() || Auth::id() !== 1)) {
@@ -118,11 +97,11 @@ class DeviceController extends Controller
 
     public function monthlyDownloads()
     {
-        $user = Auth::user();
+        $userId = Auth::id();
 
         $allowedIds = [1, 2, 5, 7, 8];
 
-        if (! ($user && in_array($user->id, $allowedIds, true))) {
+        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);
         }
 
@@ -133,11 +112,11 @@ class DeviceController extends Controller
 
     public function packages()
     {
-        $user = Auth::user();
+        $userId = Auth::id();
 
         $allowedIds = [1, 2, 5, 7, 8];
 
-        if (! ($user && in_array($user->id, $allowedIds, true))) {
+        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);
         }
 
@@ -146,11 +125,12 @@ class DeviceController extends Controller
 
     public function processPDF(Request $request)
     {
+        $userId = Auth::id();
         $user = Auth::user();
 
         $allowedIds = [1, 2, 5, 7, 8];
 
-        if (! ($user && in_array($user->id, $allowedIds, true))) {
+        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
             abort(403);
         }
 
@@ -223,11 +203,11 @@ class DeviceController extends Controller
                 return json_decode($body, true);
             }
 
-            \Log::error('Python API returned non-2xx: ' . $status . ' body: ' . $body);
+            \Log::error('Python API Returned non-2xx: ' . $status . ' body: ' . $body);
 
             return [
                 'success' => false,
-                'message' => 'Python API returned non-2xx response',
+                'message' => 'Python API Returned non-2xx response',
                 'status' => $status,
                 'body' => $body,
             ];
