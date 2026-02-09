@@ -101,10 +101,6 @@ class DeviceController extends Controller
 
         $allowedIds = [1, 2, 3, 5, 7, 8];
 
-        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
-            abort(403);
-        }
-
         $devices = Device::orderBy('name')->get(['id', 'name']);
 
         return view('admin.devices.monthly-downloads', compact('devices'));

@@ -24,6 +24,9 @@ Route::resource('/channels', ChannelController::class)
 Route::resource('/stages', StageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Stage']);
 
+Route::resource('/devices', DeviceController::class)
+    ->middleware(['auth', 'verified']);
+
 Route::get('admin/devices/packages', [DeviceController::class, 'packages'])
     ->name('admin.devices.packages')
     ->middleware(['auth', 'verified']);
@@ -54,9 +57,6 @@ Route::post('admin/devices/downloads/history.email', [DownloadExportController::
 
 Route::get('admin/devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
     ->name('admin.downloads.history.data')
-    ->middleware(['auth', 'verified']);
-
-Route::resource('/devices', DeviceController::class)
     ->middleware(['auth', 'verified']);
 
 Route::resource('/radios', RadioController::class)

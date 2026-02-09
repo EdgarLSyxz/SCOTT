@@ -17,9 +17,6 @@ class DevicePolicy
         }
     }
 
-    /**
-     * Determine whether the user can view any devices.
-     */
     public function viewAny(User $user)
     {
         return $user->can('devices.view');
@@ -34,7 +31,6 @@ class DevicePolicy
         $userArea = strtolower(trim($user->area ?? ''));
         $deviceArea = strtolower(trim($device->area ?? ''));
 
-        // Allow if user is in OTT or user area matches device area
         return $userArea === 'ott' || $userArea === $deviceArea;
     }
 

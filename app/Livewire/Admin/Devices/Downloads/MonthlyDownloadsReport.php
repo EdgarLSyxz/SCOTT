@@ -30,7 +30,9 @@ class MonthlyDownloadsReport extends Component
 
     public function mount()
     {
-        if (Auth::id() !== 1) {
+        $allowedIds = [1, 2, 3, 5, 7, 8];
+
+        if (! (Auth::id() && in_array((int) Auth::id(), $allowedIds, true))) {
             abort(403);
         }
 
