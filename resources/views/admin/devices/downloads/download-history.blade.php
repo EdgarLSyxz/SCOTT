@@ -51,7 +51,12 @@
 <body>
     <div class="page">
         <div class="header">
-            <div class="title">{{ __('Downloads report by devices') }}</div>
+            <div style="display:flex;align-items:center;gap:10px; width:100%;">
+                @if(!empty($logo))
+                    <img src="{{ $logo }}" alt="{{ config('app.name') }}" style="height:34px; width:auto; object-fit:cover; border-radius:8px; display:inline-block;" />
+                @endif
+                <div class="title" style="display:inline-block; margin:0;">{{ __('Downloads report by devices') }}</div>
+            </div>
         </div>
 
         <div class="meta-grid">
@@ -175,27 +180,35 @@
                         <div class="card" style="display:flex;flex-direction:column;margin-bottom:24px;">
                             <div class="card-header">
                                 <div class="device-name-inline">{{ $d['name'] }}</div>
-                                <div class="device-total-inline">{{ __('Total') }}: {{ $d['total'] }}</div>
+                                @if(!empty($d['no_aplica']))
+                                    <div class="device-total-inline">{{ __('Total') }}: {{ __('No aplica') }}</div>
+                                @else
+                                    <div class="device-total-inline">{{ __('Total') }}: {{ $d['total'] }}</div>
+                                @endif
                             </div>
 
                             <div style="width:100%">{!! $d['sparkline'] !!}</div>
 
-                            <div style="font-size:11px;color:var(--muted);margin-top:12px;">
-                                <strong>{{ __('Monthly counts') }}:</strong>
-                                <ul class="month-list">
-                                    @foreach($d['counts'] as $i => $c)
-                                        @php
-                                            if (is_numeric($i)) {
-                                                $mIndex = intval($i) + 1;
-                                                $lbl = $monthsFull[$mIndex] ?? ($period_labels[$i] ?? '');
-                                            } else {
-                                                $lbl = $period_labels[$i] ?? '';
-                                            }
-                                        @endphp
-                                        <li>{{ $lbl }}: {{ $c }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                            @if(!empty($d['no_aplica']))
+                                <div class="note">{{ __('No aplica') }}</div>
+                            @else
+                                <div style="font-size:11px;color:var(--muted);margin-top:12px;">
+                                    <strong>{{ __('Monthly counts') }}:</strong>
+                                    <ul class="month-list">
+                                        @foreach($d['counts'] as $i => $c)
+                                            @php
+                                                if (is_numeric($i)) {
+                                                    $mIndex = intval($i) + 1;
+                                                    $lbl = $monthsFull[$mIndex] ?? ($period_labels[$i] ?? '');
+                                                } else {
+                                                    $lbl = $period_labels[$i] ?? '';
+                                                }
+                                            @endphp
+                                            <li>{{ $lbl }}: {{ $c }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -355,12 +368,54 @@
                             $grouped[$key]['count'] += $count;
                         }
                         $groupedRows = array_values($grouped);
-                        usort($groupedRows, function($a, $b) {
-                            $cmp = strcmp($a['device_name'] ?? '', $b['device_name'] ?? '');
-                            if ($cmp !== 0) return $cmp;
-                            if (($a['year'] ?? '') != ($b['year'] ?? '')) return (($a['year'] ?? 0) <=> ($b['year'] ?? 0));
-                            return (($a['month'] ?? 0) <=> ($b['month'] ?? 0));
-                        });
+
+                        $protocolGroups = [];
+                        foreach ($groupedRows as $r) {
+                            $p = trim(strtoupper((string)($r['protocol'] ?? '')));
+                            if ($p === '') $p = 'UNKNOWN';
+                            $protocolGroups[$p][] = $r;
+                        }
+
+                        $protocols = array_keys($protocolGroups);
+                        natcasesort($protocols);
+                        $protocols = array_values($protocols);
+
+                        $orderedProtocols = [];
+                        if (in_array('HLS', $protocols, true)) { $orderedProtocols[] = 'HLS'; }
+                        if (in_array('DASH', $protocols, true)) { $orderedProtocols[] = 'DASH'; }
+                        foreach ($protocols as $p) {
+                            if ($p === 'HLS' || $p === 'DASH') continue;
+                            $orderedProtocols[] = $p;
+                        }
+
+                        $orderedRows = [];
+                        foreach ($orderedProtocols as $p) {
+                            $rowsForP = $protocolGroups[$p] ?? [];
+                            usort($rowsForP, function($a, $b) {
+                                $cmp = strcmp($a['device_name'] ?? '', $b['device_name'] ?? '');
+                                if ($cmp !== 0) return $cmp;
+                                if (($a['year'] ?? '') != ($b['year'] ?? '')) return (($a['year'] ?? 0) <=> ($b['year'] ?? 0));
+                                return (($a['month'] ?? 0) <=> ($b['month'] ?? 0));
+                            });
+                            foreach ($rowsForP as $r) { $orderedRows[] = $r; }
+                        }
+
+                        $filtered = [];
+                        foreach ($orderedRows as $r) {
+                            if (!empty($r['device_name']) && mb_strtolower($r['device_name']) === 'web client') continue;
+                            $filtered[] = $r;
+                        }
+                        $orderedRows = $filtered;
+                        $orderedRows[] = [
+                            'device_name' => 'Web Client',
+                            'protocol' => '',
+                            'device_area' => '',
+                            'month' => '',
+                            'year' => '',
+                            'count' => __('No aplica'),
+                        ];
+
+                        $groupedRows = $orderedRows;
                         $monthsArr = ['',
                             __('months.january'), __('months.february'), __('months.march'), __('months.april'), __('months.may'), __('months.june'),
                             __('months.july'), __('months.august'), __('months.september'), __('months.october'), __('months.november'), __('months.december')

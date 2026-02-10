@@ -414,10 +414,10 @@ class DownloadExportController extends Controller
                 }
 
                 $rows = DB::table('downloads')
-                    ->selectRaw('downloads.device_id, downloads.month as month, downloads.year as year, SUM(downloads.count) as total, devices.name')
+                    ->selectRaw('downloads.device_id, downloads.month as month, downloads.year as year, SUM(downloads.count) as total, devices.name, devices.protocol')
                     ->join('devices', 'downloads.device_id', '=', 'devices.id')
                     ->where('downloads.year', $year)
-                    ->groupBy('downloads.device_id', 'downloads.month', 'downloads.year', 'devices.name')
+                    ->groupBy('downloads.device_id', 'downloads.month', 'downloads.year', 'devices.name', 'devices.protocol')
                     ->orderBy('devices.name')
                     ->get();
 
@@ -473,6 +473,7 @@ class DownloadExportController extends Controller
                         $devices[$did] = [
                             'id' => $did,
                             'name' => $r->name,
+                            'protocol' => $r->protocol ?? '',
                             'image' => $r->image ?? null,
                             'months' => array_fill(0, count($months), 0),
                         ];
@@ -515,6 +516,7 @@ class DownloadExportController extends Controller
                     $devicesList[] = [
                         'id' => $dev['id'],
                         'name' => $dev['name'],
+                        'protocol' => $dev['protocol'] ?? '',
                         'image' => $dev['image'] ?? null,
                         'counts' => $counts,
                         'total' => $total,
@@ -524,6 +526,63 @@ class DownloadExportController extends Controller
                         'sparkline' => $svg,
                     ];
                 }
+
+                $grouped = [];
+                foreach ($devicesList as $d) {
+                    $p = trim(strtoupper((string)($d['protocol'] ?? '')));
+                    if ($p === '') $p = 'UNKNOWN';
+                    $grouped[$p][] = $d;
+                }
+
+                $protocols = array_keys($grouped);
+                natcasesort($protocols);
+                $protocols = array_values($protocols);
+                $ordered = [];
+                if (in_array('HLS', $protocols, true)) { $ordered[] = 'HLS'; }
+                if (in_array('DASH', $protocols, true)) { $ordered[] = 'DASH'; }
+                foreach ($protocols as $p) {
+                    if ($p === 'HLS' || $p === 'DASH') continue;
+                    $ordered[] = $p;
+                }
+
+                $orderedDevices = [];
+                foreach ($ordered as $p) {
+                    foreach ($grouped[$p] as $dev) {
+                        $orderedDevices[] = $dev;
+                    }
+                }
+
+                $webClientIndex = null;
+                foreach ($orderedDevices as $i => $d) {
+                    if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) {
+                        $webClientIndex = $i; break;
+                    }
+                }
+                if ($webClientIndex !== null) {
+                    $web = $orderedDevices[$webClientIndex];
+                    unset($orderedDevices[$webClientIndex]);
+                    $orderedDevices = array_values($orderedDevices);
+                    $web['no_aplica'] = true;
+                    $web['counts'] = [];
+                    $web['total'] = 0;
+                    $orderedDevices[] = $web;
+                } else {
+                    $orderedDevices[] = [
+                        'id' => null,
+                        'name' => 'Web Client',
+                        'protocol' => 'WEB',
+                        'image' => null,
+                        'counts' => [],
+                        'total' => 0,
+                        'average' => 0,
+                        'top_month_label' => null,
+                        'top_month_value' => 0,
+                        'sparkline' => '',
+                        'no_aplica' => true,
+                    ];
+                }
+
+                $devicesList = $orderedDevices;
 
                 $overallTotal = array_sum(array_map(fn($d) => $d['total'], $devicesList));
                 $monthsCount = count($months) ?: 1;
@@ -571,6 +630,23 @@ class DownloadExportController extends Controller
                 $data['devices'] = [];
                 $data['period_labels'] = [];
             }
+        }
+
+        try {
+            $logoPath = public_path('img/startv-stream-logo.png');
+            if ($logoPath && file_exists($logoPath)) {
+                $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
+                $contents = @file_get_contents($logoPath);
+                if ($contents !== false) {
+                    $data['logo'] = 'data:image/' . $type . ';base64,' . base64_encode($contents);
+                } else {
+                    $data['logo'] = null;
+                }
+            } else {
+                $data['logo'] = null;
+            }
+        } catch (\Throwable $_e) {
+            $data['logo'] = null;
         }
 
         $html = view('admin.devices.downloads.download-history', $data)->render();
@@ -693,7 +769,7 @@ class DownloadExportController extends Controller
                         if (empty($deviceId)) {
                             $sheet->setCellValue("A{$row}", $dateStr);
                             $sheet->setCellValue("B{$row}", 'Web Client');
-                            $sheet->setCellValue("C{$row}", 'No aplica');
+                            $sheet->setCellValue("C{$row}", __('Not applicable'));
                             $row++;
                         }
                     } else {
