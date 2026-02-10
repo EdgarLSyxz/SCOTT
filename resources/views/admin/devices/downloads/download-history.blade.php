@@ -290,10 +290,12 @@
                     </div>
                 @endforeach
 
-                <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
-                    <div class="device-name">Web Client</div>
-                    <div class="device-meta">{{ __('No aplica') }}</div>
-                </div>
+                @if(empty($device_id))
+                    <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
+                        <div class="device-name">Web Client</div>
+                        <div class="device-meta">{{ __('Not applicable') }}</div>
+                    </div>
+                @endif
             @elseif(!empty($devices) && count($devices))
                 <div class="device-grid">
                     @foreach($devices as $d)
@@ -301,7 +303,7 @@
                             <div class="card-header">
                                 <div class="device-name-inline">{{ $d['name'] }}</div>
                                 @if(!empty($d['no_aplica']))
-                                    <div class="device-total-inline">{{ __('Total') }}: {{ __('No aplica') }}</div>
+                                    <div class="device-total-inline">{{ __('Total') }}: {{ __('Not applicable') }}</div>
                                 @else
                                     <div class="device-total-inline">{{ __('Total') }}: {{ $d['total'] }}</div>
                                 @endif
