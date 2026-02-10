@@ -171,6 +171,7 @@ class DownloadExportController extends Controller
                     'devices.area as device_area',
                     'downloads.year',
                     'downloads.month',
+                    'downloads.day',
                     'downloads.count',
                     'downloads.created_at',
                 ])
@@ -202,6 +203,7 @@ class DownloadExportController extends Controller
                     'device_area' => $r->device_area ?? '',
                     'year' => $r->year,
                     'month' => $r->month,
+                    'day' => $r->day,
                     'count' => $r->count,
                     'created_at' => isset($r->created_at) ? Carbon::parse($r->created_at)->format('Y-m-d H:i:s') : null,
                 ];
@@ -448,19 +450,26 @@ class DownloadExportController extends Controller
             }
         } else {
             try {
-                $s = Carbon::create($year, 1, 1)->startOfDay();
-                $e = Carbon::create($year, 12, 31)->endOfDay();
+                $monthsWithRecords = DB::table('downloads')
+                    ->select('month')
+                    ->where('downloads.year', $year)
+                    ->distinct()
+                    ->pluck('month')
+                    ->toArray();
 
-                $period = CarbonPeriod::create($s->copy()->startOfMonth(), '1 month', $e->copy()->startOfMonth());
+                $monthsWithRecords = array_map('intval', $monthsWithRecords);
+                sort($monthsWithRecords);
+
                 $months = [];
-                foreach ($period as $m) {
-                    $months[] = $m->format('Y-m');
+                foreach ($monthsWithRecords as $month) {
+                    $months[] = Carbon::create($year, $month, 1)->format('Y-m');
                 }
 
                 $rows = DB::table('downloads')
                     ->selectRaw('downloads.device_id, downloads.month as month, downloads.year as year, SUM(downloads.count) as total, devices.name, devices.protocol')
                     ->join('devices', 'downloads.device_id', '=', 'devices.id')
                     ->where('downloads.year', $year)
+                    ->whereIn('downloads.month', $monthsWithRecords)
                     ->groupBy('downloads.device_id', 'downloads.month', 'downloads.year', 'devices.name', 'devices.protocol')
                     ->orderBy('devices.name')
                     ->get();
@@ -474,6 +483,7 @@ class DownloadExportController extends Controller
                         'devices.area as device_area',
                         'downloads.year',
                         'downloads.month',
+                        'downloads.day',
                         'downloads.count',
                         'downloads.created_at',
                     ])
@@ -503,6 +513,7 @@ class DownloadExportController extends Controller
                         'device_area' => $r->device_area ?? '',
                         'year' => $r->year,
                         'month' => $r->month,
+                        'day' => $r->day,
                         'count' => $r->count,
                         'created_at' => isset($r->created_at) ? Carbon::parse($r->created_at)->format('Y-m-d H:i:s') : null,
                     ];
@@ -695,6 +706,13 @@ class DownloadExportController extends Controller
             $data['logo'] = null;
         }
 
+        \Log::info('historyPDF: Data before view render', [
+            'download_rows_count' => count($data['download_rows'] ?? []),
+            'download_rows_sample_first' => !empty($data['download_rows']) ? $data['download_rows'][0] : null,
+            'devices_count' => count($data['devices'] ?? []),
+            'has_download_rows' => !empty($data['download_rows']),
+        ]);
+
         $html = view('admin.devices.downloads.download-history', $data)->render();
 
         $dompdf = new \Dompdf\Dompdf();
@@ -754,9 +772,12 @@ class DownloadExportController extends Controller
             }
         }
 
+        $monthly = $request->input('charts.monthly');
+        $pie = $request->input('charts.pie');
+
         $pdfData = [
-            'monthlyImage' => null,
-            'pieImage' => null,
+            'monthlyImage' => $monthly,
+            'pieImage' => $pie,
             'year' => $pd['year'] ?? $request->input('year') ?? date('Y'),
             'device_id' => $deviceIdParam,
             'devices' => $pd['devices'] ?? [],
@@ -769,6 +790,15 @@ class DownloadExportController extends Controller
                 'top_month_value' => 0,
             ],
         ];
+
+        \Log::info('historyEmail: PDF data before render', [
+            'download_rows_count' => count($pdfData['download_rows'] ?? []),
+            'download_rows_sample_first' => !empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
+            'devices_count' => count($pdfData['devices'] ?? []),
+            'has_download_rows' => !empty($pdfData['download_rows']),
+            'has_monthly_image' => !empty($pdfData['monthlyImage']),
+            'has_pie_image' => !empty($pdfData['pieImage']),
+        ]);
 
         try {
             $logoPath = public_path('img/startv-stream-logo.png');
@@ -808,8 +838,39 @@ class DownloadExportController extends Controller
                 }
             }
 
+            $monthsWithData = DB::table('downloads')
+                ->select('month')
+                ->where('downloads.year', $year)
+                ->distinct()
+                ->pluck('month')
+                ->toArray();
+
+            if ($areaFilter) {
+                $monthsWithData = DB::table('downloads')
+                    ->join('devices', 'downloads.device_id', '=', 'devices.id')
+                    ->select('downloads.month')
+                    ->where('downloads.year', $year)
+                    ->where('devices.area', $areaFilter)
+                    ->distinct()
+                    ->pluck('downloads.month')
+                    ->toArray();
+            }
+
+            if ($deviceId) {
+                $monthsWithData = DB::table('downloads')
+                    ->select('month')
+                    ->where('downloads.year', $year)
+                    ->where('downloads.device_id', $deviceId)
+                    ->distinct()
+                    ->pluck('month')
+                    ->toArray();
+            }
+
+            $monthsWithData = array_map('intval', $monthsWithData);
+            sort($monthsWithData);
+
             $firstSheet = true;
-            for ($month = 1; $month <= 12; $month++) {
+            foreach ($monthsWithData as $month) {
                 if ($firstSheet) {
                     $sheet = $spreadsheet->getActiveSheet();
                     $firstSheet = false;
@@ -881,11 +942,6 @@ class DownloadExportController extends Controller
                             $sheet->setCellValue("C{$row}", __('Not applicable'));
                             $row++;
                         }
-                    } else {
-                        $sheet->setCellValue("A{$row}", $dateStr);
-                        $sheet->setCellValue("B{$row}", '—');
-                        $sheet->setCellValue("C{$row}", 0);
-                        $row++;
                     }
                 }
             }

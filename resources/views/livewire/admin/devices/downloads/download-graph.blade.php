@@ -361,8 +361,25 @@ $devProtocol = $kpis['device_protocol_percent'] ?? null;
                         }
                     }
 
+                    const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
+                    const pieCanvas = document.getElementById('pieDownloadsChart');
+                    let monthlyData = null;
+                    let pieData = null;
+                    if (monthlyCanvas) {
+                        try {
+                            monthlyData = monthlyCanvas.toDataURL('image/png');
+                        } catch (e) { console.warn('Could not capture monthly chart'); }
+                    }
+                    if (pieCanvas) {
+                        try {
+                            pieData = pieCanvas.toDataURL('image/png');
+                        } catch (e) { console.warn('Could not capture pie chart'); }
+                    }
+
                     const fd = new FormData();
                     fd.append('data', JSON.stringify(preData));
+                    if (monthlyData) fd.append('charts[monthly]', monthlyData);
+                    if (pieData) fd.append('charts[pie]', pieData);
                     if (yearSelect) fd.append('year', yearSelect.value);
                     if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
 
