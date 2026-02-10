@@ -443,6 +443,12 @@ class DownloadExportController extends Controller
                                 'no_aplica' => true,
                             ];
                         }
+                    } else {
+                        // If a specific device is requested, ensure Web Client is removed from prefetched devices
+                        $data['devices'] = array_values(array_filter($data['devices'] ?? [], function ($d) {
+                            return mb_strtolower($d['name'] ?? '') !== mb_strtolower('Web Client');
+                        }));
+                        \Log::debug('historyPDF: Removed Web Client from prefetched devices because deviceId was provided', ['device_id' => $deviceId]);
                     }
                 }
             } catch (\Throwable $_e) {
@@ -770,6 +776,11 @@ class DownloadExportController extends Controller
                     'no_aplica' => true,
                 ];
             }
+        } else {
+            $pd['devices'] = array_values(array_filter($pd['devices'] ?? [], function ($d) {
+                return mb_strtolower($d['name'] ?? '') !== mb_strtolower('Web Client');
+            }));
+            \Log::debug('historyEmail: Removed Web Client from prefetched devices because device_id param is provided', ['device_id' => $deviceIdParam]);
         }
 
         $monthly = $request->input('charts.monthly');
