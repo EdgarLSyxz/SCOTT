@@ -15,6 +15,19 @@
         {{ 'Historial de descargas por dispositivo' }}
       </h2>
 
+      <p style="margin:0 0 10px 0; font-size:13px; color:#334155; line-height:1.5;">
+        {{ __('Adjuntamos el reporte en Excel y el PDF correspondiente a este informe.') }}
+        @if(!empty($meta['selected_all']))
+          {{ __('El Excel incluye el detalle de todos los dispositivos, y el PDF resume el consolidado del periodo seleccionado.') }}
+        @else
+          {{ __('El Excel incluye el detalle del dispositivo seleccionado, y el PDF resume el consolidado para ese dispositivo.') }}
+        @endif
+      </p>
+
+      <p style="margin:0 0 12px 0; font-size:13px; color:#475569; line-height:1.5;">
+        {{ __('Si necesitas otro rango de fechas o un dispositivo distinto, responde a este correo y lo preparamos.') }}
+      </p>
+
       <br>
 
       @php

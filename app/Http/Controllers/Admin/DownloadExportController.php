@@ -286,6 +286,28 @@ class DownloadExportController extends Controller
             $overallTopValue = $monthlyTotals[$overallTopIndex] ?? 0;
 
             $data['devices'] = $devicesList;
+            if (empty($deviceId)) {
+                $hasWeb = false;
+                foreach ($data['devices'] as $d) {
+                    if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
+                }
+                if (! $hasWeb) {
+                    $data['devices'][] = [
+                        'id' => null,
+                        'name' => 'Web Client',
+                        'image' => null,
+                        'counts' => array_fill(0, count($months), 0),
+                        'total' => 0,
+                        'average' => 0,
+                        'top_month_label' => null,
+                        'top_month_value' => 0,
+                        'sparkline' => '',
+                        'protocol' => 'WEB',
+                        'no_aplica' => true,
+                    ];
+                }
+            }
+
             $data['period_labels'] = array_map(function ($m) {
                 $lbl = Carbon::createFromFormat('Y-m', $m)->locale('es')->isoFormat('MMM YYYY');
                 $lbl = preg_replace('/\.$/u', '', $lbl);
@@ -398,6 +420,28 @@ class DownloadExportController extends Controller
                         'has_summary' => !empty($data['summary']),
                         'has_period_labels' => !empty($data['period_labels']),
                     ]);
+                    if (empty($deviceId)) {
+                        $hasWeb = false;
+                        foreach ($data['devices'] as $d) {
+                            if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
+                        }
+                        if (! $hasWeb) {
+                            $monthsCount = count($data['period_labels'] ?? []);
+                            $data['devices'][] = [
+                                'id' => null,
+                                'name' => 'Web Client',
+                                'protocol' => 'WEB',
+                                'image' => null,
+                                'counts' => array_fill(0, $monthsCount, 0),
+                                'total' => 0,
+                                'average' => 0,
+                                'top_month_label' => null,
+                                'top_month_value' => 0,
+                                'sparkline' => '',
+                                'no_aplica' => true,
+                            ];
+                        }
+                    }
                 }
             } catch (\Throwable $_e) {
                 \Log::error('PDF prefetch JSON decode error', ['error' => $_e->getMessage()]);
@@ -552,34 +596,36 @@ class DownloadExportController extends Controller
                     }
                 }
 
-                $webClientIndex = null;
-                foreach ($orderedDevices as $i => $d) {
-                    if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) {
-                        $webClientIndex = $i; break;
+                if (empty($deviceId)) {
+                    $webClientIndex = null;
+                    foreach ($orderedDevices as $i => $d) {
+                        if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) {
+                            $webClientIndex = $i; break;
+                        }
                     }
-                }
-                if ($webClientIndex !== null) {
-                    $web = $orderedDevices[$webClientIndex];
-                    unset($orderedDevices[$webClientIndex]);
-                    $orderedDevices = array_values($orderedDevices);
-                    $web['no_aplica'] = true;
-                    $web['counts'] = [];
-                    $web['total'] = 0;
-                    $orderedDevices[] = $web;
-                } else {
-                    $orderedDevices[] = [
-                        'id' => null,
-                        'name' => 'Web Client',
-                        'protocol' => 'WEB',
-                        'image' => null,
-                        'counts' => [],
-                        'total' => 0,
-                        'average' => 0,
-                        'top_month_label' => null,
-                        'top_month_value' => 0,
-                        'sparkline' => '',
-                        'no_aplica' => true,
-                    ];
+                    if ($webClientIndex !== null) {
+                        $web = $orderedDevices[$webClientIndex];
+                        unset($orderedDevices[$webClientIndex]);
+                        $orderedDevices = array_values($orderedDevices);
+                        $web['no_aplica'] = true;
+                        $web['counts'] = [];
+                        $web['total'] = 0;
+                        $orderedDevices[] = $web;
+                    } else {
+                        $orderedDevices[] = [
+                            'id' => null,
+                            'name' => 'Web Client',
+                            'protocol' => 'WEB',
+                            'image' => null,
+                            'counts' => [],
+                            'total' => 0,
+                            'average' => 0,
+                            'top_month_label' => null,
+                            'top_month_value' => 0,
+                            'sparkline' => '',
+                            'no_aplica' => true,
+                        ];
+                    }
                 }
 
                 $devicesList = $orderedDevices;
@@ -683,6 +729,69 @@ class DownloadExportController extends Controller
         if (!is_array($pd)) {
             return response()->json(['message' => 'Invalid data'], 422);
         }
+
+        $deviceIdParam = $request->input('device_id') ?? $pd['device_id'] ?? null;
+        if (empty($deviceIdParam)) {
+            $hasWeb = false;
+            foreach ($pd['devices'] ?? [] as $d) {
+                if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
+            }
+            if (! $hasWeb) {
+                $monthsCount = count($pd['period_labels'] ?? []);
+                $pd['devices'][] = [
+                    'id' => null,
+                    'name' => 'Web Client',
+                    'protocol' => 'WEB',
+                    'image' => null,
+                    'counts' => array_fill(0, $monthsCount, 0),
+                    'total' => 0,
+                    'average' => 0,
+                    'top_month_label' => null,
+                    'top_month_value' => 0,
+                    'sparkline' => '',
+                    'no_aplica' => true,
+                ];
+            }
+        }
+
+        $pdfData = [
+            'monthlyImage' => null,
+            'pieImage' => null,
+            'year' => $pd['year'] ?? $request->input('year') ?? date('Y'),
+            'device_id' => $deviceIdParam,
+            'devices' => $pd['devices'] ?? [],
+            'period_labels' => $pd['period_labels'] ?? [],
+            'download_rows' => $pd['download_rows'] ?? [],
+            'summary' => $pd['summary'] ?? [
+                'total' => 0,
+                'average' => 0,
+                'top_month_label' => null,
+                'top_month_value' => 0,
+            ],
+        ];
+
+        try {
+            $logoPath = public_path('img/startv-stream-logo.png');
+            if ($logoPath && file_exists($logoPath)) {
+                $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
+                $contents = @file_get_contents($logoPath);
+                $pdfData['logo'] = $contents !== false
+                    ? 'data:image/' . $type . ';base64,' . base64_encode($contents)
+                    : null;
+            } else {
+                $pdfData['logo'] = null;
+            }
+        } catch (\Throwable $_e) {
+            $pdfData['logo'] = null;
+        }
+
+        $pdfHtml = view('admin.devices.downloads.download-history', $pdfData)->render();
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($pdfHtml);
+        $dompdf->setPaper('a4', 'portrait');
+        $dompdf->render();
+        $pdfBytes = $dompdf->output();
+        $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
 
         try {
             $spreadsheet = new Spreadsheet();
@@ -807,7 +916,15 @@ class DownloadExportController extends Controller
             if ($request->filled('title')) $meta['title'] = $request->input('title');
             if ($request->filled('description')) $meta['description'] = $request->input('description');
 
-            Mail::to($to)->send(new DownloadsExcelMail($subject, $body, $xlsData, $filename, $meta));
+            Mail::to($to)->send(new DownloadsExcelMail(
+                $subject,
+                $body,
+                $xlsData,
+                $filename,
+                $meta,
+                $pdfBytes,
+                $pdfFilename
+            ));
 
             session()->flash('swal', [
                 'icon' => 'success',
@@ -841,7 +958,15 @@ class DownloadExportController extends Controller
                 $filename = 'Download History' . ' - ' . now()->format('Ymd His') . '.csv';
                 $metaFallback = $meta ?? [];
                 Mail::to($auth->email ?? config('mail.from.address'))
-                    ->send(new DownloadsExcelMail($subject, $body, $csvData, $filename, $metaFallback));
+                    ->send(new DownloadsExcelMail(
+                        $subject,
+                        $body,
+                        $csvData,
+                        $filename,
+                        $metaFallback,
+                        $pdfBytes,
+                        $pdfFilename
+                    ));
 
                 session()->flash('swal', [
                     'icon' => 'success',

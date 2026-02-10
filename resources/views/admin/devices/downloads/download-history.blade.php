@@ -187,7 +187,7 @@
                                 @endif
                             </div>
 
-                            <div style="width:100%">{!! $d['sparkline'] !!}</div>
+                            <div style="width:100%">{!! $d['sparkline'] ?? '' !!}</div>
 
                             @if(!empty($d['no_aplica']))
                                 <div class="note">{{ __('No aplica') }}</div>

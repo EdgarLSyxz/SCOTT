@@ -15,14 +15,26 @@ class DownloadsExcelMail extends Mailable
     protected $attachment;
     protected $filename;
     public $meta;
+    protected $pdfAttachment;
+    protected $pdfFilename;
 
-    public function __construct(string $subjectText, string $bodyText, string $attachment, string $filename, array $meta = [])
+    public function __construct(
+        string $subjectText,
+        string $bodyText,
+        string $attachment,
+        string $filename,
+        array $meta = [],
+        ?string $pdfAttachment = null,
+        ?string $pdfFilename = null
+    )
     {
         $this->subjectText = $subjectText;
         $this->bodyText = $bodyText;
         $this->attachment = $attachment;
         $this->filename = $filename;
         $this->meta = $meta ?: [];
+        $this->pdfAttachment = $pdfAttachment;
+        $this->pdfFilename = $pdfFilename;
     }
 
     public function build()
@@ -42,6 +54,12 @@ class DownloadsExcelMail extends Mailable
         $mail->attachData($this->attachment, $this->filename, [
             'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+
+        if ($this->pdfAttachment && $this->pdfFilename) {
+            $mail->attachData($this->pdfAttachment, $this->pdfFilename, [
+                'mime' => 'application/pdf',
+            ]);
+        }
 
         return $mail;
     }
