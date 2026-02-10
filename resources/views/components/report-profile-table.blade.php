@@ -21,7 +21,7 @@
 
 <div class="mt-6">
     <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-        <i class="fa-solid fa-folder-open"></i>
+        <i class="fa-solid fa-folder"></i>
         <span class="truncate">{{ $report->title }}</span>
     </h3>
 
@@ -30,7 +30,7 @@
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-800">
                 <tr>
                     <th class="px-3 py-2 border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-left max-w-[280px] w-[280px] whitespace-nowrap">
-                        <i class="fa-solid fa-computer mr-2"></i>
+                        <i class="fa-solid fa-tv mr-2"></i>
                         {{ __('Channel') }}
                     </th>
                     <th class="px-3 py-2 border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 max-w-[120px] w-[100px] whitespace-nowrap">

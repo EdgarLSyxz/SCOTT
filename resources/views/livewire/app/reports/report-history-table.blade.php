@@ -246,7 +246,7 @@
                             </td>
                             <td title="{{ $report->category }}"
                                 class="py-3 px-4 text-xs font-bold leading-tight truncate whitespace-nowrap overflow-hidden text-ellipsis sm:max-w-xs">
-                                {{ $report->category }}
+                                {{ __($report->category) }}
                             </td>
                             <td class="py-3 px-4 w-[120px]">
                                 <span class="inline-flex items-center px-2 py-1 text-xs sm:text-sm font-medium rounded-full {{ $report->area === 'DTH'

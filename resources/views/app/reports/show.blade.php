@@ -16,7 +16,7 @@
     ]">
 
     @php
-$brand = (auth()->user()?->area === 'OTT') ? 'primary' : 'secondary';
+        $brand = (auth()->user()?->area === 'OTT') ? 'primary' : 'secondary';
     @endphp
 
     <div class="px-6 mx-auto h-auto">
@@ -29,25 +29,25 @@ $brand = (auth()->user()?->area === 'OTT') ? 'primary' : 'secondary';
                         <span
                             class="block sm:inline-block text-lg sm:text-xl font-semibold text-gray-900 dark:text-white leading-tight truncate max-w-[200px] sm:max-w-[520px] overflow-hidden"
                             title="{{ $report->category }}">
-                            {{ $report->category }}
+                            {{ __($report->category) }}
                         </span>
                     </div>
                     <div
                         class="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                         <div class="flex flex-nowrap sm:flex-wrap justify-between sm:justify-start items-center gap-2">
                             @php
-$areaIcon = null;
-if ($report->area === 'DTH') {
-    $areaIcon = 'fa-satellite-dish';
-} elseif ($report->area === 'OTT') {
-    $areaIcon = 'fa-cube';
-}
-$areaBadgeClass = 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
-if ($report->area === 'DTH') {
-    $areaBadgeClass = 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200';
-} elseif ($report->area === 'OTT') {
-    $areaBadgeClass = 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200';
-}
+                                $areaIcon = null;
+                                if ($report->area === 'DTH') {
+                                    $areaIcon = 'fa-satellite-dish';
+                                } elseif ($report->area === 'OTT') {
+                                    $areaIcon = 'fa-cube';
+                                }
+                                $areaBadgeClass = 'text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
+                                if ($report->area === 'DTH') {
+                                    $areaBadgeClass = 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200';
+                                } elseif ($report->area === 'OTT') {
+                                    $areaBadgeClass = 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200';
+                                }
                             @endphp
 
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md md:rounded-lg {{ $areaBadgeClass }} text-[10px] font-medium uppercase tracking-wide md:px-3 md:py-1.5 md:text-xs md:mr-2 flex-shrink-0" aria-label="Area {{ $report->area ?? '' }}">
@@ -290,16 +290,16 @@ if ($report->area === 'DTH') {
                 <x-report-profile-table :report="$report" />
             @else
                 @php
-    $fixedCategories = [];
-    if ($report->type === 'Hourly') {
-        $fixedCategories = ['CDN TELMEX', 'CDN CEF+', 'STINGRAY'];
-    } elseif ($report->type === 'Functions') {
-        $fixedCategories = ['RESTART', 'CUTV', 'EPG', 'PC'];
-    }
+                    $fixedCategories = [];
+                    if ($report->type === 'Hourly') {
+                        $fixedCategories = ['CDN TELMEX', 'CDN CEF+', 'STINGRAY'];
+                    } elseif ($report->type === 'Functions') {
+                        $fixedCategories = ['RESTART', 'CUTV', 'EPG', 'PC'];
+                    }
 
-    $dynamicCategories = $report->reportDetails->pluck('subcategory')->unique()->toArray();
+                    $dynamicCategories = $report->reportDetails->pluck('subcategory')->unique()->toArray();
 
-    $allCategories = collect($fixedCategories)->merge($dynamicCategories)->unique()->values()->toArray();
+                    $allCategories = collect($fixedCategories)->merge($dynamicCategories)->unique()->values()->toArray();
                 @endphp
                 @if ($report->type === 'Hourly' || $report->type === 'Functions')
                     @foreach ($allCategories as $fixedCategory)
@@ -322,9 +322,9 @@ if ($report->area === 'DTH') {
                                 <span
                                     class="bg-{{ $brand }}-100 text-{{ $brand }}-800 text-sm font-medium py-1 px-3 rounded-full text-center sm:text-left w-full sm:w-auto">
                                     @if (
-                in_array($fixedCategory, $allCategories) &&
-                $report->reportDetails->where('subcategory', $fixedCategory)->count() > 0
-            )
+                                        in_array($fixedCategory, $allCategories) &&
+                                        $report->reportDetails->where('subcategory', $fixedCategory)->count() > 0
+                                    )
                                         {{ $report->reportDetails->where('subcategory', $fixedCategory)->count() }}
                                         {{ $report->reportDetails->where('subcategory', $fixedCategory)->count() === 1 ? __('Channel') : __('Channels') }}
                                     @else
@@ -456,18 +456,18 @@ if ($report->area === 'DTH') {
                                                         <tbody>
                                                             @foreach ($detail->reportContentLosses as $loss)
                                                                 @php
-                            $start = \Carbon\Carbon::parse(
-                                $loss->start_time,
-                            );
-                            $end = \Carbon\Carbon::parse($loss->end_time);
-                            $diff = $start->diff($end);
-                            $days = $diff->format('%a');
-                            $hours = $diff->format('%H');
-                            $minutes = $diff->format('%I');
+                                                                    $start = \Carbon\Carbon::parse(
+                                                                        $loss->start_time,
+                                                                    );
+                                                                    $end = \Carbon\Carbon::parse($loss->end_time);
+                                                                    $diff = $start->diff($end);
+                                                                    $days = $diff->format('%a');
+                                                                    $hours = $diff->format('%H');
+                                                                    $minutes = $diff->format('%I');
 
-                            $duration =
-                                ($days > 0 ? "{$days}d " : '') .
-                                "{$hours}h {$minutes}m";
+                                                                    $duration =
+                                                                        ($days > 0 ? "{$days}d " : '') .
+                                                                        "{$hours}h {$minutes}m";
                                                                 @endphp
                                                                 <tr
                                                                     class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
