@@ -1,12 +1,12 @@
 <div>
 
 @php
-$area = Auth::user()?->area;
-$selectRingClass = $area === 'OTT'
-    ? 'focus-within:ring-2 focus-within:ring-primary-400 dark:focus-within:ring-primary-600'
-    : ($area === 'DTH'
-        ? 'focus-within:ring-2 focus-within:ring-secondary-400 dark:focus-within:ring-secondary-600'
-        : 'focus-within:ring-2 focus-within:ring-primary-400 dark:focus-within:ring-primary-600');
+    $area = Auth::user()?->area;
+    $selectRingClass = $area === 'OTT'
+        ? 'focus-within:ring-2 focus-within:ring-primary-400 dark:focus-within:ring-primary-600'
+        : ($area === 'DTH'
+            ? 'focus-within:ring-2 focus-within:ring-secondary-400 dark:focus-within:ring-secondary-600'
+            : 'focus-within:ring-2 focus-within:ring-primary-400 dark:focus-within:ring-primary-600');
 @endphp
 
 <style>
@@ -42,7 +42,7 @@ $selectRingClass = $area === 'OTT'
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
                     @php
-$spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
+                        $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'fill-secondary-600' : 'fill-blue-600');
                     @endphp
                     <div id="chart-loading" class="text-sm text-gray-500 hidden" aria-hidden="true">
                         <div role="status" class="flex items-center gap-2 mr-0.5">
@@ -152,7 +152,7 @@ $spinnerFillClass = $area === 'OTT' ? 'fill-primary-600' : ($area === 'DTH' ? 'f
                 </div>
 
                 @php
-$devProtocol = $kpis['device_protocol_percent'] ?? null;
+                    $devProtocol = $kpis['device_protocol_percent'] ?? null;
                 @endphp
 
                 @if(!empty($devProtocol) && is_array($devProtocol))
@@ -401,22 +401,21 @@ $devProtocol = $kpis['device_protocol_percent'] ?? null;
                 function exportCsv() {
                     try {
                         const input = document.getElementById('downloads-datepicker-range');
-                                let start = '';
-                                let end = '';
-                                if (input && input.value) {
-                            const parts = input.value.split(' to ');
-                                start = parts[0] ? parts[0].trim() : '';
-                                end = parts[1] ? parts[1].trim() : start;
+                            let start = '';
+                            let end = '';
+                            if (input && input.value) {
+                        const parts = input.value.split(' to ');
+                            start = parts[0] ? parts[0].trim() : '';
+                            end = parts[1] ? parts[1].trim() : start;
                         }
-
-                                const base = '{{ route("admin.downloads.history.csv") }}';
-                                const url = new URL(base, window.location.origin);
-                                if (start) url.searchParams.set('start', start);
-                                if (end) url.searchParams.set('end', end);
-                                window.open(url.toString(), '_blank');
+                        const base = '{{ route("admin.downloads.history.csv") }}';
+                        const url = new URL(base, window.location.origin);
+                        if (start) url.searchParams.set('start', start);
+                        if (end) url.searchParams.set('end', end);
+                        window.open(url.toString(), '_blank');
                     } catch (e) {
-                                    console.error('Export CSV failed', e);
-                                alert('Could not start CSV export.');
+                        console.error('Export CSV failed', e);
+                        alert('Could not start CSV export.');
                     }
                 }
             </script>

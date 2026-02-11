@@ -124,20 +124,25 @@ class DownloadGraph extends Component
         }
 
         try {
-            $perDeviceProtocol = DB::table('downloads')
+            $hlsTotal = isset($pieRows['HLS']) ? (int) $pieRows['HLS']->total_downloads : 0;
+            $dashTotal = isset($pieRows['DASH']) ? (int) $pieRows['DASH']->total_downloads : 0;
+            $totalProtocolDownloads = $hlsTotal + $dashTotal;
+
+            if ($totalProtocolDownloads > 0) {
+                $hlsPercent = round(($hlsTotal / $totalProtocolDownloads) * 100, 1);
+                $dashPercent = round(($dashTotal / $totalProtocolDownloads) * 100, 1);
+            } else {
+                $hlsPercent = 0;
+                $dashPercent = 0;
+            }
+
+            $totalDevicesWithDownloads = DB::table('downloads')
                 ->where('year', $this->selectedYear)
-                ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                ->select('devices.protocol', 'downloads.device_id', DB::raw('SUM(downloads.`count`) as total'))
-                ->groupBy('downloads.device_id', 'devices.protocol')
-                ->havingRaw('SUM(downloads.`count`) > 0')
-                ->get();
-
-            $totalDevicesWithDownloads = $perDeviceProtocol->count();
-            $hlsDevices = $perDeviceProtocol->where('protocol', 'HLS')->count();
-            $dashDevices = $perDeviceProtocol->where('protocol', 'DASH')->count();
-
-            $hlsPercent = $totalDevicesWithDownloads ? round(($hlsDevices / $totalDevicesWithDownloads) * 100, 1) : 0;
-            $dashPercent = $totalDevicesWithDownloads ? round(($dashDevices / $totalDevicesWithDownloads) * 100, 1) : 0;
+                ->select('downloads.device_id', DB::raw('SUM(downloads.count) as total'))
+                ->groupBy('downloads.device_id')
+                ->havingRaw('SUM(downloads.count) > 0')
+                ->get()
+                ->count();
         } catch (\Exception $e) {
             $totalDevicesWithDownloads = 0;
             $hlsPercent = 0;
