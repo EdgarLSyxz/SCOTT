@@ -15,6 +15,59 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DownloadExportController extends Controller
 {
+    private function buildProtocolSummary(array $downloadRows): array
+    {
+        $protocols = ['HLS', 'DASH'];
+        $deviceSets = [
+            'HLS' => [],
+            'DASH' => [],
+        ];
+        $downloadTotals = [
+            'HLS' => 0,
+            'DASH' => 0,
+        ];
+
+        foreach ($downloadRows as $row) {
+            $protocol = strtoupper(trim((string)($row['protocol'] ?? '')));
+            if (!in_array($protocol, $protocols, true)) {
+                continue;
+            }
+
+            $count = (int)($row['count'] ?? 0);
+            if ($count <= 0) {
+                continue;
+            }
+
+            $downloadTotals[$protocol] += $count;
+
+            $deviceId = $row['device_id'] ?? null;
+            if ($deviceId !== null && $deviceId !== '') {
+                $deviceSets[$protocol][(string)$deviceId] = true;
+            }
+        }
+
+        $allDevices = array_unique(array_merge(array_keys($deviceSets['HLS']), array_keys($deviceSets['DASH'])));
+        $totalDevices = count($allDevices);
+        $totalDownloads = $downloadTotals['HLS'] + $downloadTotals['DASH'];
+
+        $summary = [
+            'device_total' => $totalDevices,
+            'download_total' => $totalDownloads,
+        ];
+
+        foreach ($protocols as $protocol) {
+            $deviceCount = count($deviceSets[$protocol]);
+            $percent = $totalDownloads ? round(($downloadTotals[$protocol] / $totalDownloads) * 100, 1) : 0;
+            $summary[$protocol] = [
+                'download_percent' => $percent,
+                'device_count' => $deviceCount,
+                'download_total' => $downloadTotals[$protocol],
+            ];
+        }
+
+        return $summary;
+    }
+
     public function historyCSV(Request $request)
     {
         $start = $request->query('start');
@@ -444,12 +497,13 @@ class DownloadExportController extends Controller
                             ];
                         }
                     } else {
-                        // If a specific device is requested, ensure Web Client is removed from prefetched devices
                         $data['devices'] = array_values(array_filter($data['devices'] ?? [], function ($d) {
                             return mb_strtolower($d['name'] ?? '') !== mb_strtolower('Web Client');
                         }));
                         \Log::debug('historyPDF: Removed Web Client from prefetched devices because deviceId was provided', ['device_id' => $deviceId]);
                     }
+
+                    $data['protocol_summary'] = $this->buildProtocolSummary($data['download_rows'] ?? []);
                 }
             } catch (\Throwable $_e) {
                 \Log::error('PDF prefetch JSON decode error', ['error' => $_e->getMessage()]);
@@ -526,6 +580,7 @@ class DownloadExportController extends Controller
                 })->toArray();
 
                 $data['download_rows'] = $downloadRows;
+                $data['protocol_summary'] = $this->buildProtocolSummary($downloadRows);
 
                 $devices = [];
                 foreach ($rows as $r) {
@@ -801,6 +856,8 @@ class DownloadExportController extends Controller
                 'top_month_value' => 0,
             ],
         ];
+
+        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
 
         \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),

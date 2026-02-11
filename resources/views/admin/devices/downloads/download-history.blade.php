@@ -69,9 +69,20 @@
                 <div class="value">{{ $year ?? date('Y') }}</div>
             </div>
             @php
-                $__months_local = ['',
-                    __('months.january'), __('months.february'), __('months.march'), __('months.april'), __('months.may'), __('months.june'),
-                    __('months.july'), __('months.august'), __('months.september'), __('months.october'), __('months.november'), __('months.december')
+                $__months_local = [
+                    '',
+                    __('months.january'),
+                    __('months.february'),
+                    __('months.march'),
+                    __('months.april'),
+                    __('months.may'),
+                    __('months.june'),
+                    __('months.july'),
+                    __('months.august'),
+                    __('months.september'),
+                    __('months.october'),
+                    __('months.november'),
+                    __('months.december')
                 ];
 
                 $top_raw = $summary['top_month_label'] ?? null;
@@ -82,26 +93,53 @@
                         $top_month_label = $__months_local[$mi] ?? $top_raw;
                     } else {
                         if (preg_match('/(\d{4})[-\/](\d{1,2})/', $top_raw, $m)) {
-                            $year = $m[1]; $mi = intval($m[2]);
+                            $year = $m[1];
+                            $mi = intval($m[2]);
                             $top_month_label = ($__months_local[$mi] ?? $top_raw) . ' ' . $year;
                         } elseif (preg_match('/(\d{1,2})[-\/](\d{4})/', $top_raw, $m2)) {
-                            $mi = intval($m2[1]); $year = $m2[2];
+                            $mi = intval($m2[1]);
+                            $year = $m2[2];
                             $top_month_label = ($__months_local[$mi] ?? $top_raw) . ' ' . $year;
                         } else {
                             $map = [
-                                'january' => __('months.january'), 'february' => __('months.february'), 'march' => __('months.march'),
-                                'april' => __('months.april'), 'may' => __('months.may'), 'june' => __('months.june'),
-                                'july' => __('months.july'), 'august' => __('months.august'), 'september' => __('months.september'),
-                                'october' => __('months.october'), 'november' => __('months.november'), 'december' => __('months.december'),
-                                'jan' => __('months.january'), 'feb' => __('months.february'), 'mar' => __('months.march'),
-                                'apr' => __('months.april'), 'jun' => __('months.june'), 'jul' => __('months.july'),
-                                'aug' => __('months.august'), 'sep' => __('months.september'), 'oct' => __('months.october'),
-                                'nov' => __('months.november'), 'dec' => __('months.december'),
-                                'enero' => __('months.january'), 'febrero' => __('months.february'), 'marzo' => __('months.march'),
-                                'abril' => __('months.april'), 'mayo' => __('months.may'), 'junio' => __('months.june'),
-                                'julio' => __('months.july'), 'agosto' => __('months.august'), 'septiembre' => __('months.september'),
-                                'octubre' => __('months.october'), 'noviembre' => __('months.november'), 'diciembre' => __('months.december'),
-                                'ene' => __('months.january'), 'abr' => __('months.april'), 'ago' => __('months.august'),
+                                'january' => __('months.january'),
+                                'february' => __('months.february'),
+                                'march' => __('months.march'),
+                                'april' => __('months.april'),
+                                'may' => __('months.may'),
+                                'june' => __('months.june'),
+                                'july' => __('months.july'),
+                                'august' => __('months.august'),
+                                'september' => __('months.september'),
+                                'october' => __('months.october'),
+                                'november' => __('months.november'),
+                                'december' => __('months.december'),
+                                'jan' => __('months.january'),
+                                'feb' => __('months.february'),
+                                'mar' => __('months.march'),
+                                'apr' => __('months.april'),
+                                'jun' => __('months.june'),
+                                'jul' => __('months.july'),
+                                'aug' => __('months.august'),
+                                'sep' => __('months.september'),
+                                'oct' => __('months.october'),
+                                'nov' => __('months.november'),
+                                'dec' => __('months.december'),
+                                'enero' => __('months.january'),
+                                'febrero' => __('months.february'),
+                                'marzo' => __('months.march'),
+                                'abril' => __('months.april'),
+                                'mayo' => __('months.may'),
+                                'junio' => __('months.june'),
+                                'julio' => __('months.july'),
+                                'agosto' => __('months.august'),
+                                'septiembre' => __('months.september'),
+                                'octubre' => __('months.october'),
+                                'noviembre' => __('months.november'),
+                                'diciembre' => __('months.december'),
+                                'ene' => __('months.january'),
+                                'abr' => __('months.april'),
+                                'ago' => __('months.august'),
                                 'dic' => __('months.december')
                             ];
                             $found = false;
@@ -112,12 +150,17 @@
                                     } else {
                                         $top_month_label = $v;
                                     }
-                                    $found = true; break;
+                                    $found = true;
+                                    break;
                                 }
                             }
                             if (!$found) {
                                 if (preg_match('/(\d{1,2})$/', $top_raw, $m3)) {
-                                    $mi = intval($m3[1]); if ($mi >=1 && $mi <=12) $top_month_label = $__months_local[$mi]; else $top_month_label = $top_raw;
+                                    $mi = intval($m3[1]);
+                                    if ($mi >= 1 && $mi <= 12)
+                                        $top_month_label = $__months_local[$mi];
+                                    else
+                                        $top_month_label = $top_raw;
                                 } else {
                                     $top_month_label = $top_raw;
                                 }
@@ -126,6 +169,7 @@
                     }
                 }
             @endphp
+
             @if(!empty($summary))
                 <div class="card">
                     <h4>{{ __('Total downloads') }}</h4>
@@ -157,9 +201,33 @@
         @if(!empty($pieImage) && empty($device_id))
             <div class="section" style="margin-top: 12px;">
                 <h3>{{ __('Protocol distribution') }}</h3>
-                <div class="chart-box">
-                    <img src="{{ $pieImage }}" alt="pie chart">
+                <div class="chart-box" style="padding: 6px;">
+                    <img src="{{ $pieImage }}" alt="pie chart" style="max-height: 300px;">
                 </div>
+                @php
+                    $protocolSummary = $protocol_summary ?? null;
+                    $totalProtocolDownloads = is_array($protocolSummary) ? (int) ($protocolSummary['download_total'] ?? 0) : 0;
+                    $hlsSummary = is_array($protocolSummary) ? ($protocolSummary['HLS'] ?? null) : null;
+                    $dashSummary = is_array($protocolSummary) ? ($protocolSummary['DASH'] ?? null) : null;
+                @endphp
+                @if(is_array($protocolSummary))
+                    <table style="width:100%; border-collapse: collapse; margin-top: 6px; font-size: 9px; font-family: DejaVu Sans, Arial, Helvetica, sans-serif;">
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px 6px; border: 1px solid #eef2f6; background: #f8fafc; color: #1f2933; width: 50%;">
+                                    <span style="font-weight: 700; color: #00A7C4;">HLS</span>
+                                    — {{ number_format((float) ($hlsSummary['download_percent'] ?? 0), 1) }}% de descargas
+                                    · {{ number_format((int) ($hlsSummary['download_total'] ?? 0), 0) }} / {{ number_format($totalProtocolDownloads, 0) }} descargas
+                                </td>
+                                <td style="padding: 5px 6px; border: 1px solid #eef2f6; background: #f8fafc; color: #1f2933; width: 50%;">
+                                    <span style="font-weight: 700; color: #8B5CF6;">DASH</span>
+                                    — {{ number_format((float) ($dashSummary['download_percent'] ?? 0), 1) }}% de descargas
+                                    · {{ number_format((int) ($dashSummary['download_total'] ?? 0), 0) }} / {{ number_format($totalProtocolDownloads, 0) }} descargas
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @endif
                 <div class="note">{{ __('Figure 2. Share of downloads by protocol.') }}</div>
             </div>
         @endif
@@ -169,9 +237,20 @@
         <div class="section">
             <h3>{{ __('Downloads by device') }}</h3>
             @php
-                $monthsFull = ['',
-                    __('months.january'), __('months.february'), __('months.march'), __('months.april'), __('months.may'), __('months.june'),
-                    __('months.july'), __('months.august'), __('months.september'), __('months.october'), __('months.november'), __('months.december')
+                $monthsFull = [
+                    '',
+                    __('months.january'),
+                    __('months.february'),
+                    __('months.march'),
+                    __('months.april'),
+                    __('months.may'),
+                    __('months.june'),
+                    __('months.july'),
+                    __('months.august'),
+                    __('months.september'),
+                    __('months.october'),
+                    __('months.november'),
+                    __('months.december')
                 ];
             @endphp
 
@@ -184,7 +263,7 @@
                         $year = $r['year'] ?? '';
                         $month = $r['month'] ?? '';
                         $day = $r['day'] ?? '';
-                        $count = isset($r['count']) ? (int)$r['count'] : 0;
+                        $count = isset($r['count']) ? (int) $r['count'] : 0;
 
                         if (!isset($deviceGroups[$deviceName])) {
                             $deviceGroups[$deviceName] = [
@@ -206,24 +285,38 @@
                     }
 
                     foreach ($deviceGroups as &$group) {
-                        usort($group['records'], function($a, $b) {
-                            if (($a['year'] ?? 0) != ($b['year'] ?? 0)) return (($a['year'] ?? 0) <=> ($b['year'] ?? 0));
-                            if (($a['month'] ?? 0) != ($b['month'] ?? 0)) return (($a['month'] ?? 0) <=> ($b['month'] ?? 0));
+                        usort($group['records'], function ($a, $b) {
+                            if (($a['year'] ?? 0) != ($b['year'] ?? 0))
+                                return (($a['year'] ?? 0) <=> ($b['year'] ?? 0));
+                            if (($a['month'] ?? 0) != ($b['month'] ?? 0))
+                                return (($a['month'] ?? 0) <=> ($b['month'] ?? 0));
                             return (($a['day'] ?? 0) <=> ($b['day'] ?? 0));
                         });
                     }
 
                     $protocolOrder = ['HLS' => 0, 'DASH' => 1];
-                    usort($deviceGroups, function($a, $b) use ($protocolOrder) {
+                    usort($deviceGroups, function ($a, $b) use ($protocolOrder) {
                         $aProto = $protocolOrder[$a['protocol']] ?? 999;
                         $bProto = $protocolOrder[$b['protocol']] ?? 999;
-                        if ($aProto !== $bProto) return $aProto <=> $bProto;
+                        if ($aProto !== $bProto)
+                            return $aProto <=> $bProto;
                         return strcmp($a['name'] ?? '', $b['name'] ?? '');
                     });
 
-                    $monthsArr = ['',
-                        __('months.january'), __('months.february'), __('months.march'), __('months.april'), __('months.may'), __('months.june'),
-                        __('months.july'), __('months.august'), __('months.september'), __('months.october'), __('months.november'), __('months.december')
+                    $monthsArr = [
+                        '',
+                        __('months.january'),
+                        __('months.february'),
+                        __('months.march'),
+                        __('months.april'),
+                        __('months.may'),
+                        __('months.june'),
+                        __('months.july'),
+                        __('months.august'),
+                        __('months.september'),
+                        __('months.october'),
+                        __('months.november'),
+                        __('months.december')
                     ];
                 @endphp
 
