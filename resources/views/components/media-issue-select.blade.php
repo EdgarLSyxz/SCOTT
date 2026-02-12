@@ -22,6 +22,7 @@
         'emerald' => 'border-emerald-500 bg-emerald-100 dark:bg-emerald-900 focus:border-emerald-500',
         'amber' => 'border-amber-500 bg-amber-100 dark:bg-amber-900 focus:border-amber-500',
         'yellow' => 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900 focus:border-yellow-500',
+        'teal' => 'border-teal-500 bg-teal-100 dark:bg-teal-900 focus:border-teal-500',
         'sky' => 'border-sky-500 bg-sky-100 dark:bg-sky-900 focus:border-sky-500',
         'blue' => 'border-blue-500 bg-blue-100 dark:bg-blue-900 focus:border-blue-500',
         'rose' => 'border-rose-500 bg-rose-100 dark:bg-rose-900 focus:border-rose-500',
@@ -32,6 +33,7 @@
         'emerald' => 'text-emerald-800 dark:text-emerald-100',
         'amber' => 'text-amber-800 dark:text-amber-100',
         'yellow' => 'text-yellow-800 dark:text-yellow-100',
+        'teal' => 'text-teal-800 dark:text-teal-100',
         'sky' => 'text-sky-800 dark:text-sky-100',
         'blue' => 'text-blue-800 dark:text-blue-100',
         'rose' => 'text-rose-800 dark:text-rose-100',
@@ -58,7 +60,7 @@
         <ul class="max-h-60 overflow-y-auto rounded-lg">
             <div class="p-2">
                 @php
-                    $groups = ['audio' => __('AUDIO'), 'video' => __('VIDEO'), 'ui' => __('LOGO'), 'epg' => __('EPG'), 'other' => __('OTHER')];
+                    $groups = ['audio' => __('AUDIO'), 'video' => __('VIDEO'), 'ui' => __('LOGO'), 'epg' => __('EPG'), 'restart' => __('RESTART/CUTV'), 'other' => __('OTHER')];
                     $grouped = [];
                     foreach ($options as $optValue => $opt) {
                         $g = $opt['group'] ?? 'other';
@@ -75,15 +77,21 @@
                                     <i class="fa-solid fa-video text-xs"></i>
                                 @elseif($gKey === 'ui')
                                     <i class="fa-solid fa-image text-xs"></i>
+                                @elseif($gKey === 'restart')
+                                    <i class="fa-solid fa-arrow-rotate-right text-xs"></i>
                                 @elseif($gKey === 'epg')
                                     <i class="fa-solid fa-calendar-days text-xs"></i>
                                 @else
-                                    <i class="fa-solid fa-circle-info text-xs"></i>
+                                    <i class="fa-solid fa-exclamation-triangle text-xs"></i>
                                 @endif
                                 <span>{{ $gLabel }}</span>
                             </li>
                             @foreach($grouped[$gKey] as $optValue => $opt)
-                                @php $optColor = $opt['color'] ?? 'gray'; $badge = $colorMap[$optColor] ?? $colorMap['gray']; $labelColor = $textMap[$optColor] ?? $textMap['gray']; @endphp
+                                @php
+                                    $optColor = $opt['color'] ?? 'gray';
+                                    $badge = $colorMap[$optColor] ?? $colorMap['gray'];
+                                    $labelColor = $textMap[$optColor] ?? $textMap['gray'];
+                                @endphp
                                 <li>
                                     <button type="button"
                                         @click="$wire.set('{{ $name }}', '{{ $optValue }}'); selected = '{{ $optValue }}'; open = false"

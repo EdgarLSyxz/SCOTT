@@ -29,10 +29,15 @@ enum MediaIssue: string
     case NO_CHANNEL_LOGO = 'NO CHANNEL LOGO';
     case NO_EPG_AND_CHANNEL_ICON = 'NO EPG AND CHANNEL ICON';
     case OUT_OF_SERVICE = 'OUT OF SERVICE';
+    case NO_RESTART = 'NO RESTART';
+    case NO_CUTV = 'NO CUTV';
+    case NO_RESTART_CUTV = 'NO RESTART/CUTV';
+    case DOES_NOT_HAVE_RESTART_CUTV_DISTINCTIVE = 'DOES NOT HAVE THE RESTART/CUTV DISTINCTIVE';
+    case LOSS_BECAUSE_EPG_DOES_NOT_COINCIDE = 'LOSS BECAUSE THE EPG DOES NOT COINCIDE';
 
     public static function values(): array
     {
-        return array_map(fn(MediaIssue $m) => $m->value, self::cases());
+        return array_map(fn (MediaIssue $m) => $m->value, self::cases());
     }
 
     public static function optionsWithColors(): array
@@ -64,6 +69,12 @@ enum MediaIssue: string
             self::NO_EPG->value => ['color' => 'emerald', 'group' => 'epg'],
             self::NO_EPG_AND_CHANNEL_ICON->value => ['color' => 'emerald', 'group' => 'epg'],
 
+            self::NO_RESTART->value => ['color' => 'teal', 'group' => 'restart'],
+            self::NO_CUTV->value => ['color' => 'teal', 'group' => 'restart'],
+            self::NO_RESTART_CUTV->value => ['color' => 'teal', 'group' => 'restart'],
+            self::DOES_NOT_HAVE_RESTART_CUTV_DISTINCTIVE->value => ['color' => 'teal', 'group' => 'restart'],
+            self::LOSS_BECAUSE_EPG_DOES_NOT_COINCIDE->value => ['color' => 'teal', 'group' => 'restart'],
+
             self::INTERMITTENCY->value => ['color' => 'rose', 'group' => 'other'],
             self::NO_AV->value => ['color' => 'rose', 'group' => 'other'],
             self::OUT_OF_SERVICE->value => ['color' => 'rose', 'group' => 'other'],
@@ -86,6 +97,7 @@ enum MediaIssue: string
     public static function optionsForSelect(): array
     {
         $vals = self::values();
+
         return array_combine($vals, $vals);
     }
 }
