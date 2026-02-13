@@ -15,6 +15,12 @@ class ChannelTest extends Model
         "high",
         "medium",
         "low",
+        "profile_data",
+    ];
+
+    protected $casts = [
+        'profile_data' => 'array',
+        'created_at' => 'datetime',
     ];
 
     public function report()
