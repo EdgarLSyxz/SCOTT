@@ -177,7 +177,7 @@ class DeviceController extends Controller
     {
         try {
             $pythonUrl = config('services.python_packages_api.url', 'http://172.16.126.166:8000');
-            $endpoint = rtrim($pythonUrl, '/') . '/process-pdf';
+            $endpoint = rtrim($pythonUrl, '/') . '/api/process-pdf';
 
             $client = new \GuzzleHttp\Client();
 
