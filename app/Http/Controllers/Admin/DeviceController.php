@@ -176,8 +176,8 @@ class DeviceController extends Controller
     private function callPythonAPI($pdfFile)
     {
         try {
-            $pythonUrl = config('services.python_packages_api.url', 'http://127.0.0.1:8000');
-            $endpoint = rtrim($pythonUrl, '/') . '/api/process-pdf';
+            $pythonUrl = config('services.python_packages_api.url', 'http://172.16.126.166:8000');
+            $endpoint = rtrim($pythonUrl, '/') . '/process-pdf';
 
             $client = new \GuzzleHttp\Client();
 
