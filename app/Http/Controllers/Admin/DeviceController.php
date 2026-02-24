@@ -139,6 +139,37 @@ class DeviceController extends Controller
             'content_type' => $request->header('content-type'),
         ]);
 
+        try {
+            \Log::info('processPDF diagnostics', [
+                'all_files_helper' => $request->allFiles(),
+                'php_upload_max_filesize' => ini_get('upload_max_filesize'),
+                'php_post_max_size' => ini_get('post_max_size'),
+                'server_content_length' => isset($_SERVER['CONTENT_LENGTH']) ? $_SERVER['CONTENT_LENGTH'] : null,
+            ]);
+
+            \Log::info('$_FILES snapshot', isset($_FILES) ? $_FILES : []);
+
+            foreach ($request->files->all() as $k => $v) {
+                if ($v instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    $real = $v->getRealPath();
+                    \Log::info('uploaded file diagnostics', [
+                        'key' => $k,
+                        'error' => $v->getError(),
+                        'size' => $v->getSize(),
+                        'client_name' => $v->getClientOriginalName(),
+                        'client_mime' => $v->getClientMimeType(),
+                        'realpath' => $real,
+                        'is_uploaded_file' => $real ? is_uploaded_file($real) : null,
+                        'is_valid' => $v->isValid(),
+                    ]);
+                } else {
+                    \Log::info('file entry not UploadedFile instance', ['key' => $k, 'type' => is_object($v) ? get_class($v) : gettype($v)]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('processPDF diagnostics exception', ['message' => $e->getMessage()]);
+        }
+
         $pdfFile = null;
         if ($request->hasFile('pdf_file')) {
             $pdfFile = $request->file('pdf_file');
