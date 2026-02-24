@@ -131,44 +131,40 @@ class DeviceController extends Controller
             abort(403);
         }
 
+        $phpFilesInfo = [];
+        if (isset($_FILES['pdf_file'])) {
+            $phpFilesInfo = [
+                'name' => $_FILES['pdf_file']['name'] ?? null,
+                'type' => $_FILES['pdf_file']['type'] ?? null,
+                'size' => $_FILES['pdf_file']['size'] ?? null,
+                'error' => $_FILES['pdf_file']['error'] ?? null,
+                'error_message' => $this->getUploadErrorMessage($_FILES['pdf_file']['error'] ?? 0),
+                'tmp_name' => isset($_FILES['pdf_file']['tmp_name']) ? 'set' : 'not set',
+                'tmp_exists' => isset($_FILES['pdf_file']['tmp_name']) && file_exists($_FILES['pdf_file']['tmp_name']),
+            ];
+        }
+
         \Log::info('processPDF received', [
             'has_file' => $request->hasFile('pdf_file'),
             'files_count' => count($request->files->all()),
             'files_keys' => array_keys($request->files->all()),
             'input_keys' => array_keys($request->all()),
             'content_type' => $request->header('content-type'),
-        ]);
-
-        try {
-            \Log::info('processPDF diagnostics', [
-                'all_files_helper' => $request->allFiles(),
-                'php_upload_max_filesize' => ini_get('upload_max_filesize'),
-                'php_post_max_size' => ini_get('post_max_size'),
-                'server_content_length' => isset($_SERVER['CONTENT_LENGTH']) ? $_SERVER['CONTENT_LENGTH'] : null,
-            ]);
-
-            \Log::info('$_FILES snapshot', isset($_FILES) ? $_FILES : []);
-
-            foreach ($request->files->all() as $k => $v) {
-                if ($v instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
-                    $real = $v->getRealPath();
-                    \Log::info('uploaded file diagnostics', [
-                        'key' => $k,
-                        'error' => $v->getError(),
-                        'size' => $v->getSize(),
-                        'client_name' => $v->getClientOriginalName(),
-                        'client_mime' => $v->getClientMimeType(),
-                        'realpath' => $real,
-                        'is_uploaded_file' => $real ? is_uploaded_file($real) : null,
-                        'is_valid' => $v->isValid(),
-                    ]);
-                } else {
-                    \Log::info('file entry not UploadedFile instance', ['key' => $k, 'type' => is_object($v) ? get_class($v) : gettype($v)]);
+            'content_length' => $request->header('content-length'),
+            'php_files_info' => $phpFilesInfo,
+            'php_ini_upload_max' => ini_get('upload_max_filesize'),
+            'php_ini_post_max' => ini_get('post_max_size'),
+            'files_array_content' => array_map(function($file) {
+                if (is_object($file)) {
+                    return [
+                        'class' => get_class($file),
+                        'is_valid' => method_exists($file, 'isValid') ? $file->isValid() : 'N/A',
+                        'size' => method_exists($file, 'getSize') ? $file->getSize() : 'N/A',
+                    ];
                 }
-            }
-        } catch (\Exception $e) {
-            \Log::warning('processPDF diagnostics exception', ['message' => $e->getMessage()]);
-        }
+                return ['type' => gettype($file), 'value' => (string)$file];
+            }, $request->files->all()),
+        ]);
 
         $pdfFile = null;
         if ($request->hasFile('pdf_file')) {
@@ -180,6 +176,7 @@ class DeviceController extends Controller
                 'user_id' => $userId,
                 'has_files' => $request->hasFile('pdf_file'),
                 'all_files' => array_keys($request->files->all()),
+                'php_files_info' => $phpFilesInfo,
             ]);
             return response()->json(['success' => true, 'message' => 'Request received but no pdf_file found. Check logs.'], 200);
         }
@@ -294,5 +291,20 @@ class DeviceController extends Controller
             \Log::error('Python API Unexpected Exception', ['message' => $e->getMessage()]);
             throw $e;
         }
+    }
+
+    private function getUploadErrorMessage($errorCode)
+    {
+        $errorMessages = [
+            UPLOAD_ERR_OK => 'No error',
+            UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+            UPLOAD_ERR_FORM_SIZE => 'File exceeds form MAX_FILE_SIZE',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary directory',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+            UPLOAD_ERR_EXTENSION => 'Upload stopped by PHP extension',
+        ];
+        return $errorMessages[$errorCode] ?? 'Unknown error';
     }
 }
