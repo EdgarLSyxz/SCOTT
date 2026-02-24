@@ -287,9 +287,17 @@
                     xhr.open('POST', '{{ route("admin.devices.process-pdf") }}');
                     xhr.withCredentials = true;
                     if (csrfToken) {
+                        try { formData.append('_token', csrfToken); } catch (e) { console.warn('Could not append _token to FormData', e); }
                         try { xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken); } catch (e) { console.warn('Could not set X-CSRF-TOKEN header', e); }
                     }
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    try { xhr.setRequestHeader('Accept', 'application/json'); } catch (e) { }
+
+                    try {
+                        for (const pair of formData.entries()) {
+                            console.debug('FormData entry:', pair[0], pair[1]);
+                        }
+                    } catch (e) { }
 
                     xhr.send(formData);
                 } catch (err) {
