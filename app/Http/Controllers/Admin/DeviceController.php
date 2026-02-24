@@ -8,6 +8,7 @@ use App\Models\Device;
 use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class DeviceController extends Controller
@@ -130,9 +131,24 @@ class DeviceController extends Controller
             abort(403);
         }
 
-        $request->validate([
-            'pdf_file' => 'required|mimes:pdf|max:50000',
-        ]);
+        try {
+            $request->validate([
+                'pdf_file' => 'required|mimes:pdf|max:50000',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('processPDF validation failed', [
+                'errors' => $e->errors(),
+                'has_file' => $request->hasFile('pdf_file'),
+                'files_keys' => array_keys($request->files->all()),
+                'input_keys' => array_keys($request->all()),
+                'headers' => $request->headers->all(),
+            ]);
+
+            return response()->json([
+                'message' => __('Subir pdf file ha fallado.'),
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         try {
             $pdfFile = $request->file('pdf_file');
