@@ -223,7 +223,6 @@
                     const xhr = new XMLHttpRequest();
                     xhr.upload.addEventListener('progress', e => {
                         if (e.lengthComputable) {
-                            // Cap upload progress at 90% - remaining 10% for server processing
                             const percentComplete = Math.min((e.loaded / e.total) * 90, 90);
                             progressBar.style.width = percentComplete + '%';
                             progressPercent.textContent = Math.round(percentComplete) + '%';
@@ -278,8 +277,20 @@
                         uploadProgress.classList.add('hidden');
                     });
 
+                    const metaCsrf = document.querySelector('meta[name="csrf-token"]');
+                    let csrfToken = metaCsrf ? metaCsrf.getAttribute('content') : null;
+                    if (!csrfToken) {
+                        const inputToken = document.querySelector('#pdf-upload-form input[name="_token"]');
+                        csrfToken = inputToken ? inputToken.value : null;
+                    }
+
                     xhr.open('POST', '{{ route("admin.devices.process-pdf") }}');
-                    xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    xhr.withCredentials = true;
+                    if (csrfToken) {
+                        try { xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken); } catch (e) { console.warn('Could not set X-CSRF-TOKEN header', e); }
+                    }
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
                     xhr.send(formData);
                 } catch (err) {
                     showError(err.message || '{{ __('Upload failed') }}');
