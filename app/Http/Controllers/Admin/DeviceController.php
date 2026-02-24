@@ -131,27 +131,29 @@ class DeviceController extends Controller
             abort(403);
         }
 
-        try {
-            $request->validate([
-                'pdf_file' => 'required|mimes:pdf|max:50000',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning('processPDF validation failed', [
-                'errors' => $e->errors(),
-                'has_file' => $request->hasFile('pdf_file'),
-                'files_keys' => array_keys($request->files->all()),
-                'input_keys' => array_keys($request->all()),
-                'headers' => $request->headers->all(),
-            ]);
+        \Log::info('processPDF received', [
+            'has_file' => $request->hasFile('pdf_file'),
+            'files_count' => count($request->files->all()),
+            'files_keys' => array_keys($request->files->all()),
+            'input_keys' => array_keys($request->all()),
+            'content_type' => $request->header('content-type'),
+        ]);
 
-            return response()->json([
-                'message' => __('Subir pdf file ha fallado.'),
-                'errors' => $e->errors(),
-            ], 422);
+        $pdfFile = null;
+        if ($request->hasFile('pdf_file')) {
+            $pdfFile = $request->file('pdf_file');
+        }
+
+        if (!$pdfFile) {
+            \Log::warning('processPDF no file received', [
+                'user_id' => $userId,
+                'has_files' => $request->hasFile('pdf_file'),
+                'all_files' => array_keys($request->files->all()),
+            ]);
+            return response()->json(['success' => true, 'message' => 'Request received but no pdf_file found. Check logs.'], 200);
         }
 
         try {
-            $pdfFile = $request->file('pdf_file');
 
             \Log::info('processPDF called', [
                 'user_id' => $userId,
