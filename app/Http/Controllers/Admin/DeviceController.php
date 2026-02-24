@@ -137,7 +137,20 @@ class DeviceController extends Controller
         try {
             $pdfFile = $request->file('pdf_file');
 
+            \Log::info('processPDF called', [
+                'user_id' => $userId,
+                'user_email' => $user->email ?? null,
+                'filename' => $pdfFile ? $pdfFile->getClientOriginalName() : null,
+                'size' => $pdfFile ? $pdfFile->getSize() : null,
+            ]);
+
             $pythonResponse = $this->callPythonAPI($pdfFile);
+
+            \Log::info('processPDF python response', [
+                'user_id' => $userId,
+                'status' => is_array($pythonResponse) && isset($pythonResponse['success']) ? $pythonResponse['success'] : 'unknown',
+                'summary_keys' => is_array($pythonResponse) ? array_keys($pythonResponse) : null,
+            ]);
 
             if (is_array($pythonResponse) && isset($pythonResponse['success']) && $pythonResponse['success'] === false) {
                 $message = $pythonResponse['message'] ?? __('Error processing PDF via Python API');
@@ -179,6 +192,12 @@ class DeviceController extends Controller
             $pythonUrl = config('services.python_packages_api.url', 'http://172.16.126.166:8000');
             $endpoint = rtrim($pythonUrl, '/') . '/api/process-pdf';
 
+            \Log::info('callPythonAPI start', [
+                'endpoint' => $endpoint,
+                'filename' => $pdfFile ? $pdfFile->getClientOriginalName() : null,
+                'realpath' => $pdfFile ? $pdfFile->getRealPath() : null,
+            ]);
+
             $client = new \GuzzleHttp\Client();
 
             $response = $client->post($endpoint, [
@@ -191,6 +210,9 @@ class DeviceController extends Controller
                 ],
                 'timeout' => config('services.python_packages_api.timeout', 120),
             ]);
+
+            \Log::info('callPythonAPI response status', ['status' => $response->getStatusCode()]);
+            \Log::info('callPythonAPI response body (truncated)', ['body' => substr((string)$response->getBody(), 0, 400)]);
 
             $status = $response->getStatusCode();
             $body = (string) $response->getBody();
@@ -211,7 +233,7 @@ class DeviceController extends Controller
             $resp = $e->getResponse();
             $body = $resp ? (string) $resp->getBody() : null;
 
-            \Log::error('Python API RequestException: ' . $e->getMessage() . ' response: ' . $body);
+            \Log::error('Python API RequestException', ['message' => $e->getMessage(), 'status' => $resp ? $resp->getStatusCode() : null, 'body' => $body]);
 
             return [
                 'success' => false,
@@ -219,6 +241,9 @@ class DeviceController extends Controller
                 'status' => $resp ? $resp->getStatusCode() : null,
                 'body' => $body,
             ];
+        } catch (\Exception $e) {
+            \Log::error('Python API Unexpected Exception', ['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 }

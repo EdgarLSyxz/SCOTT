@@ -96,9 +96,6 @@ class PackageController extends Controller
         }
     }
 
-    /**
-     * Return saved package uploads for the current user as JSON.
-     */
     public function apiList(Request $request)
     {
         $user = Auth::user();
