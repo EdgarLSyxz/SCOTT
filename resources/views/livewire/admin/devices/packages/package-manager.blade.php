@@ -1,6 +1,11 @@
 <div class="space-y-6">
+    @php
+        $area = auth()->user()->area ?? session('area') ?? 'OTT';
+        $color = $area === 'DTH' ? 'secondary' : 'primary';
+    @endphp
+
     @if (!empty($uploads))
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700 p-8 mb-4">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8 mb-4">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -8,7 +13,7 @@
                         {{ __('Uploaded files on the server') }}
                     </p>
                     <select wire:model.live="selectedUploadId" wire:change="loadSelectedUpload"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         @foreach ($uploads as $u)
                             <option value="{{ $u['id'] }}">
                                 {{ $u['filename'] }} — {{ \Carbon\Carbon::parse($u['created_at'])->format('d/m/Y H:i') }}
@@ -30,10 +35,10 @@
     @endif
 
     @if ($totalPackages || $totalCustomers)
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700 p-8">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-simple text-primary-400"></i>
+                    <i class="fa-solid fa-chart-simple text-{{ $color }}-400"></i>
                     <span>{{ __('Summary') }}</span>
                 </h3>
             </div>
@@ -65,10 +70,10 @@
     @endif
 
     @if (!empty($packages))
-            <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700">
+            <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
                 <div class="flex items-center justify-between p-8">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-boxes-packing text-primary-400"></i>
+                        <i class="fa-solid fa-boxes-packing text-{{ $color }}-400"></i>
                         <span>{{ __('Packages') }}</span>
                     </h3>
                     <div class="ml-4 w-full md:w-80 lg:w-96">
@@ -79,7 +84,7 @@
                                 </svg>
                             </div>
                             <input type="text" wire:model.live="searchTerm"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-primary-500 focus:border-primary-500"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500"
                                 placeholder="{{ __('Search by package name or customer ID...') }}">
                             @if ($searchTerm)
                                 <button wire:click="$set('searchTerm', '')"
@@ -91,10 +96,10 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-gray-300/50 dark:border-none">
+                <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
                     <div class="overflow-x-auto">
                     @php
-                        $filteredPackages = $this->getFilteredPackages();
+    $filteredPackages = $this->getFilteredPackages();
                     @endphp
                     </div>
                     @if (!empty($filteredPackages))
@@ -113,7 +118,7 @@
                                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $pkg['id'] }}</td>
                                         <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">{{ $pkg['name'] }}</td>
                                         <td class="px-4 py-3 text-right">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
                                                 {{ $pkg['customers'] ?? 0 }}
                                             </span>
                                         </td>
@@ -138,9 +143,9 @@
 
     @if (!empty($packages))
         <div wire:ignore x-data="packagesChart(@entangle('packages'))" x-init="init()"
-            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-primary-200 dark:border-gray-700 p-8">
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-primary-400"></i>
+                <i class="fa-solid fa-chart-pie text-{{ $color }}-400"></i>
                 <span>{{ __('Package distribution') }}</span>
             </h3>
             <canvas id="packages-chart" x-ref="chartCanvas" class="max-w-full"></canvas>
@@ -154,7 +159,7 @@
 
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full mx-4 z-50 transform transition-all duration-300">
             @if ($selectedPackage)
-                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between p-6 border-b border-{{ $color }}-200 dark:border-{{ $color }}-700">
                     <div>
                         <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ $selectedPackage['name'] ?? '' }}</h4>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -174,7 +179,7 @@
                             </svg>
                         </div>
                         <input type="text" wire:model.live="modalSearchTerm"
-                            class="bg-white border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                            class="bg-white border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-2 focus:ring-{{ $color }}-500 focus:border-transparent transition"
                             placeholder="{{ __('Search customer ID...') }}">
                         @if ($modalSearchTerm)
                             <button @click="$wire.set('modalSearchTerm', '')" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -183,7 +188,7 @@
                         @endif
                     </div>
 
-                    <ul id="package-customers-list" class="space-y-1 max-h-80 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <ul id="package-customers-list" class="space-y-1 max-h-80 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-{{ $color }}-200 dark:border-{{ $color }}-700">
                         @forelse ($filteredCustomerIds as $id)
                             <li
                                 class="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -200,7 +205,7 @@
                     @if($modalHasMore)
                         <div class="py-2 text-center">
                             <button wire:click="loadMoreCustomers"
-                                class="inline-flex items-center gap-2 px-3 py-1.5 mt-4 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                class="inline-flex items-center gap-2 px-3 py-1.5 mt-4 text-xs font-medium text-gray-600 dark:text-gray-300 border border-{{ $color }}-200 dark:border-{{ $color }}-700 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                                 <span>{{ __('Load more') }}</span>
                             </button>
@@ -208,12 +213,12 @@
                     @endif
                 </div>
 
-                <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+                <div class="flex items-center justify-between p-6 border-t border-{{ $color }}-200 dark:border-{{ $color }}-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
                     <span id="copy-feedback" class="text-sm text-green-600 dark:text-green-400 opacity-0 transition-opacity duration-300 inline-flex items-center">
                         <i class="fa-solid fa-circle-check mt-[2px] mr-2"></i>{{ __('Copied!') }}
                     </span>
                     <div class="flex space-x-4">
-                        <button onclick="copyToClipboard()" class="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium transition-colors flex items-center space-x-2">
+                        <button onclick="copyToClipboard()" class="px-4 py-2 rounded-lg bg-{{ $color }}-600 hover:bg-{{ $color }}-700 text-white text-sm font-medium transition-colors flex items-center space-x-2">
                             <i class="fa-solid fa-copy"></i>
                             <span>{{ __('Copy all') }}</span>
                         </button>
