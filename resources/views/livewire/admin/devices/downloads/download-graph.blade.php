@@ -240,47 +240,85 @@
                     } catch (e) {}
                 }
 
+                let monthsLoadAbort = null;
+                let monthsLoadTimeout = null;
+
                 async function loadMonthsForYear() {
                     const yearSelect = document.querySelector('#select-year');
                     const monthSelect = document.querySelector('#select-month');
                     if (!yearSelect || !monthSelect) return;
 
-                    try {
-                        const params = new URLSearchParams();
-                        params.append('year', yearSelect.value);
-
-                        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                        const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
-
-                        const resp = await fetch(getMonthsUrl + '?' + params.toString(), {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) }
-                        });
-
-                        if (resp.ok) {
-                            const data = await resp.json();
-                            monthSelect.innerHTML = '<option value="">{{ __('All months') }}</option>';
-
-                            if (data.months && Array.isArray(data.months)) {
-                                data.months.forEach(month => {
-                                    const option = document.createElement('option');
-                                    option.value = month.value;
-                                    option.textContent = month.label;
-                                    monthSelect.appendChild(option);
-                                });
-                            }
-                            console.log('Loaded months:', data.months);
-                        } else {
-                            console.warn('Failed to load months');
-                        }
-                    } catch (err) {
-                        console.error('Error loading months:', err);
+                    if (monthsLoadAbort) {
+                        monthsLoadAbort.abort();
                     }
+
+                    if (monthsLoadTimeout) {
+                        clearTimeout(monthsLoadTimeout);
+                    }
+
+                    monthsLoadTimeout = setTimeout(async () => {
+                        try {
+                            const params = new URLSearchParams();
+                            params.append('year', yearSelect.value);
+
+                            const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                            const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
+
+                            monthsLoadAbort = new AbortController();
+
+                            const resp = await fetch(getMonthsUrl + '?' + params.toString(), {
+                                headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) },
+                                signal: monthsLoadAbort.signal
+                            });
+
+                            if (resp.ok) {
+                                const data = await resp.json();
+                                monthSelect.innerHTML = '<option value="">{{ __('All months') }}</option>';
+
+                                if (data.months && Array.isArray(data.months)) {
+                                    data.months.forEach(month => {
+                                        const option = document.createElement('option');
+                                        option.value = month.value;
+                                        option.textContent = month.label;
+                                        monthSelect.appendChild(option);
+                                    });
+                                }
+                                console.log('Loaded months:', data.months);
+                            } else {
+                                console.warn('Failed to load months');
+                            }
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('Error loading months:', err);
+                            }
+                        }
+                    }, 300);
                 }
 
                 if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', loadMonthsForYear);
+                    document.addEventListener('DOMContentLoaded', () => {
+                        loadMonthsForYear();
+                        attachYearChangeListener();
+                    });
                 } else {
                     loadMonthsForYear();
+                    attachYearChangeListener();
+                }
+
+                function attachYearChangeListener() {
+                    const yearSelect = document.querySelector('#select-year');
+                    if (yearSelect) {
+                        yearSelect.removeEventListener('change', loadMonthsForYear);
+                        yearSelect.addEventListener('change', loadMonthsForYear);
+                    }
+                }
+
+                if (typeof Livewire !== 'undefined') {
+                    try {
+                        Livewire.hook('morph.updated', () => {
+                            attachYearChangeListener();
+                        });
+                    } catch (e) {}
                 }
 
                 const yearSelect = document.querySelector('#select-year');
