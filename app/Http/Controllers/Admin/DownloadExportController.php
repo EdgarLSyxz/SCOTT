@@ -144,14 +144,67 @@ class DownloadExportController extends Controller
         return response()->streamDownload($callback, $filename, $headers);
     }
 
+    public function getMonthsByYear(Request $request)
+    {
+        $year = $request->query('year', date('Y'));
+
+        try {
+            $auth = Auth::user();
+            $areaFilter = null;
+            if ($auth && $auth->id !== 1) {
+                if ($viewerArea = $auth->area) {
+                    $areaFilter = $viewerArea;
+                }
+            }
+
+            $query = DB::table('downloads')
+                ->select('month')
+                ->where('year', $year)
+                ->distinct()
+                ->orderBy('month');
+
+            if ($areaFilter) {
+                $query->join('devices', 'downloads.device_id', '=', 'devices.id')
+                    ->where('devices.area', $areaFilter);
+            }
+
+            $monthsData = $query->pluck('month')->toArray();
+
+            $monthLabels = [];
+            $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+            foreach ($monthsData as $m) {
+                $monthNumber = intval($m);
+                $monthName = $monthNames[$monthNumber - 1] ?? 'Mes ' . $monthNumber;
+                $monthLabels[] = [
+                    'value' => $monthNumber,
+                    'label' => $monthName,
+                ];
+            }
+
+            return response()->json([
+                'months' => $monthLabels,
+                'year' => $year,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('getMonthsByYear exception', [
+                'error' => $e->getMessage(),
+                'year' => $year,
+            ]);
+            return response()->json(['months' => [], 'year' => $year], 200);
+        }
+    }
+
     public function historyData(Request $request)
     {
         $year = $request->query('year', date('Y'));
         $deviceId = $request->query('device_id');
+        $month = $request->query('month');
 
         $data = [
             'year' => $year,
             'device_id' => $deviceId,
+            'month' => $month,
             'devices' => [],
             'period_labels' => [],
             'download_rows' => [],
@@ -164,8 +217,14 @@ class DownloadExportController extends Controller
         ];
 
         try {
-            $s = Carbon::create($year, 1, 1)->startOfDay();
-            $e = Carbon::create($year, 12, 31)->endOfDay();
+            if ($month) {
+                $monthNum = intval($month);
+                $s = Carbon::create($year, $monthNum, 1)->startOfDay();
+                $e = Carbon::create($year, $monthNum, 1)->endOfMonth()->endOfDay();
+            } else {
+                $s = Carbon::create($year, 1, 1)->startOfDay();
+                $e = Carbon::create($year, 12, 31)->endOfDay();
+            }
 
             $period = CarbonPeriod::create($s->copy()->startOfMonth(), '1 month', $e->copy()->startOfMonth());
             $months = [];
@@ -186,6 +245,7 @@ class DownloadExportController extends Controller
 
             \Log::info('historyData: Starting query', [
                 'year' => $year,
+                'month' => $month,
                 'device_id' => $deviceId,
                 'area_filter' => $areaFilter,
                 'user_id' => $auth?->id,
@@ -197,6 +257,10 @@ class DownloadExportController extends Controller
                 ->selectRaw('downloads.device_id, downloads.month as month, downloads.year as year, SUM(downloads.count) as total, devices.name')
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
                 ->where('downloads.year', $year);
+
+            if ($month) {
+                $rowsQuery->where('downloads.month', intval($month));
+            }
 
             if ($areaFilter) {
                 $rowsQuery->where('devices.area', $areaFilter);
@@ -231,6 +295,10 @@ class DownloadExportController extends Controller
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
                 ->where('downloads.year', $year)
                 ->orderBy('downloads.created_at', 'desc');
+
+            if ($month) {
+                $downloadsQuery->where('downloads.month', intval($month));
+            }
 
             if ($areaFilter) {
                 $downloadsQuery->where('devices.area', $areaFilter);
@@ -845,6 +913,7 @@ class DownloadExportController extends Controller
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
             'year' => $pd['year'] ?? $request->input('year') ?? date('Y'),
+            'month' => $pd['month'] ?? $request->input('month'),
             'device_id' => $deviceIdParam,
             'devices' => $pd['devices'] ?? [],
             'period_labels' => $pd['period_labels'] ?? [],
@@ -857,9 +926,7 @@ class DownloadExportController extends Controller
             ],
         ];
 
-        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
-
-        \Log::info('historyEmail: PDF data before render', [
+        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);        \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),
             'download_rows_sample_first' => !empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
             'devices_count' => count($pdfData['devices'] ?? []),
@@ -894,6 +961,7 @@ class DownloadExportController extends Controller
         try {
             $spreadsheet = new Spreadsheet();
             $year = $pd['year'] ?? $request->input('year') ?? date('Y');
+            $month = $pd['month'] ?? $request->input('month');
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
 
             $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -913,6 +981,12 @@ class DownloadExportController extends Controller
                 ->pluck('month')
                 ->toArray();
 
+            if ($month) {
+                $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
+                    return intval($m) === intval($month);
+                });
+            }
+
             if ($areaFilter) {
                 $monthsWithData = DB::table('downloads')
                     ->join('devices', 'downloads.device_id', '=', 'devices.id')
@@ -922,6 +996,12 @@ class DownloadExportController extends Controller
                     ->distinct()
                     ->pluck('downloads.month')
                     ->toArray();
+
+                if ($month) {
+                    $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
+                        return intval($m) === intval($month);
+                    });
+                }
             }
 
             if ($deviceId) {
@@ -932,6 +1012,12 @@ class DownloadExportController extends Controller
                     ->distinct()
                     ->pluck('month')
                     ->toArray();
+
+                if ($month) {
+                    $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
+                        return intval($m) === intval($month);
+                    });
+                }
             }
 
             $monthsWithData = array_map('intval', $monthsWithData);

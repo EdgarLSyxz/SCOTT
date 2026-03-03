@@ -59,6 +59,10 @@ Route::get('admin/devices/downloads/history.data', [DownloadExportController::cl
     ->name('admin.downloads.history.data')
     ->middleware(['auth', 'verified']);
 
+Route::get('admin/devices/downloads/months', [DownloadExportController::class, 'getMonthsByYear'])
+    ->name('admin.downloads.months')
+    ->middleware(['auth', 'verified']);
+
 Route::resource('/radios', RadioController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Radio']);
 

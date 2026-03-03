@@ -55,9 +55,9 @@
 
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         @if(isset($devices) && $devices->count())
-                            <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-3 py-1.5 sm:py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto">
-                                <i class="fa-solid fa-hard-drive text-gray-400 mx-2" aria-hidden="true"></i>
-                                <select id="select-device" wire:model="selectedDevice" wire:change="$set('selectedDevice', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[220px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select device') }}">
+                            <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-2 py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto">
+                                <i class="fa-solid fa-hard-drive text-gray-400 text-xs mx-1" aria-hidden="true"></i>
+                                <select id="select-device" wire:model="selectedDevice" wire:change="$set('selectedDevice', $event.target.value)" class="appearance-none bg-transparent border-0 pl-1 pr-5 text-[11px] font-medium text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[160px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select device') }}">
                                     <option value="">{{ __('All devices') }}</option>
                                     @foreach($devices as $d)
                                         <option value="{{ $d->id }}">{{ $d->name }}</option>
@@ -67,12 +67,20 @@
                         @endif
 
                         <label for="select-year" class="sr-only">{{ __('Year') }}</label>
-                        <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-3 py-1.5 sm:py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto mt-2 md:mt-0">
-                            <i class="fa-solid fa-calendar text-gray-400 mx-2" aria-hidden="true"></i>
-                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-2 pr-6 text-sm font-semibold text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[90px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select year') }}">
+                        <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-2 py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto mt-2 md:mt-0">
+                            <i class="fa-solid fa-calendar text-gray-400 text-xs mx-1" aria-hidden="true"></i>
+                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-1 pr-5 text-[11px] font-medium text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[85px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select year') }}">
                                 @for($y = date('Y'); $y >= date('Y') - 3; $y--)
                                     <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
+                            </select>
+                        </div>
+
+                        <label for="select-month" class="sr-only">{{ __('Month') }}</label>
+                        <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-2 py-1 shadow-sm {{ $selectRingClass }} w-full sm:w-auto mt-2 md:mt-0">
+                            <i class="fa-solid fa-calendar-days text-gray-400 text-xs mx-1" aria-hidden="true"></i>
+                            <select id="select-month" class="appearance-none bg-transparent border-0 pl-1 pr-5 text-[11px] font-medium text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[100px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select month') }}">
+                                <option value="">{{ __('All months') }}</option>
                             </select>
                         </div>
                     </div>
@@ -157,12 +165,12 @@
 
                 @if(!empty($devProtocol) && is_array($devProtocol))
                     <div class="flex items-center justify-center gap-3">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-100 dark:bg-gray-700 dark:text-gray-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-[#8B5CF6] text-white border border-gray-100 shadow">
                             <i class="fa-solid fa-tv mr-1.5"></i>
                             HLS: {{ $devProtocol['HLS'] }}%
                         </span>
 
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-100 dark:bg-gray-700 dark:text-gray-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-[#00A7C4] text-white border border-gray-100 shadow">
                             <i class="fa-solid fa-computer mr-1.5"></i>
                             DASH: {{ $devProtocol['DASH'] }}%
                         </span>
@@ -221,6 +229,7 @@
                 const downloadsPdfUrl = "{{ route('admin.downloads.history.pdf') }}";
                 const downloadsDataUrl = "{{ route('admin.downloads.history.data') }}";
                 const downloadsEmailUrl = "{{ route('admin.downloads.history.email') }}";
+                const getMonthsUrl = "{{ route('admin.downloads.months') }}";
 
                 if (window && typeof Livewire !== 'undefined') {
                     try {
@@ -231,13 +240,64 @@
                     } catch (e) {}
                 }
 
+                async function loadMonthsForYear() {
+                    const yearSelect = document.querySelector('#select-year');
+                    const monthSelect = document.querySelector('#select-month');
+                    if (!yearSelect || !monthSelect) return;
+
+                    try {
+                        const params = new URLSearchParams();
+                        params.append('year', yearSelect.value);
+
+                        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                        const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
+
+                        const resp = await fetch(getMonthsUrl + '?' + params.toString(), {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) }
+                        });
+
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            monthSelect.innerHTML = '<option value="">{{ __('All months') }}</option>';
+
+                            if (data.months && Array.isArray(data.months)) {
+                                data.months.forEach(month => {
+                                    const option = document.createElement('option');
+                                    option.value = month.value;
+                                    option.textContent = month.label;
+                                    monthSelect.appendChild(option);
+                                });
+                            }
+                            console.log('Loaded months:', data.months);
+                        } else {
+                            console.warn('Failed to load months');
+                        }
+                    } catch (err) {
+                        console.error('Error loading months:', err);
+                    }
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', loadMonthsForYear);
+                } else {
+                    loadMonthsForYear();
+                }
+
+                const yearSelect = document.querySelector('#select-year');
+                if (yearSelect) {
+                    yearSelect.addEventListener('change', loadMonthsForYear);
+                }
+
                 async function exportChartsPdf(e) {
                     e && e.preventDefault();
 
                     const yearSelect = document.querySelector('#select-year');
+                    const monthSelect = document.querySelector('#select-month');
+
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
                     if (yearSelect) params.append('year', yearSelect.value);
+                    if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
                     if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
 
                     const tokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -293,11 +353,13 @@
                     fd.append('charts[monthly]', monthlyData);
                     fd.append('charts[pie]', pieData);
                     if (yearSelect) fd.append('year', yearSelect.value);
+                    if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
                     if (deviceSelect) fd.append('device_id', deviceSelect.value);
                     fd.append('data', JSON.stringify(preData));
 
                     console.log('Posting PDF with data, fields:', {
                         has_year: !!yearSelect?.value,
+                        has_month: !!monthSelect?.value,
                         has_device_id: !!deviceSelect?.value,
                         data_size: JSON.stringify(preData).length,
                         download_rows_count: preData.download_rows?.length || 0,
@@ -333,9 +395,11 @@
                     e && e.preventDefault();
 
                     const yearSelect = document.querySelector('#select-year');
+                    const monthSelect = document.querySelector('#select-month');
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
                     if (yearSelect) params.append('year', yearSelect.value);
+                    if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
                     if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
 
                     const tokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -381,6 +445,7 @@
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
                     if (pieData) fd.append('charts[pie]', pieData);
                     if (yearSelect) fd.append('year', yearSelect.value);
+                    if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
                     if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
 
                     try {
@@ -423,8 +488,8 @@
 @endonce
 
 @php
-    $__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
-    $__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
+$__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
+$__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
 @endphp
 
 <script type="application/json" id="initialDownloadsData">{!! json_encode($__initialDownloadsData) !!}</script>
