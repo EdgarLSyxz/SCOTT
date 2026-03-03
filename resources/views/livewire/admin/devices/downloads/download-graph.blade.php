@@ -544,8 +544,8 @@
 @endonce
 
 @php
-$__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
-$__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
+    $__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
+    $__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
 @endphp
 
 <script type="application/json" id="initialDownloadsData">{!! json_encode($__initialDownloadsData) !!}</script>
