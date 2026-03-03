@@ -157,12 +157,12 @@
 
                 @if(!empty($devProtocol) && is_array($devProtocol))
                     <div class="flex items-center justify-center gap-3">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100 dark:bg-blue-900 dark:text-blue-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-100 dark:bg-gray-700 dark:text-gray-200">
                             <i class="fa-solid fa-tv mr-1.5"></i>
                             HLS: {{ $devProtocol['HLS'] }}%
                         </span>
 
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-100 dark:bg-green-900 dark:text-green-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-100 dark:bg-gray-700 dark:text-gray-200">
                             <i class="fa-solid fa-computer mr-1.5"></i>
                             DASH: {{ $devProtocol['DASH'] }}%
                         </span>
@@ -423,8 +423,8 @@
 @endonce
 
 @php
-$__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
-$__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
+    $__initialDownloadsData = $monthlyData ?? array_fill(0, 12, 0);
+    $__initialDownloadsKpis = $kpis ?? ['total' => 0, 'average' => 0, 'top' => ['month' => '—', 'value' => 0]];
 @endphp
 
 <script type="application/json" id="initialDownloadsData">{!! json_encode($__initialDownloadsData) !!}</script>
