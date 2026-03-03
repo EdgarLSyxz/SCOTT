@@ -913,11 +913,23 @@ class DownloadExportController extends Controller
         $monthly = $request->input('charts.monthly');
         $pie = $request->input('charts.pie');
 
+        $monthValue = $pd['month'] ?? $request->input('month');
+        if ($monthValue !== null && $monthValue !== '' && trim((string)$monthValue) !== '') {
+            $monthInt = intval($monthValue);
+            if ($monthInt >= 1 && $monthInt <= 12) {
+                $monthValue = $monthInt;
+            } else {
+                $monthValue = null;
+            }
+        } else {
+            $monthValue = null;
+        }
+
         $pdfData = [
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
             'year' => $pd['year'] ?? $request->input('year') ?? date('Y'),
-            'month' => $pd['month'] ?? $request->input('month'),
+            'month' => $monthValue,
             'device_id' => $deviceIdParam,
             'devices' => $pd['devices'] ?? [],
             'period_labels' => $pd['period_labels'] ?? [],
@@ -1047,7 +1059,9 @@ class DownloadExportController extends Controller
         try {
             $spreadsheet = new Spreadsheet();
             $year = $pd['year'] ?? $request->input('year') ?? date('Y');
-            $month = $pd['month'] ?? $request->input('month');
+
+            $month = $pdfData['month'] ?? null;
+
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
 
             $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1110,7 +1124,7 @@ class DownloadExportController extends Controller
             sort($monthsWithData);
 
             $firstSheet = true;
-            foreach ($monthsWithData as $month) {
+            foreach ($monthsWithData as $mth) {
                 if ($firstSheet) {
                     $sheet = $spreadsheet->getActiveSheet();
                     $firstSheet = false;
@@ -1118,7 +1132,7 @@ class DownloadExportController extends Controller
                     $sheet = $spreadsheet->createSheet();
                 }
 
-                $sheet->setTitle($monthNames[$month - 1]);
+                $sheet->setTitle($monthNames[$mth - 1]);
                 $sheet->setCellValue('A1', 'Día');
                 $sheet->setCellValue('B1', 'Dispositivo');
                 $sheet->setCellValue('C1', 'Descargas');
@@ -1127,13 +1141,13 @@ class DownloadExportController extends Controller
                 $sheet->getColumnDimension('C')->setWidth(15);
                 $sheet->getStyle('A1:C1')->getFont()->setBold(true);
 
-                $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+                $daysInMonth = Carbon::create($year, $mth, 1)->daysInMonth;
 
                 $query = DB::table('downloads')
                     ->selectRaw('downloads.day, devices.name as device_name, SUM(downloads.count) as total')
                     ->join('devices', 'downloads.device_id', '=', 'devices.id')
                     ->where('downloads.year', $year)
-                    ->where('downloads.month', $month);
+                    ->where('downloads.month', $mth);
 
                 if ($areaFilter) {
                     $query->where('devices.area', $areaFilter);
@@ -1166,7 +1180,7 @@ class DownloadExportController extends Controller
 
                 $row = 2;
                 for ($day = 1; $day <= $daysInMonth; $day++) {
-                    $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day);
+                    $dateStr = sprintf('%04d-%02d-%02d', $year, $mth, $day);
 
                     if (isset($downloadsByDay[$day]) && count($downloadsByDay[$day]) > 0) {
                         foreach ($downloadsByDay[$day] as $deviceName => $total) {
@@ -1199,12 +1213,11 @@ class DownloadExportController extends Controller
 
             $meta = [];
             $meta['year'] = $pd['year'] ?? $request->input('year') ?? date('Y');
-            if (!empty($month)) {
-                $monthIndex = intval($month);
-                if ($monthIndex >= 1 && $monthIndex <= 12) {
-                    $meta['year'] = $monthNames[$monthIndex - 1] . ' ' . $year;
-                }
+
+            if ($month !== null && $month >= 1 && $month <= 12) {
+                $meta['year'] = $monthNames[$month - 1] . ' ' . $year;
             }
+
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
             if ($deviceId) {
                 $meta['device_id'] = $deviceId;
