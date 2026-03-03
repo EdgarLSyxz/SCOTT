@@ -66,7 +66,15 @@
             </div>
             <div class="card">
                 <h4>{{ __('Report year') }}</h4>
-                <div class="value">{{ $year ?? date('Y') }}</div>
+                @php
+                    $reportYearValue = $year ?? date('Y');
+                    if (!empty($month)) {
+                        $mnum = intval($month);
+                        $mname = $__months_local[$mnum] ?? null;
+                        $reportYearValue = ($mname ? $mname . ' ' : '') . ($year ?? date('Y'));
+                    }
+                @endphp
+                <div class="value">{{ $reportYearValue }}</div>
             </div>
             @php
                 $__months_local = [
@@ -85,9 +93,12 @@
                     __('months.december')
                 ];
 
+                $isMonthlyEmailSummary = !empty($summary['is_monthly_email']) && !empty($month);                $isDeviceMonthMode = !empty($summary['is_device_month_mode']);
                 $top_raw = $summary['top_month_label'] ?? null;
                 $top_month_label = '—';
-                if (!empty($top_raw)) {
+                if ($isMonthlyEmailSummary) {
+                    $top_month_label = !empty($top_raw) ? $top_raw : '—';
+                } elseif (!empty($top_raw)) {
                     if (is_numeric($top_raw)) {
                         $mi = intval($top_raw);
                         $top_month_label = $__months_local[$mi] ?? $top_raw;
@@ -176,11 +187,11 @@
                     <div class="value">{{ $summary['total'] ?? 0 }}</div>
                 </div>
                 <div class="card">
-                    <h4>{{ __('Average per month') }}</h4>
+                    <h4>{{ $isDeviceMonthMode ? __('Average per day') : ($isMonthlyEmailSummary ? __('Average per device') : __('Average per month')) }}</h4>
                     <div class="value">{{ $summary['average'] ?? 0 }}</div>
                 </div>
                 <div class="card">
-                    <h4>{{ __('Top month') }}</h4>
+                    <h4>{{ $isDeviceMonthMode ? __('Top day') : ($isMonthlyEmailSummary ? __('Top device') : __('Top month')) }}</h4>
                     <div class="value">{{ $top_month_label }} ({{ $summary['top_month_value'] ?? 0 }})</div>
                 </div>
             @endif

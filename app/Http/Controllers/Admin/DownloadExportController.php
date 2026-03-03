@@ -147,6 +147,7 @@ class DownloadExportController extends Controller
     public function getMonthsByYear(Request $request)
     {
         $year = $request->query('year', date('Y'));
+        $deviceId = $request->query('device_id');
 
         try {
             $auth = Auth::user();
@@ -160,6 +161,9 @@ class DownloadExportController extends Controller
             $query = DB::table('downloads')
                 ->select('month')
                 ->where('year', $year)
+                ->when($deviceId, function ($q, $deviceId) {
+                    return $q->where('downloads.device_id', $deviceId);
+                })
                 ->distinct()
                 ->orderBy('month');
 
@@ -926,6 +930,88 @@ class DownloadExportController extends Controller
             ],
         ];
 
+        if (!empty($pdfData['month'])) {
+            $deviceIdFilter = $pdfData['device_id'] ?? null;
+
+            if (!empty($deviceIdFilter)) {
+                $daysWithData = [];
+                $totalDownloads = 0;
+
+                foreach (($pdfData['download_rows'] ?? []) as $row) {
+                    $day = (int)($row['day'] ?? 0);
+                    $count = (int)($row['count'] ?? 0);
+
+                    if ($day > 0) {
+                        $daysWithData[$day] = true;
+                    }
+                    $totalDownloads += $count;
+                }
+
+                $daysCount = count($daysWithData);
+                $averagePerDay = $daysCount > 0 ? round($totalDownloads / $daysCount, 2) : 0;
+
+                $dayTotals = [];
+                foreach (($pdfData['download_rows'] ?? []) as $row) {
+                    $day = (int)($row['day'] ?? 0);
+                    $count = (int)($row['count'] ?? 0);
+                    if ($day > 0) {
+                        if (!isset($dayTotals[$day])) {
+                            $dayTotals[$day] = 0;
+                        }
+                        $dayTotals[$day] += $count;
+                    }
+                }
+
+                $topDay = 0;
+                $topDayValue = 0;
+                if (!empty($dayTotals)) {
+                    arsort($dayTotals);
+                    $topDay = (int)array_key_first($dayTotals);
+                    $topDayValue = (int)reset($dayTotals);
+                }
+
+                $pdfData['summary']['total'] = $totalDownloads;
+                $pdfData['summary']['average'] = $averagePerDay;
+                $pdfData['summary']['top_month_label'] = $topDay > 0 ? 'Día ' . $topDay : '—';
+                $pdfData['summary']['top_month_value'] = $topDayValue;
+                $pdfData['summary']['is_monthly_email'] = true;
+                $pdfData['summary']['is_device_month_mode'] = true;
+
+            } else {
+                $deviceTotals = [];
+                foreach (($pdfData['download_rows'] ?? []) as $row) {
+                    $deviceName = trim((string)($row['device_name'] ?? ''));
+                    if ($deviceName === '') {
+                        continue;
+                    }
+                    $count = (int)($row['count'] ?? 0);
+                    if (!isset($deviceTotals[$deviceName])) {
+                        $deviceTotals[$deviceName] = 0;
+                    }
+                    $deviceTotals[$deviceName] += $count;
+                }
+
+                $totalDownloads = array_sum($deviceTotals);
+                $devicesWithData = count($deviceTotals);
+                $averagePerDevice = $devicesWithData > 0 ? round($totalDownloads / $devicesWithData, 2) : 0;
+
+                $topDeviceName = '—';
+                $topDeviceValue = 0;
+                if (!empty($deviceTotals)) {
+                    arsort($deviceTotals);
+                    $topDeviceName = (string)array_key_first($deviceTotals);
+                    $topDeviceValue = (int)reset($deviceTotals);
+                }
+
+                $pdfData['summary']['total'] = $totalDownloads;
+                $pdfData['summary']['average'] = $averagePerDevice;
+                $pdfData['summary']['top_month_label'] = $topDeviceName;
+                $pdfData['summary']['top_month_value'] = $topDeviceValue;
+                $pdfData['summary']['is_monthly_email'] = true;
+                $pdfData['summary']['is_device_month_mode'] = false;
+            }
+        }
+
         $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);        \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),
             'download_rows_sample_first' => !empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
@@ -1113,6 +1199,12 @@ class DownloadExportController extends Controller
 
             $meta = [];
             $meta['year'] = $pd['year'] ?? $request->input('year') ?? date('Y');
+            if (!empty($month)) {
+                $monthIndex = intval($month);
+                if ($monthIndex >= 1 && $monthIndex <= 12) {
+                    $meta['year'] = $monthNames[$monthIndex - 1] . ' ' . $year;
+                }
+            }
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
             if ($deviceId) {
                 $meta['device_id'] = $deviceId;

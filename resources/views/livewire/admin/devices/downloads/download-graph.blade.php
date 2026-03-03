@@ -258,8 +258,12 @@
 
                     monthsLoadTimeout = setTimeout(async () => {
                         try {
-                            const params = new URLSearchParams();
-                            params.append('year', yearSelect.value);
+                                const params = new URLSearchParams();
+                                params.append('year', yearSelect.value);
+                                const deviceSelect = document.querySelector('#select-device');
+                                if (deviceSelect && deviceSelect.value) {
+                                    params.append('device_id', deviceSelect.value);
+                                }
 
                             const tokenMeta = document.querySelector('meta[name="csrf-token"]');
                             const headers = tokenMeta ? { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') } : {};
@@ -299,10 +303,12 @@
                     document.addEventListener('DOMContentLoaded', () => {
                         loadMonthsForYear();
                         attachYearChangeListener();
+                        attachDeviceChangeListener();
                     });
                 } else {
                     loadMonthsForYear();
                     attachYearChangeListener();
+                    attachDeviceChangeListener();
                 }
 
                 function attachYearChangeListener() {
@@ -310,6 +316,14 @@
                     if (yearSelect) {
                         yearSelect.removeEventListener('change', loadMonthsForYear);
                         yearSelect.addEventListener('change', loadMonthsForYear);
+                    }
+                }
+
+                function attachDeviceChangeListener() {
+                    const deviceSelect = document.querySelector('#select-device');
+                    if (deviceSelect) {
+                        deviceSelect.removeEventListener('change', loadMonthsForYear);
+                        deviceSelect.addEventListener('change', loadMonthsForYear);
                     }
                 }
 
@@ -324,6 +338,10 @@
                 const yearSelect = document.querySelector('#select-year');
                 if (yearSelect) {
                     yearSelect.addEventListener('change', loadMonthsForYear);
+                }
+                const deviceSelect = document.querySelector('#select-device');
+                if (deviceSelect) {
+                    deviceSelect.addEventListener('change', loadMonthsForYear);
                 }
 
                 async function exportChartsPdf(e) {
