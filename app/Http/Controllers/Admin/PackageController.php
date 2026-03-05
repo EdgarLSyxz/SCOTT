@@ -14,7 +14,7 @@ class PackageController extends Controller
     {
         $user = Auth::user();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($user && in_array($user->id, $allowedIds, true))) {
             abort(403);
@@ -31,7 +31,7 @@ class PackageController extends Controller
     {
         $user = Auth::user();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($user && in_array($user->id, $allowedIds, true))) {
             abort(403);
@@ -48,7 +48,7 @@ class PackageController extends Controller
     {
         $user = Auth::user();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($user && in_array($user->id, $allowedIds, true))) {
             abort(403);
@@ -100,7 +100,7 @@ class PackageController extends Controller
     {
         $user = Auth::user();
 
-        $allowedIds = [1, 2, 5, 7, 8];
+        $allowedIds = [1, 2, 3, 5, 7, 8];
 
         if (! ($user && in_array($user->id, $allowedIds, true))) {
             return response()->json(['ok' => false, 'error' => 'Forbidden'], 403);
