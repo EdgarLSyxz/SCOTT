@@ -21,11 +21,14 @@ class CreateFunctionsReport extends Component
     public $categories = [];
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
     public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
-    public $allowedStages = ['CDN CEF+'];
+    public $allowedStages = ['CDN BPK', 'CDN CEF+'];
 
     public function mount()
     {
-        $this->stages = Stage::whereIn('name', $this->allowedStages)->pluck('id', 'name')->toArray();
+        $this->stages = Stage::whereIn('name', $this->allowedStages)
+            ->orderBy('name')
+            ->pluck('id', 'name')
+            ->toArray();
         $this->initializeDefaultCategories();
     }
 

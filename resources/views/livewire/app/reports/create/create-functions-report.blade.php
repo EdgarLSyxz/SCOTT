@@ -22,7 +22,7 @@
                     };
                     return visibilityRules[category]?.includes(field) ?? false;
                 }
-            }" c<div
+            }"
                 class="p-4 md:p-6 border bg-white dark:bg-gray-800 rounded-2xl shadow-2xl mb-5">
                 <div class="flex items-center justify-between cursor-pointer" @click="open = !open">
                     <div class="flex items-center">
