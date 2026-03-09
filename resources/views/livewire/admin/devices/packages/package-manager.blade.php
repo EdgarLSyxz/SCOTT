@@ -70,75 +70,75 @@
     @endif
 
     @if (!empty($packages))
-            <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
-                <div class="flex items-center justify-between p-8">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-boxes-packing text-{{ $color }}-400"></i>
-                        <span>{{ __('Packages') }}</span>
-                    </h3>
-                    <div class="ml-4 w-full md:w-80 lg:w-96">
-                        <div class="relative w-full">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <input type="text" wire:model.live="searchTerm"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500"
-                                placeholder="{{ __('Search by package name or customer ID...') }}">
-                            @if ($searchTerm)
-                                <button wire:click="$set('searchTerm', '')"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
-                                    <i class="fa-solid fa-times"></i>
-                                </button>
-                            @endif
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+            <div class="flex items-center justify-between p-8">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-packing text-{{ $color }}-400"></i>
+                    <span>{{ __('Packages') }}</span>
+                </h3>
+                <div class="ml-4 w-full md:w-80 lg:w-96">
+                    <div class="relative w-full">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
                         </div>
+                        <input type="text" wire:model.live="searchTerm"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500"
+                            placeholder="{{ __('Search by package name or customer ID...') }}">
+                        @if ($searchTerm)
+                            <button wire:click="$set('searchTerm', '')"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        @endif
                     </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
-                    <div class="overflow-x-auto">
-                    @php
-    $filteredPackages = $this->getFilteredPackages();
-                    @endphp
-                    </div>
-                    @if (!empty($filteredPackages))
-                        <table class="w-full text-sm text-gray-600 dark:text-gray-400">
-                            <thead class="text-xs dark:text-white uppercase dark:bg-gray-600">
-                                <tr>
-                                    <th class="px-4 py-3 text-left"><i class="fa-solid fa-id-card mr-1.5 text-xs"></i>{{ __('ID') }}</th>
-                                    <th class="px-4 py-3 text-left"><i class="fa-solid fa-boxes-packing mr-1.5 text-xs"></i>{{ __('Package name') }}</th>
-                                    <th class="px-4 py-3 text-right inline-flex"><i class="fa-solid fa-user-group mr-1.5 text-xs"></i>{{ __('Customers') }}</th>
-                                    <th class="px-4 py-3 text-center w-12"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($filteredPackages as $pkg)
-                                    <tr @click="$wire.openModal('{{ $pkg['data_key'] ?? $pkg['id'] }}', '{{ $pkg['id'] }}')" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group transition" title="{{ __('Click to view customer IDs') }}">
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $pkg['id'] }}</td>
-                                        <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">{{ $pkg['name'] }}</td>
-                                        <td class="px-4 py-3 text-right">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
-                                                {{ $pkg['customers'] ?? 0 }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <i class="fa-solid fa-chevron-right transition-colors text-gray-300 group-hover:text-gray-700 dark:text-gray-500 dark:group-hover:text-gray-400"></i>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <div class="p-8 text-center">
-                            <p class="flex items-center text-gray-600 dark:text-gray-400 justify-center">
-                                <i class="fa-solid fa-circle-info mr-2"></i>
-                                {{ __('No packages match your search.') }}
-                            </p>
-                        </div>
-                    @endif
                 </div>
             </div>
+
+            <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
+                <div class="overflow-x-auto">
+                @php
+                    $filteredPackages = $this->getFilteredPackages();
+                @endphp
+                </div>
+                @if (!empty($filteredPackages))
+                    <table class="w-full text-sm text-gray-600 dark:text-gray-400">
+                        <thead class="text-xs dark:text-white uppercase dark:bg-gray-600">
+                            <tr>
+                                <th class="px-4 py-3 text-left"><i class="fa-solid fa-id-card mr-1.5 text-xs"></i>{{ __('ID') }}</th>
+                                <th class="px-4 py-3 text-left"><i class="fa-solid fa-boxes-packing mr-1.5 text-xs"></i>{{ __('Package name') }}</th>
+                                <th class="px-4 py-3 text-right inline-flex"><i class="fa-solid fa-user-group mr-1.5 text-xs"></i>{{ __('Customers') }}</th>
+                                <th class="px-4 py-3 text-center w-12"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($filteredPackages as $pkg)
+                                <tr @click="$wire.openModal('{{ $pkg['data_key'] ?? $pkg['id'] }}', '{{ $pkg['id'] }}')" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group transition" title="{{ __('Click to view customer IDs') }}">
+                                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $pkg['id'] }}</td>
+                                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">{{ $pkg['name'] }}</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
+                                            {{ $pkg['customers'] ?? 0 }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <i class="fa-solid fa-chevron-right transition-colors text-gray-300 group-hover:text-gray-700 dark:text-gray-500 dark:group-hover:text-gray-400"></i>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div class="p-8 text-center">
+                        <p class="flex items-center text-gray-600 dark:text-gray-400 justify-center">
+                            <i class="fa-solid fa-circle-info mr-2"></i>
+                            {{ __('No packages match your search.') }}
+                        </p>
+                    </div>
+                @endif
+            </div>
+        </div>
     @endif
 
     @if (!empty($packages))

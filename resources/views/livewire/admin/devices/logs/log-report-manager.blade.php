@@ -37,16 +37,16 @@
     @if (!empty($uploads))
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8 mb-4">
             <div class="flex items-center justify-between">
-                <div class="flex-1">
+                <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                         <i class="fa-solid fa-cloud mr-1"></i>
-                        {{ __('Uploaded reports on the server') }}
+                        {{ __('Uploaded files on the server') }}
                     </p>
                     <select wire:model.live="selectedUploadId" wire:change="loadSelectedUpload"
                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         @foreach ($uploads as $u)
                             <option value="{{ $u['id'] }}">
-                                {{ $u['filename'] }} — {{ $u['report_date'] }} ({{ $u['created_at'] }})
+                                {{ $u['filename'] }} — {{ \Carbon\Carbon::parse($u['created_at'])->format('d/m/Y H:i') }}
                             </option>
                         @endforeach
                     </select>
@@ -92,7 +92,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Report date') }}</p>
-                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $currentReportDate }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $currentReportDate->format('d/m/Y') }}</p>
                         </div>
                     </div>
                 </div>
@@ -102,8 +102,8 @@
     @endif
 
     @if (!empty($categories))
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
-            <div class="flex items-center justify-between p-8">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+            <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-{{ $color }}-400"></i>
                     <span>{{ __('Report categories') }}</span>
@@ -128,44 +128,113 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
-                @php
-                    $filteredCategories = $this->getFilteredCategories();
-                @endphp
-                @if (!empty($filteredCategories))
-                    <table class="w-full text-sm text-gray-600 dark:text-gray-400">
-                        <thead class="text-xs dark:text-white uppercase dark:bg-gray-600">
-                            <tr>
-                                <th class="px-4 py-3 text-left"><i class="fa-solid fa-layer-group mr-1.5 text-xs"></i>{{ __('Category') }}</th>
-                                <th class="px-4 py-3 text-right inline-flex"><i class="fa-solid fa-bars mr-1.5 text-xs"></i>{{ __('Records') }}</th>
-                                <th class="px-4 py-3 text-center w-12"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($filteredCategories as $cat)
-                                <tr @click="$wire.openModal('{{ $cat['key'] }}')" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer group transition" title="{{ __('Click to view records') }}">
-                                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">{{ $cat['name'] }}</td>
-                                    <td class="px-4 py-3 text-right">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
-                                            {{ $cat['count'] ?? 0 }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <i class="fa-solid fa-chevron-right transition-colors text-gray-300 group-hover:text-gray-700 dark:text-gray-500 dark:group-hover:text-gray-400"></i>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <div class="p-8 text-center">
-                        <p class="flex items-center text-gray-600 dark:text-gray-400 justify-center">
-                            <i class="fa-solid fa-circle-info mr-2"></i>
-                            {{ __('No categories match your search.') }}
-                        </p>
-                    </div>
-                @endif
-            </div>
+            @php
+                $filteredCategories = $this->getFilteredCategories();
+            @endphp
+
+            @if (!empty($filteredCategories))
+                <div class="space-y-3">
+                    @foreach ($filteredCategories as $cat)
+                        <div class="border border-{{ $color }}-200 dark:border-{{ $color }}-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 transition-all duration-200 hover:shadow-md dark:hover:shadow-lg">
+                            <button wire:click="toggleAccordion('{{ $cat['key'] }}')"
+                                class="w-full px-6 py-4 flex items-center justify-between hover:bg-{{ $color }}-50 dark:hover:bg-gray-700 transition-colors group">
+
+                                <div class="flex items-center gap-4 flex-1 text-left min-w-0">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-{{ $color }}-100 dark:bg-{{ $color }}-900 flex items-center justify-center text-{{ $color }}-600 dark:text-{{ $color }}-300">
+                                        <i class="fa-solid fa-folder-open text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white truncate group-hover:text-{{ $color }}-600 dark:group-hover:text-{{ $color }}-400 transition-colors">
+                                            {{ $cat['name'] }}
+                                        </h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                            {{ $cat['count'] ?? 0 }} {{ $cat['count'] === 1 ? __('Record') : __('Records') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 ml-4 flex-shrink-0">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900/50 dark:text-{{ $color }}-200">
+                                        {{ $cat['count'] ?? 0 }}
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down text-{{ $color }}-500 dark:text-{{ $color }}-400 transition-transform duration-300 text-sm {{ $expandedCategoryKey === $cat['key'] ? 'rotate-180' : '' }}"></i>
+                                </div>
+                            </button>
+
+                            @if ($expandedCategoryKey === $cat['key'])
+                                <div class="border-t border-{{ $color }}-200 dark:border-{{ $color }}-700 bg-gray-50 dark:bg-gray-900 animate-in fade-in slide-in-from-up-4 duration-300">
+                                    <div class="px-6 pt-4 pb-3">
+                                        <div class="relative w-full">
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                <svg aria-hidden="true" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <input type="text" wire:model.live="accordionSearchTerm"
+                                                class="bg-white border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-9 pr-9 py-2 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-500 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500 transition"
+                                                placeholder="{{ __('Search within category...') }}">
+                                            @if ($accordionSearchTerm)
+                                                <button wire:click="$set('accordionSearchTerm', '')"
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                                    <i class="fa-solid fa-times"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="px-6 pb-4 max-h-96 overflow-y-auto">
+                                        @php
+                                            $accordionRecords = $this->getAccordionRecords($cat['key']);
+                                        @endphp
+                                        @if (!empty($accordionRecords))
+                                            <div class="space-y-3">
+                                                @foreach ($accordionRecords as $idx => $record)
+                                                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:border-{{ $color }}-300 dark:hover:border-{{ $color }}-600 transition-all group">
+                                                        <div class="flex items-start justify-between mb-2">
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                                                #{{ $idx + 1 }}
+                                                            </span>
+                                                            @if (isset($record['rank']))
+                                                                <span class="text-xs font-bold text-{{ $color }}-600 dark:text-{{ $color }}-400 group-hover:text-{{ $color }}-700 dark:group-hover:text-{{ $color }}-300">
+                                                                    <i class="fa-solid fa-medal mr-1"></i>Rank: {{ $record['rank'] }}
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                        <div class="text-xs text-gray-700 dark:text-gray-300 space-y-2">
+                                                            <div class="flex items-start justify-between gap-2">
+                                                                <span class="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">{{ __('Label') }}:</span>
+                                                                <span class="text-gray-800 dark:text-gray-200 text-right break-all">{{ $record['label'] ?? 'N/A' }}</span>
+                                                            </div>
+                                                            <div class="flex items-start justify-between gap-2">
+                                                                <span class="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">{{ __('Value') }}:</span>
+                                                                <span class="text-gray-800 dark:text-gray-200 font-mono">{{ $record['value'] ?? 'N/A' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="py-8 text-center">
+                                                <p class="flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+                                                    <i class="fa-solid fa-inbox mr-2"></i>
+                                                    {{ __('No records match your search.') }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="p-12 text-center">
+                    <p class="flex items-center text-gray-600 dark:text-gray-400 justify-center">
+                        <i class="fa-solid fa-circle-info mr-2"></i>
+                        {{ __('No categories match your search.') }}
+                    </p>
+                </div>
+            @endif
         </div>
     @endif
 

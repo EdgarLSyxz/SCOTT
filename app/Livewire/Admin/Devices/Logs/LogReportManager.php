@@ -29,6 +29,8 @@ class LogReportManager extends Component
     public $modalHasMore = false;
     public $modalSearchTerm = '';
     public $currentReportDate = null;
+    public $expandedCategoryKey = null;
+    public $accordionSearchTerm = '';
 
     public function mount()
     {
@@ -268,6 +270,45 @@ class LogReportManager extends Component
             })
             ->values()
             ->toArray();
+    }
+
+    public function toggleAccordion($categoryKey)
+    {
+        if ($this->expandedCategoryKey === $categoryKey) {
+            $this->expandedCategoryKey = null;
+            $this->accordionSearchTerm = '';
+        } else {
+            $this->expandedCategoryKey = $categoryKey;
+            $this->accordionSearchTerm = '';
+        }
+    }
+
+    public function getAccordionRecords($categoryKey)
+    {
+        $user = Auth::user();
+        if (!$user || !$this->selectedUploadId) {
+            return [];
+        }
+
+        $upload = LogAnalytic::where('id', $this->selectedUploadId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$upload) {
+            return [];
+        }
+
+        $items = $upload->getCategory($categoryKey) ?? [];
+        $term = strtolower($this->accordionSearchTerm);
+
+        if ($term === '') {
+            return $items;
+        }
+
+        return array_values(array_filter($items, function ($record) use ($term) {
+            $searchable = json_encode($record);
+            return strpos(strtolower($searchable), $term) !== false;
+        }));
     }
 
     public function render()

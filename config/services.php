@@ -46,4 +46,9 @@ return [
         'timeout' => env('PYTHON_PACKAGES_API_TIMEOUT', 120),
     ],
 
+    'python_log_analytics_api' => [
+        'url' => env('PYTHON_LOG_ANALYTICS_API_URL', 'http://172.16.100.81:8001'),
+        'timeout' => env('PYTHON_LOG_ANALYTICS_API_TIMEOUT', 120),
+    ],
+
 ];

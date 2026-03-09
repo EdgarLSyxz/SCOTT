@@ -75,23 +75,79 @@ class LogAnalyticsController extends Controller
     private function parseLogFile($filePath)
     {
         try {
-            $apiUrl = env('LOG_PARSER_URL') ?: config('services.log_parser.url') ?: null;
+            $apiUrl = env('LOG_PARSER_URL') ?: env('PYTHON_LOG_ANALYTICS_API_URL') ?: config('services.python_log_analytics_api.url') ?: config('services.log_parser.url') ?: null;
             if ($apiUrl) {
                 if (stripos($apiUrl, '/extract') === false && stripos($apiUrl, '/api/process-txt') === false) {
                     $apiUrl = rtrim($apiUrl, '/') . '/extract';
                 }
 
                 try {
-                    $response = Http::timeout(60)
-                        ->attach('txt_file', fopen($filePath, 'r'), basename($filePath))
+                    $timeout = config('services.python_log_analytics_api.timeout', 60);
+
+                    $response = Http::timeout($timeout)
+                        ->attach('file', fopen($filePath, 'r'), basename($filePath))
                         ->post($apiUrl);
 
                     if (! $response->successful()) {
-                        return ['error' => 'Parser API error: ' . $response->body()];
+                        try {
+                            $response = Http::timeout($timeout)
+                                ->attach('txt_file', fopen($filePath, 'r'), basename($filePath))
+                                ->post($apiUrl);
+                        } catch (\Exception $innerEx) {
+                            \Log::debug('Parser API fallback attempt failed: ' . $innerEx->getMessage());
+                        }
                     }
 
-                    $parsed = $response->json();
-                    return $parsed;
+                    if ($response->successful()) {
+                        $parsed = $response->json();
+
+                        $normalized = [];
+                        $normalized['report_date'] = $parsed['report_date'] ?? $parsed['reportDate'] ?? null;
+
+                        if (isset($parsed['data']) && is_array($parsed['data'])) {
+                            $normalized['data'] = $parsed['data'];
+                        } elseif (isset($parsed['category_map']) && is_array($parsed['category_map'])) {
+                            $data = [];
+                            foreach ($parsed['category_map'] as $catName => $catPayload) {
+                                if (is_array($catPayload)) {
+                                    if (isset($catPayload['rows']) && is_array($catPayload['rows'])) {
+                                        $data[$catName] = $catPayload['rows'];
+                                    } elseif (isset($catPayload['raw_lines']) && is_array($catPayload['raw_lines'])) {
+                                        $data[$catName] = array_map(fn($ln) => ['raw' => $ln], $catPayload['raw_lines']);
+                                    } else {
+                                        $data[$catName] = $catPayload;
+                                    }
+                                }
+                            }
+                            $normalized['data'] = $data;
+                        } elseif (isset($parsed['categories']) && is_array($parsed['categories'])) {
+                            $data = [];
+                            foreach ($parsed['categories'] as $cat) {
+                                $name = $cat['name'] ?? ($cat['title'] ?? '');
+                                if (! $name) continue;
+                                if (isset($cat['rows']) && is_array($cat['rows'])) {
+                                    $data[$name] = $cat['rows'];
+                                } elseif (isset($cat['raw_lines']) && is_array($cat['raw_lines'])) {
+                                    $data[$name] = array_map(fn($ln) => ['raw' => $ln], $cat['raw_lines']);
+                                } else {
+                                    $data[$name] = [];
+                                }
+                            }
+                            $normalized['data'] = $data;
+                        } else {
+                            if (is_array($parsed)) {
+                                $candidate = $parsed;
+                                unset($candidate['report_date'], $candidate['title'], $candidate['success'], $candidate['categories'], $candidate['category_map'], $candidate['total_categories']);
+                                $normalized['data'] = $candidate ?: [];
+                            } else {
+                                $normalized['data'] = [];
+                            }
+                        }
+
+                        return $normalized;
+                    }
+
+                    \Log::warning('Parser API returned non-success (' . ($response->status() ?? 'n/a') . '): ' . ($response->body() ?? ''));
                 } catch (\Exception $ex) {
                     \Log::warning('Parser API call failed, falling back to local parser: ' . $ex->getMessage());
                 }
@@ -125,7 +181,49 @@ class LogAnalyticsController extends Controller
                 return ['error' => 'Invalid JSON response from parser: ' . json_last_error_msg()];
             }
 
-            return $parsed;
+            $normalized = [];
+            $normalized['report_date'] = $parsed['report_date'] ?? ($parsed['reportDate'] ?? null);
+            if (isset($parsed['data']) && is_array($parsed['data'])) {
+                $normalized['data'] = $parsed['data'];
+            } elseif (isset($parsed['category_map']) && is_array($parsed['category_map'])) {
+                $data = [];
+                foreach ($parsed['category_map'] as $catName => $catPayload) {
+                    if (is_array($catPayload)) {
+                        if (isset($catPayload['rows']) && is_array($catPayload['rows'])) {
+                            $data[$catName] = $catPayload['rows'];
+                        } elseif (isset($catPayload['raw_lines']) && is_array($catPayload['raw_lines'])) {
+                            $data[$catName] = array_map(fn($ln) => ['raw' => $ln], $catPayload['raw_lines']);
+                        } else {
+                            $data[$catName] = $catPayload;
+                        }
+                    }
+                }
+                $normalized['data'] = $data;
+            } elseif (isset($parsed['categories']) && is_array($parsed['categories'])) {
+                $data = [];
+                foreach ($parsed['categories'] as $cat) {
+                    $name = $cat['name'] ?? ($cat['title'] ?? '');
+                    if (! $name) continue;
+                    if (isset($cat['rows']) && is_array($cat['rows'])) {
+                        $data[$name] = $cat['rows'];
+                    } elseif (isset($cat['raw_lines']) && is_array($cat['raw_lines'])) {
+                        $data[$name] = array_map(fn($ln) => ['raw' => $ln], $cat['raw_lines']);
+                    } else {
+                        $data[$name] = [];
+                    }
+                }
+                $normalized['data'] = $data;
+            } else {
+                if (is_array($parsed)) {
+                    $candidate = $parsed;
+                    unset($candidate['report_date'], $candidate['title'], $candidate['success']);
+                    $normalized['data'] = $candidate ?: [];
+                } else {
+                    $normalized['data'] = [];
+                }
+            }
+
+            return $normalized;
         } catch (ProcessFailedException $e) {
             return ['error' => 'Process failed: ' . $e->getMessage()];
         } catch (\Exception $e) {

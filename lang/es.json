@@ -917,5 +917,13 @@
     "LOSS BECAUSE THE EPG DOES NOT COINCIDE": "PÉRDIDA DEBIDO A QUE LA EPG NO COINCIDE",
     "All months": "Todos los meses",
     "Select month": "Seleccionar mes",
-    "Log analytics": "Análisis de logs"
+    "Log analytics": "Análisis de logs",
+    "Total categories": "Categorías totales",
+    "Report date": "Fecha del reporte",
+    "Report categories": "Categorías del reporte",
+    "Search category...": "Buscar categoría...",
+    "Search within category...": "Buscar dentro de la categoría...",
+    "Rank": "Rango",
+    "Records": "Registros",
+    "No categories match your search.": "No hay categorías que coincidan con su búsqueda."
 }
