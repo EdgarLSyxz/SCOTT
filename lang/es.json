@@ -916,5 +916,6 @@
     "DOES NOT HAVE THE RESTART/CUTV DISTINCTIVE": "NO TIENE EL DISTINTIVO DE RESTART/CUTV",
     "LOSS BECAUSE THE EPG DOES NOT COINCIDE": "PÉRDIDA DEBIDO A QUE LA EPG NO COINCIDE",
     "All months": "Todos los meses",
-    "Select month": "Seleccionar mes"
+    "Select month": "Seleccionar mes",
+    "Log analytics": "Análisis de logs"
 }

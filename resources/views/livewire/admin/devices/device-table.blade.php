@@ -23,6 +23,13 @@
                     </a>
                 @endif
                 @if($isAllowedId)
+                    <a href="{{ route('admin.devices.log-analytics') }}"
+                        class="hidden lg:block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                        <i class="fa-solid fa-chart-line mr-1"></i>
+                        {{ __('Log analytics') }}
+                    </a>
+                @endif
+                @if($isAllowedId)
                     <a href="{{ route('admin.devices.monthly-downloads') }}"
                         class="hidden lg:block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                         <i class="fa-solid fa-download mr-1"></i>
@@ -43,6 +50,13 @@
                 class="mb-4 lg:hidden block text-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                 <i class="fa-solid fa-boxes-packing mr-1"></i>
                 {{ __('Packages') }}
+            </a>
+        @endif
+        @if($isAllowedId)
+            <a href="{{ route('admin.devices.log-analytics') }}"
+                class="mb-4 lg:hidden block text-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                <i class="fa-solid fa-chart-line mr-1"></i>
+                {{ __('Log analytics') }}
             </a>
         @endif
         @if($isAllowedId)

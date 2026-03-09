@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Admin\ChannelController;
 use App\Http\Controllers\Admin\DeviceController;
+use App\Http\Controllers\Admin\DownloadExportController;
 use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
-use App\Http\Controllers\Admin\DownloadExportController;
 use App\Http\Controllers\Admin\StageController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +37,10 @@ Route::post('admin/devices/process-pdf', [DeviceController::class, 'processPDF']
 
 Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
     ->name('admin.devices.packages.data')
+    ->middleware(['auth', 'verified']);
+
+Route::get('admin/devices/log-analytics', [DeviceController::class, 'logAnalytics'])
+    ->name('admin.devices.log-analytics')
     ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])

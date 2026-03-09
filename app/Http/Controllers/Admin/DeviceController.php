@@ -307,4 +307,17 @@ class DeviceController extends Controller
         ];
         return $errorMessages[$errorCode] ?? 'Unknown error';
     }
+
+    public function logAnalytics()
+    {
+        $userId = Auth::id();
+
+        $allowedIds = [1, 2, 3, 5, 7, 8];
+
+        if (! ($userId && in_array((int) $userId, $allowedIds, true))) {
+            abort(403);
+        }
+
+        return view('admin.devices.log-analytics');
+    }
 }
