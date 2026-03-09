@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        @livewire('admin.devices.packages.package-manager')
+        @livewire('admin.devices.logs.log-report-manager')
 
         <div id="error-container"
             class="hidden bg-red-50 dark:bg-red-900/30 rounded-lg p-4 border border-red-200 dark:border-red-800">

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ChannelController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\DownloadExportController;
 use App\Http\Controllers\Admin\GrafanaController;
+use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
 use App\Http\Controllers\Admin\StageController;
@@ -41,6 +42,14 @@ Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
 
 Route::get('admin/devices/log-analytics', [DeviceController::class, 'logAnalytics'])
     ->name('admin.devices.log-analytics')
+    ->middleware(['auth', 'verified']);
+
+Route::post('admin/log-analytics/upload', [LogAnalyticsController::class, 'upload'])
+    ->name('admin.log-analytics.upload')
+    ->middleware(['auth', 'verified']);
+
+Route::delete('admin/log-analytics/{id}', [LogAnalyticsController::class, 'delete'])
+    ->name('admin.log-analytics.delete')
     ->middleware(['auth', 'verified']);
 
 Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])

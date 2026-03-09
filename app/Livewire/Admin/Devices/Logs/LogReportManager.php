@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Logs;
+namespace App\Livewire\Admin\Devices\Logs;
 
 use App\Models\LogAnalytic;
 use Illuminate\Support\Facades\Auth;
@@ -272,6 +272,6 @@ class LogReportManager extends Component
 
     public function render()
     {
-        return view('livewire.admin.logs.log-report-manager');
+        return view('livewire.admin.devices.logs.log-report-manager');
     }
 }

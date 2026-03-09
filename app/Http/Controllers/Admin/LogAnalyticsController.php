@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -74,27 +75,54 @@ class LogAnalyticsController extends Controller
     private function parseLogFile($filePath)
     {
         try {
+            $apiUrl = env('LOG_PARSER_URL') ?: config('services.log_parser.url') ?: null;
+            if ($apiUrl) {
+                if (stripos($apiUrl, '/extract') === false && stripos($apiUrl, '/api/process-txt') === false) {
+                    $apiUrl = rtrim($apiUrl, '/') . '/extract';
+                }
+
+                try {
+                    $response = Http::timeout(60)
+                        ->attach('txt_file', fopen($filePath, 'r'), basename($filePath))
+                        ->post($apiUrl);
+
+                    if (! $response->successful()) {
+                        return ['error' => 'Parser API error: ' . $response->body()];
+                    }
+
+                    $parsed = $response->json();
+                    return $parsed;
+                } catch (\Exception $ex) {
+                    \Log::warning('Parser API call failed, falling back to local parser: ' . $ex->getMessage());
+                }
+            }
+
             $pythonScript = base_path('app/Scripts/parse_log_report.py');
 
-            if (!file_exists($pythonScript)) {
+            if (! file_exists($pythonScript)) {
                 return ['error' => 'Parser script not found'];
             }
 
-            $result = Process::run([
-                'python',
-                $pythonScript,
-                $filePath,
-            ]);
+            $pythonCmd = 'python3';
 
-            if (!$result->successful()) {
-                return ['error' => 'Failed to parse log file: ' . $result->errorOutput()];
+            $result = Process::run([$pythonCmd, $pythonScript, $filePath]);
+
+            if (! $result->successful()) {
+                $pythonCmd = 'python';
+                $result = Process::run([$pythonCmd, $pythonScript, $filePath]);
             }
 
-            $output = $result->output();
+            if (! $result->successful()) {
+                $errorMsg = $result->errorOutput();
+                return ['error' => 'Failed to parse log file: ' . ($errorMsg ?: 'Unknown error')];
+            }
+
+            $output = trim($result->output());
+
             $parsed = json_decode($output, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return ['error' => 'Invalid JSON response from parser'];
+                return ['error' => 'Invalid JSON response from parser: ' . json_last_error_msg()];
             }
 
             return $parsed;
