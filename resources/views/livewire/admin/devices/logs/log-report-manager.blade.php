@@ -4,32 +4,87 @@
         $color = $area === 'DTH' ? 'secondary' : 'primary';
     @endphp
 
-    <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8 mb-4">
-        <div class="flex items-center justify-between">
+    <div
+        class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+            <form x-data="uploadForm()" @submit.prevent="submit()" class="p-8">
+            @csrf
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-file-pdf text-{{ $color }}-400"></i>
+                    <span>{{ __('Upload file') }}</span>
+                </h2>
+            </div>
+
+            <div class="relative group">
+                <div class="border-3 border-dashed border-{{ $color }}-300 dark:border-{{ $color }}-600 rounded-xl p-12 text-center cursor-pointer transition-all duration-300 hover:border-{{ $color }}-400 dark:hover:border-{{ $color }}-500 hover:bg-gray-200/50 dark:hover:bg-gray-800"
+                    id="drop-zone">
+                    <input type="file" id="pdf-file" name="pdf_file" accept=".pdf" class="hidden" />
+
+                    <div class="space-y-4 transition-all duration-300" id="upload-prompt">
+                        <div
+                            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-{{ $color }}-200 dark:bg-{{ $color }}-900 text-{{ $color }}-600 dark:text-{{ $color }}-300">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ __('Drop your file here') }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {{ __('or click to browse') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="hidden space-y-3" id="upload-info">
+                        <div
+                            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-200 dark:bg-green-900 text-green-600 dark:text-green-300">
+                            <i class="fa-solid fa-check text-3xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ __('Ready to process') }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" id="file-name-display"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="upload-progress" class="hidden mt-4 space-y-2">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">{{ __('Processing...') }}</span>
+                        <span id="progress-percent" class="text-gray-500 dark:text-gray-400">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div id="progress-bar"
+                            class="bg-gradient-to-r from-{{ $color }}-500 to-{{ $color }}-600 h-full rounded-full transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full mt-6 bg-{{ $color }}-600 hover:bg-{{ $color }}-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                id="submit-btn" disabled>
+                <i class="fa-solid fa-gears text-lg"></i>
+                <span>{{ __('Process file') }}</span>
+            </button>
+
+            <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-4">
+                {{ __('Maximum file size: 50 MB') }}
+            </p>
+        </form>
+    </div>
+
+    <div id="loading-indicator" class="hidden bg-{{ $color }}-50 dark:bg-{{ $color }}-900/30 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <div class="animate-spin">
+                <i class="fa-solid fa-spinner text-{{ $color }}-600 dark:text-{{ $color }}-400 text-2xl"></i>
+            </div>
             <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    <i class="fa-solid fa-file-upload mr-1"></i>
-                    {{ __('Upload log report file') }}
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ __('Processing PDF...') }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ __('Extracting package and customer information') }}
                 </p>
-                <form x-data="uploadForm()" @submit.prevent="submit()" class="space-y-4">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <input type="file" @change="file = $event.target.files[0]" accept=".txt"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block flex-1 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600"
-                            placeholder="{{ __('Select .txt file...') }}">
-                        <button type="submit" :disabled="uploading || !file"
-                            class="bg-{{ $color }}-600 hover:bg-{{ $color }}-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-lg cursor-pointer transition font-bold flex items-center justify-center gap-2">
-                            <template x-if="!uploading">
-                                <span><i class="fa-solid fa-upload mr-1"></i>{{ __('Upload') }}</span>
-                            </template>
-                            <template x-if="uploading">
-                                <span><i class="fa-solid fa-spinner animate-spin mr-1"></i>{{ __('Uploading...') }}</span>
-                            </template>
-                        </button>
-                    </div>
-                    <div x-show="error" x-cloak class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-200 text-sm">
-                        <span x-text="error"></span>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
