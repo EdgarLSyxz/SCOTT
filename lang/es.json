@@ -925,5 +925,6 @@
     "Search within category...": "Buscar dentro de la categoría...",
     "Rank": "Rango",
     "Records": "Registros",
-    "No categories match your search.": "No hay categorías que coincidan con su búsqueda."
+    "No categories match your search.": "No hay categorías que coincidan con su búsqueda.",
+    "No records match your search.": "No hay registros que coincidan con su búsqueda."
 }

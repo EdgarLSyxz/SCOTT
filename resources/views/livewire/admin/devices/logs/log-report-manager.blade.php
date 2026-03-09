@@ -135,9 +135,9 @@
             @if (!empty($filteredCategories))
                 <div class="space-y-3">
                     @foreach ($filteredCategories as $cat)
-                        <div class="border border-{{ $color }}-200 dark:border-{{ $color }}-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 transition-all duration-200 hover:shadow-md dark:hover:shadow-lg">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 transition-all duration-200 hover:shadow-sm dark:hover:shadow-lg">
                             <button wire:click="toggleAccordion('{{ $cat['key'] }}')"
-                                class="w-full px-6 py-4 flex items-center justify-between hover:bg-{{ $color }}-50 dark:hover:bg-gray-700 transition-colors group">
+                                class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group">
 
                                 <div class="flex items-center gap-4 flex-1 text-left min-w-0">
                                     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-{{ $color }}-100 dark:bg-{{ $color }}-900 flex items-center justify-center text-{{ $color }}-600 dark:text-{{ $color }}-300">
@@ -162,9 +162,9 @@
                             </button>
 
                             @if ($expandedCategoryKey === $cat['key'])
-                                <div class="border-t border-{{ $color }}-200 dark:border-{{ $color }}-700 bg-gray-50 dark:bg-gray-900 animate-in fade-in slide-in-from-up-4 duration-300">
+                                <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 animate-in fade-in slide-in-from-up-4 duration-300">
                                     <div class="px-6 pt-4 pb-3">
-                                        <div class="relative w-full">
+                                        <div class="relative w-full pr-[6px]">
                                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                                 <svg aria-hidden="true" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
