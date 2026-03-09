@@ -246,12 +246,19 @@
         const ctx = canvas.getContext('2d');
 
         const data = Array.isArray(packages) ? packages : [];
-        const topPackages = data.slice(0, 15);
-        const labels = topPackages.map(pkg => pkg.name || 'Unknown');
-        const values = topPackages.map(pkg => {
-            const ids = pkg.customers_list && Array.isArray(pkg.customers_list) ? pkg.customers_list : pkg.customer_ids && Array.isArray(pkg.customer_ids) ? pkg.customer_ids : [];
-            return ids.length || pkg.customers || 0;
-        });
+        const items = data.map(pkg => {
+            const ids = (pkg.customers_list && Array.isArray(pkg.customers_list)) ? pkg.customers_list : ((pkg.customer_ids && Array.isArray(pkg.customer_ids)) ? pkg.customer_ids : []);
+            let count = Array.isArray(ids) ? ids.length : 0;
+            if ((!count || count === 0) && pkg.customers) {
+                const parsed = parseInt(pkg.customers, 10);
+                count = Number.isNaN(parsed) ? (typeof pkg.customers === 'number' ? pkg.customers : 0) : parsed;
+            }
+            return { name: pkg.name || 'Unknown', count };
+        }).sort((a, b) => b.count - a.count);
+
+        const topPackages = items.slice(0, 15);
+        const labels = topPackages.map(pkg => pkg.name);
+        const values = topPackages.map(pkg => pkg.count);
 
         canvas.style.display = 'block';
         canvas.style.width = '100%';
