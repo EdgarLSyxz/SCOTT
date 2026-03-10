@@ -150,6 +150,42 @@
                                 {{ __('Send by email') }}
                             </div>
                         </div>
+
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                            <button type="button" id="exportPdfAllYearsBtn" onclick="exportChartsPdf(event, true)"
+                                class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 focus:outline-none">
+                                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                            </button>
+                            <div x-show="open" x-cloak
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-75"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-75"
+                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip">
+                                {{ __('Export PDF (all years)') }}
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                            <button type="button" id="emailExportAllYearsBtn" onclick="exportMonthlyByEmail(event, true)"
+                                class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 focus:outline-none">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                            </button>
+                            <div x-show="open" x-cloak
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-75"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-75"
+                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip">
+                                {{ __('Send all years by email') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -344,7 +380,7 @@
                     deviceSelect.addEventListener('change', loadMonthsForYear);
                 }
 
-                async function exportChartsPdf(e) {
+                async function exportChartsPdf(e, allYears = false) {
                     e && e.preventDefault();
 
                     const yearSelect = document.querySelector('#select-year');
@@ -352,8 +388,13 @@
 
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
-                    if (yearSelect) params.append('year', yearSelect.value);
-                    if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
+                    if (allYears) {
+                        params.append('all_years', '1');
+                        params.append('year', 'all');
+                    } else {
+                        if (yearSelect) params.append('year', yearSelect.value);
+                        if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
+                    }
                     if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
 
                     const tokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -363,7 +404,7 @@
 
                     let preData = null;
                     try {
-                        if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                        if (!allYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
                             preData = window.__downloadsLatest;
                             console.log('Using cached Livewire payload for PDF export', preData);
                         }
@@ -395,21 +436,30 @@
                         console.warn('Warning: download_rows not present or not array', preData);
                     }
 
-                    const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
-                    const pieCanvas = document.getElementById('pieDownloadsChart');
-                    if (!monthlyCanvas || !pieCanvas) {
-                        Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Charts not ready')) });
-                        return;
+                    let monthlyData = null;
+                    let pieData = null;
+                    if (!allYears) {
+                        const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
+                        const pieCanvas = document.getElementById('pieDownloadsChart');
+                        if (!monthlyCanvas || !pieCanvas) {
+                            Swal.fire({ icon: 'error', title: @json(__('Error')), text: @json(__('Charts not ready')) });
+                            return;
+                        }
+
+                        monthlyData = monthlyCanvas.toDataURL('image/png');
+                        pieData = pieCanvas.toDataURL('image/png');
                     }
 
-                    const monthlyData = monthlyCanvas.toDataURL('image/png');
-                    const pieData = pieCanvas.toDataURL('image/png');
-
                     const fd = new FormData();
-                    fd.append('charts[monthly]', monthlyData);
-                    fd.append('charts[pie]', pieData);
-                    if (yearSelect) fd.append('year', yearSelect.value);
-                    if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
+                    if (monthlyData) fd.append('charts[monthly]', monthlyData);
+                    if (pieData) fd.append('charts[pie]', pieData);
+                    if (allYears) {
+                        fd.append('all_years', '1');
+                        fd.append('year', 'all');
+                    } else {
+                        if (yearSelect) fd.append('year', yearSelect.value);
+                        if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
+                    }
                     if (deviceSelect) fd.append('device_id', deviceSelect.value);
                     fd.append('data', JSON.stringify(preData));
 
@@ -417,6 +467,7 @@
                         has_year: !!yearSelect?.value,
                         has_month: !!monthSelect?.value,
                         has_device_id: !!deviceSelect?.value,
+                        all_years: allYears,
                         data_size: JSON.stringify(preData).length,
                         download_rows_count: preData.download_rows?.length || 0,
                     });
@@ -447,15 +498,20 @@
                     }
                 }
 
-                async function exportMonthlyByEmail(e) {
+                async function exportMonthlyByEmail(e, allYears = false) {
                     e && e.preventDefault();
 
                     const yearSelect = document.querySelector('#select-year');
                     const monthSelect = document.querySelector('#select-month');
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
-                    if (yearSelect) params.append('year', yearSelect.value);
-                    if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
+                    if (allYears) {
+                        params.append('all_years', '1');
+                        params.append('year', 'all');
+                    } else {
+                        if (yearSelect) params.append('year', yearSelect.value);
+                        if (monthSelect && monthSelect.value) params.append('month', monthSelect.value);
+                    }
                     if (deviceSelect && deviceSelect.value) params.append('device_id', deviceSelect.value);
 
                     const tokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -463,7 +519,7 @@
 
                     let preData = null;
                     try {
-                        if (window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                        if (!allYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
                             preData = window.__downloadsLatest;
                         }
                     } catch (e) { }
@@ -485,12 +541,12 @@
                     const pieCanvas = document.getElementById('pieDownloadsChart');
                     let monthlyData = null;
                     let pieData = null;
-                    if (monthlyCanvas) {
+                    if (!allYears && monthlyCanvas) {
                         try {
                             monthlyData = monthlyCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture monthly chart'); }
                     }
-                    if (pieCanvas) {
+                    if (!allYears && pieCanvas) {
                         try {
                             pieData = pieCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture pie chart'); }
@@ -500,8 +556,13 @@
                     fd.append('data', JSON.stringify(preData));
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
                     if (pieData) fd.append('charts[pie]', pieData);
-                    if (yearSelect) fd.append('year', yearSelect.value);
-                    if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
+                    if (allYears) {
+                        fd.append('all_years', '1');
+                        fd.append('year', 'all');
+                    } else {
+                        if (yearSelect) fd.append('year', yearSelect.value);
+                        if (monthSelect && monthSelect.value) fd.append('month', monthSelect.value);
+                    }
                     if (deviceSelect && deviceSelect.value) fd.append('device_id', deviceSelect.value);
 
                     try {

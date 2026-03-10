@@ -15,6 +15,45 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DownloadExportController extends Controller
 {
+    private function isAllYearsRequest(Request $request): bool
+    {
+        $yearInput = strtolower((string) ($request->input('year', $request->query('year', ''))));
+
+        return $request->boolean('all_years') || in_array($yearInput, ['all', 'multi'], true);
+    }
+
+    private function parseYearsFromRows(array $downloadRows): array
+    {
+        $years = [];
+        foreach ($downloadRows as $row) {
+            $year = (int) ($row['year'] ?? 0);
+            if ($year > 0) {
+                $years[$year] = true;
+            }
+        }
+
+        $years = array_map('intval', array_keys($years));
+        rsort($years);
+
+        return array_values($years);
+    }
+
+    private function buildYearRangeLabel(array $years): string
+    {
+        if (empty($years)) {
+            return (string) date('Y');
+        }
+
+        $years = array_map('intval', $years);
+        rsort($years);
+
+        if (count($years) === 1) {
+            return (string) $years[0];
+        }
+
+        return max($years) . ' - ' . min($years);
+    }
+
     private function buildProtocolSummary(array $downloadRows): array
     {
         $protocols = ['HLS', 'DASH'];
@@ -201,12 +240,17 @@ class DownloadExportController extends Controller
 
     public function historyData(Request $request)
     {
-        $year = $request->query('year', date('Y'));
-        $deviceId = $request->query('device_id');
-        $month = $request->query('month');
+        $allYearsMode = $this->isAllYearsRequest($request);
+        $yearInput = $request->query('year', $request->input('year', date('Y')));
+        $year = $allYearsMode ? 'all' : $yearInput;
+        $deviceId = $request->query('device_id', $request->input('device_id'));
+        $month = $request->query('month', $request->input('month'));
 
         $data = [
             'year' => $year,
+            'years' => [],
+            'is_multi_year' => $allYearsMode,
+            'year_range_label' => null,
             'device_id' => $deviceId,
             'month' => $month,
             'devices' => [],
@@ -221,21 +265,6 @@ class DownloadExportController extends Controller
         ];
 
         try {
-            if ($month) {
-                $monthNum = intval($month);
-                $s = Carbon::create($year, $monthNum, 1)->startOfDay();
-                $e = Carbon::create($year, $monthNum, 1)->endOfMonth()->endOfDay();
-            } else {
-                $s = Carbon::create($year, 1, 1)->startOfDay();
-                $e = Carbon::create($year, 12, 31)->endOfDay();
-            }
-
-            $period = CarbonPeriod::create($s->copy()->startOfMonth(), '1 month', $e->copy()->startOfMonth());
-            $months = [];
-            foreach ($period as $m) {
-                $months[] = $m->format('Y-m');
-            }
-
             $auth = Auth::user();
             $areaFilter = null;
             if ($auth && $auth->id !== 1) {
@@ -247,8 +276,88 @@ class DownloadExportController extends Controller
                 }
             }
 
+            $years = [];
+            $months = [];
+
+            if ($allYearsMode) {
+                $yearsQuery = DB::table('downloads')
+                    ->select('downloads.year')
+                    ->distinct();
+
+                if ($areaFilter) {
+                    $yearsQuery->join('devices', 'downloads.device_id', '=', 'devices.id')
+                        ->where('devices.area', $areaFilter);
+                }
+
+                if ($deviceId) {
+                    $yearsQuery->where('downloads.device_id', $deviceId);
+                }
+
+                if ($month) {
+                    $yearsQuery->where('downloads.month', intval($month));
+                }
+
+                $years = $yearsQuery
+                    ->orderByDesc('downloads.year')
+                    ->pluck('downloads.year')
+                    ->map(fn($y) => (int) $y)
+                    ->filter(fn($y) => $y > 0)
+                    ->values()
+                    ->toArray();
+
+                if (empty($years)) {
+                    $data['years'] = [];
+                    $data['year_range_label'] = null;
+                    return response()->json($data);
+                }
+
+                $monthsQuery = DB::table('downloads')
+                    ->select('downloads.year', 'downloads.month')
+                    ->distinct()
+                    ->whereIn('downloads.year', $years)
+                    ->orderBy('downloads.year')
+                    ->orderBy('downloads.month');
+
+                if ($areaFilter) {
+                    $monthsQuery->join('devices', 'downloads.device_id', '=', 'devices.id')
+                        ->where('devices.area', $areaFilter);
+                }
+
+                if ($deviceId) {
+                    $monthsQuery->where('downloads.device_id', $deviceId);
+                }
+
+                if ($month) {
+                    $monthsQuery->where('downloads.month', intval($month));
+                }
+
+                $months = $monthsQuery->get()->map(function ($r) {
+                    return sprintf('%04d-%02d', (int) $r->year, (int) $r->month);
+                })->values()->toArray();
+            } else {
+                if ($month) {
+                    $monthNum = intval($month);
+                    $s = Carbon::create($year, $monthNum, 1)->startOfDay();
+                    $e = Carbon::create($year, $monthNum, 1)->endOfMonth()->endOfDay();
+                } else {
+                    $s = Carbon::create($year, 1, 1)->startOfDay();
+                    $e = Carbon::create($year, 12, 31)->endOfDay();
+                }
+
+                $period = CarbonPeriod::create($s->copy()->startOfMonth(), '1 month', $e->copy()->startOfMonth());
+                foreach ($period as $m) {
+                    $months[] = $m->format('Y-m');
+                }
+
+                $years = [(int) $year];
+            }
+
+            $data['years'] = $years;
+            $data['year_range_label'] = $this->buildYearRangeLabel($years);
+
             \Log::info('historyData: Starting query', [
                 'year' => $year,
+                'years' => $years,
                 'month' => $month,
                 'device_id' => $deviceId,
                 'area_filter' => $areaFilter,
@@ -259,8 +368,13 @@ class DownloadExportController extends Controller
 
             $rowsQuery = DB::table('downloads')
                 ->selectRaw('downloads.device_id, downloads.month as month, downloads.year as year, SUM(downloads.count) as total, devices.name')
-                ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                ->where('downloads.year', $year);
+                ->join('devices', 'downloads.device_id', '=', 'devices.id');
+
+            if ($allYearsMode) {
+                $rowsQuery->whereIn('downloads.year', $years);
+            } else {
+                $rowsQuery->where('downloads.year', $year);
+            }
 
             if ($month) {
                 $rowsQuery->where('downloads.month', intval($month));
@@ -297,8 +411,13 @@ class DownloadExportController extends Controller
                     'downloads.created_at',
                 ])
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                ->where('downloads.year', $year)
                 ->orderBy('downloads.created_at', 'desc');
+
+            if ($allYearsMode) {
+                $downloadsQuery->whereIn('downloads.year', $years);
+            } else {
+                $downloadsQuery->where('downloads.year', $year);
+            }
 
             if ($month) {
                 $downloadsQuery->where('downloads.month', intval($month));
@@ -336,6 +455,11 @@ class DownloadExportController extends Controller
 
             $data['download_rows'] = $downloadRows;
 
+            $monthIndexMap = [];
+            foreach ($months as $idx => $monthKey) {
+                $monthIndexMap[$monthKey] = $idx;
+            }
+
             $devices = [];
             foreach ($rows as $r) {
                 $did = $r->device_id;
@@ -347,9 +471,9 @@ class DownloadExportController extends Controller
                         'months' => array_fill(0, count($months), 0),
                     ];
                 }
-                $monthNum = intval($r->month);
-                $index = $monthNum - 1;
-                if ($index >= 0 && $index < count($months)) {
+                $monthKey = sprintf('%04d-%02d', (int) $r->year, (int) $r->month);
+                $index = $monthIndexMap[$monthKey] ?? null;
+                if ($index !== null) {
                     $devices[$did]['months'][$index] = (int)$r->total;
                 }
             }
@@ -491,6 +615,7 @@ class DownloadExportController extends Controller
                 'devices_count' => count($data['devices']),
                 'download_rows_count' => count($data['download_rows']),
                 'summary_total' => $data['summary']['total'],
+                'is_multi_year' => $data['is_multi_year'],
             ]);
         } catch (\Throwable $e) {
             \Log::error('historyData exception', [
@@ -507,7 +632,8 @@ class DownloadExportController extends Controller
     public function historyPDF(Request $request)
     {
         $charts = $request->input('charts', []);
-        $year = $request->input('year', date('Y'));
+        $allYearsMode = $this->isAllYearsRequest($request);
+        $year = $allYearsMode ? 'all' : $request->input('year', date('Y'));
         $deviceId = $request->input('device_id');
 
         $monthly = $charts['monthly'] ?? null;
@@ -517,6 +643,9 @@ class DownloadExportController extends Controller
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
             'year' => $year,
+            'years' => [],
+            'is_multi_year' => $allYearsMode,
+            'year_range_label' => null,
             'device_id' => $deviceId,
             'devices' => [],
             'period_labels' => [],
@@ -530,6 +659,14 @@ class DownloadExportController extends Controller
         ];
 
         $prefetched = $request->input('data');
+        if (!$prefetched && $allYearsMode) {
+            try {
+                $prefetchedResponse = $this->historyData($request);
+                $prefetched = $prefetchedResponse->getContent();
+            } catch (\Throwable $_e) {
+            }
+        }
+
         if ($prefetched) {
             try {
                 $pd = is_string($prefetched) ? json_decode($prefetched, true) : $prefetched;
@@ -538,6 +675,13 @@ class DownloadExportController extends Controller
                     $data['devices'] = $pd['devices'] ?? [];
                     $data['period_labels'] = $pd['period_labels'] ?? [];
                     $data['summary'] = $pd['summary'] ?? $data['summary'];
+                    $data['is_multi_year'] = !empty($pd['is_multi_year']) || $allYearsMode;
+                    $data['years'] = $pd['years'] ?? $this->parseYearsFromRows($data['download_rows'] ?? []);
+                    $data['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($data['years']);
+
+                    if ($data['is_multi_year']) {
+                        $data['year'] = 'all';
+                    }
 
                     \Log::info('PDF prefetched data received', [
                         'year' => $year,
@@ -800,6 +944,9 @@ class DownloadExportController extends Controller
                     'top_month_label' => $overallTopLabel,
                     'top_month_value' => $overallTopValue,
                 ];
+                $data['is_multi_year'] = false;
+                $data['years'] = [(int) $year];
+                $data['year_range_label'] = $this->buildYearRangeLabel($data['years']);
 
                 try {
                     \Log::debug('PDF export data', [
@@ -846,7 +993,7 @@ class DownloadExportController extends Controller
             'has_download_rows' => !empty($data['download_rows']),
         ]);
 
-        $html = view('admin.devices.downloads.download-history', $data)->render();
+        $html = view('admin.devices.monthly-downloads.download-history', $data)->render();
 
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
@@ -879,6 +1026,13 @@ class DownloadExportController extends Controller
 
         if (!is_array($pd)) {
             return response()->json(['message' => 'Invalid data'], 422);
+        }
+
+        $allYearsMode = $this->isAllYearsRequest($request) || !empty($pd['is_multi_year']);
+        if ($allYearsMode) {
+            $pd['is_multi_year'] = true;
+            $pd['years'] = $pd['years'] ?? $this->parseYearsFromRows($pd['download_rows'] ?? []);
+            $pd['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($pd['years']);
         }
 
         $deviceIdParam = $request->input('device_id') ?? $pd['device_id'] ?? null;
@@ -925,10 +1079,17 @@ class DownloadExportController extends Controller
             $monthValue = null;
         }
 
+        if ($allYearsMode) {
+            $monthValue = null;
+        }
+
         $pdfData = [
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
-            'year' => $pd['year'] ?? $request->input('year') ?? date('Y'),
+            'year' => $allYearsMode ? 'all' : ($pd['year'] ?? $request->input('year') ?? date('Y')),
+            'years' => $pd['years'] ?? [],
+            'is_multi_year' => $allYearsMode,
+            'year_range_label' => $pd['year_range_label'] ?? null,
             'month' => $monthValue,
             'device_id' => $deviceIdParam,
             'devices' => $pd['devices'] ?? [],
@@ -1048,7 +1209,7 @@ class DownloadExportController extends Controller
             $pdfData['logo'] = null;
         }
 
-        $pdfHtml = view('admin.devices.downloads.download-history', $pdfData)->render();
+        $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($pdfHtml);
         $dompdf->setPaper('a4', 'portrait');
@@ -1074,12 +1235,106 @@ class DownloadExportController extends Controller
                 }
             }
 
-            $monthsWithData = DB::table('downloads')
-                ->select('month')
-                ->where('downloads.year', $year)
-                ->distinct()
-                ->pluck('month')
-                ->toArray();
+            if ($allYearsMode) {
+                $downloadRowsForExcel = collect($pdfData['download_rows'] ?? []);
+                $yearsForExcel = $pdfData['years'] ?? $this->parseYearsFromRows($downloadRowsForExcel->toArray());
+
+                if (empty($yearsForExcel)) {
+                    $yearsForExcel = [(int) date('Y')];
+                }
+
+                $sheetCounter = 0;
+                foreach ($yearsForExcel as $yr) {
+                    $sheet = $sheetCounter === 0 ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+                    $sheet->setTitle(substr((string) $yr, 0, 31));
+
+                    $sheet->setCellValue('A1', 'Fecha');
+                    $sheet->setCellValue('B1', 'Mes');
+                    $sheet->setCellValue('C1', 'Día');
+                    $sheet->setCellValue('D1', 'Dispositivo');
+                    $sheet->setCellValue('E1', 'Protocolo');
+                    $sheet->setCellValue('F1', 'Descargas');
+                    $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+                    $sheet->getColumnDimension('A')->setWidth(16);
+                    $sheet->getColumnDimension('B')->setWidth(14);
+                    $sheet->getColumnDimension('C')->setWidth(10);
+                    $sheet->getColumnDimension('D')->setWidth(42);
+                    $sheet->getColumnDimension('E')->setWidth(14);
+                    $sheet->getColumnDimension('F')->setWidth(14);
+
+                    $yearRows = $downloadRowsForExcel->filter(function ($r) use ($yr, $deviceId) {
+                        if ((int) ($r['year'] ?? 0) !== (int) $yr) {
+                            return false;
+                        }
+
+                        if (!empty($deviceId) && (string) ($r['device_id'] ?? '') !== (string) $deviceId) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                    $groupedRows = [];
+                    foreach ($yearRows as $r) {
+                        $monthN = (int) ($r['month'] ?? 0);
+                        $dayN = (int) ($r['day'] ?? 0);
+                        $deviceName = (string) ($r['device_name'] ?? '—');
+                        $protocol = (string) ($r['protocol'] ?? '—');
+                        $count = (int) ($r['count'] ?? 0);
+                        $dateStr = sprintf('%04d-%02d-%02d', (int) $yr, max(1, $monthN), max(1, $dayN));
+                        $key = $dateStr . '|' . $deviceName;
+
+                        if (!isset($groupedRows[$key])) {
+                            $groupedRows[$key] = [
+                                'date' => $dateStr,
+                                'month' => $monthN,
+                                'day' => $dayN,
+                                'device_name' => $deviceName,
+                                'protocol' => $protocol,
+                                'count' => 0,
+                            ];
+                        }
+
+                        $groupedRows[$key]['count'] += $count;
+                    }
+
+                    $groupedRows = array_values($groupedRows);
+                    usort($groupedRows, function ($a, $b) {
+                        $dateCmp = strcmp((string) ($a['date'] ?? ''), (string) ($b['date'] ?? ''));
+                        if ($dateCmp !== 0) {
+                            return $dateCmp;
+                        }
+
+                        return strcmp((string) ($a['device_name'] ?? ''), (string) ($b['device_name'] ?? ''));
+                    });
+
+                    $row = 2;
+                    foreach ($groupedRows as $line) {
+                        $sheet->setCellValue("A{$row}", $line['date']);
+                        $sheet->setCellValue("B{$row}", $line['month'] > 0 ? ($monthNames[$line['month'] - 1] ?? $line['month']) : '—');
+                        $sheet->setCellValue("C{$row}", $line['day'] > 0 ? $line['day'] : '—');
+                        $sheet->setCellValue("D{$row}", $line['device_name']);
+                        $sheet->setCellValue("E{$row}", $line['protocol'] ?: '—');
+                        $sheet->setCellValue("F{$row}", $line['count']);
+                        $row++;
+                    }
+
+                    if ($row === 2) {
+                        $sheet->setCellValue('A2', 'Sin datos para este año');
+                    }
+
+                    $sheetCounter++;
+                }
+
+                $spreadsheet->setActiveSheetIndex(0);
+            } else {
+
+                $monthsWithData = DB::table('downloads')
+                    ->select('month')
+                    ->where('downloads.year', $year)
+                    ->distinct()
+                    ->pluck('month')
+                    ->toArray();
 
             if ($month) {
                 $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
@@ -1120,81 +1375,82 @@ class DownloadExportController extends Controller
                 }
             }
 
-            $monthsWithData = array_map('intval', $monthsWithData);
-            sort($monthsWithData);
+                $monthsWithData = array_map('intval', $monthsWithData);
+                sort($monthsWithData);
 
-            $firstSheet = true;
-            foreach ($monthsWithData as $mth) {
-                if ($firstSheet) {
-                    $sheet = $spreadsheet->getActiveSheet();
-                    $firstSheet = false;
-                } else {
-                    $sheet = $spreadsheet->createSheet();
-                }
-
-                $sheet->setTitle($monthNames[$mth - 1]);
-                $sheet->setCellValue('A1', 'Día');
-                $sheet->setCellValue('B1', 'Dispositivo');
-                $sheet->setCellValue('C1', 'Descargas');
-                $sheet->getColumnDimension('A')->setWidth(15);
-                $sheet->getColumnDimension('B')->setWidth(40);
-                $sheet->getColumnDimension('C')->setWidth(15);
-                $sheet->getStyle('A1:C1')->getFont()->setBold(true);
-
-                $daysInMonth = Carbon::create($year, $mth, 1)->daysInMonth;
-
-                $query = DB::table('downloads')
-                    ->selectRaw('downloads.day, devices.name as device_name, SUM(downloads.count) as total')
-                    ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                    ->where('downloads.year', $year)
-                    ->where('downloads.month', $mth);
-
-                if ($areaFilter) {
-                    $query->where('devices.area', $areaFilter);
-                }
-
-                if ($deviceId) {
-                    $query->where('downloads.device_id', $deviceId);
-                }
-
-                $dailyDownloads = $query->groupBy('downloads.day', 'devices.name', 'downloads.device_id')
-                    ->orderBy('downloads.day', 'asc')
-                    ->orderBy('devices.name', 'asc')
-                    ->get();
-
-                $downloadsByDay = [];
-                foreach ($dailyDownloads as $download) {
-                    $day = (int)$download->day;
-                    $deviceName = $download->device_name ?? '—';
-
-                    if (!isset($downloadsByDay[$day])) {
-                        $downloadsByDay[$day] = [];
+                $firstSheet = true;
+                foreach ($monthsWithData as $mth) {
+                    if ($firstSheet) {
+                        $sheet = $spreadsheet->getActiveSheet();
+                        $firstSheet = false;
+                    } else {
+                        $sheet = $spreadsheet->createSheet();
                     }
 
-                    if (!isset($downloadsByDay[$day][$deviceName])) {
-                        $downloadsByDay[$day][$deviceName] = 0;
+                    $sheet->setTitle($monthNames[$mth - 1]);
+                    $sheet->setCellValue('A1', 'Día');
+                    $sheet->setCellValue('B1', 'Dispositivo');
+                    $sheet->setCellValue('C1', 'Descargas');
+                    $sheet->getColumnDimension('A')->setWidth(15);
+                    $sheet->getColumnDimension('B')->setWidth(40);
+                    $sheet->getColumnDimension('C')->setWidth(15);
+                    $sheet->getStyle('A1:C1')->getFont()->setBold(true);
+
+                    $daysInMonth = Carbon::create($year, $mth, 1)->daysInMonth;
+
+                    $query = DB::table('downloads')
+                        ->selectRaw('downloads.day, devices.name as device_name, SUM(downloads.count) as total')
+                        ->join('devices', 'downloads.device_id', '=', 'devices.id')
+                        ->where('downloads.year', $year)
+                        ->where('downloads.month', $mth);
+
+                    if ($areaFilter) {
+                        $query->where('devices.area', $areaFilter);
                     }
 
-                    $downloadsByDay[$day][$deviceName] += (int)($download->total ?? 0);
-                }
+                    if ($deviceId) {
+                        $query->where('downloads.device_id', $deviceId);
+                    }
 
-                $row = 2;
-                for ($day = 1; $day <= $daysInMonth; $day++) {
-                    $dateStr = sprintf('%04d-%02d-%02d', $year, $mth, $day);
+                    $dailyDownloads = $query->groupBy('downloads.day', 'devices.name', 'downloads.device_id')
+                        ->orderBy('downloads.day', 'asc')
+                        ->orderBy('devices.name', 'asc')
+                        ->get();
 
-                    if (isset($downloadsByDay[$day]) && count($downloadsByDay[$day]) > 0) {
-                        foreach ($downloadsByDay[$day] as $deviceName => $total) {
-                            $sheet->setCellValue("A{$row}", $dateStr);
-                            $sheet->setCellValue("B{$row}", $deviceName);
-                            $sheet->setCellValue("C{$row}", $total);
-                            $row++;
+                    $downloadsByDay = [];
+                    foreach ($dailyDownloads as $download) {
+                        $day = (int)$download->day;
+                        $deviceName = $download->device_name ?? '—';
+
+                        if (!isset($downloadsByDay[$day])) {
+                            $downloadsByDay[$day] = [];
                         }
 
-                        if (empty($deviceId)) {
-                            $sheet->setCellValue("A{$row}", $dateStr);
-                            $sheet->setCellValue("B{$row}", 'Web Client');
-                            $sheet->setCellValue("C{$row}", __('Not applicable'));
-                            $row++;
+                        if (!isset($downloadsByDay[$day][$deviceName])) {
+                            $downloadsByDay[$day][$deviceName] = 0;
+                        }
+
+                        $downloadsByDay[$day][$deviceName] += (int)($download->total ?? 0);
+                    }
+
+                    $row = 2;
+                    for ($day = 1; $day <= $daysInMonth; $day++) {
+                        $dateStr = sprintf('%04d-%02d-%02d', $year, $mth, $day);
+
+                        if (isset($downloadsByDay[$day]) && count($downloadsByDay[$day]) > 0) {
+                            foreach ($downloadsByDay[$day] as $deviceName => $total) {
+                                $sheet->setCellValue("A{$row}", $dateStr);
+                                $sheet->setCellValue("B{$row}", $deviceName);
+                                $sheet->setCellValue("C{$row}", $total);
+                                $row++;
+                            }
+
+                            if (empty($deviceId)) {
+                                $sheet->setCellValue("A{$row}", $dateStr);
+                                $sheet->setCellValue("B{$row}", 'Web Client');
+                                $sheet->setCellValue("C{$row}", __('Not applicable'));
+                                $row++;
+                            }
                         }
                     }
                 }
@@ -1208,11 +1464,12 @@ class DownloadExportController extends Controller
             $filename = 'Download History - ' . now()->format('Ymd His') . '.xlsx';
 
             $to = $auth->email ?? config('mail.from.address');
-            $subject = __('Download History') . ' - ' . ($pd['year'] ?? date('Y'));
+            $subject = __('Download History') . ' - ' . ($allYearsMode ? ($pdfData['year_range_label'] ?? __('Multiple years')) : ($pd['year'] ?? date('Y')));
             $body = '';
 
             $meta = [];
-            $meta['year'] = $pd['year'] ?? $request->input('year') ?? date('Y');
+            $meta['year'] = $allYearsMode ? ($pdfData['year_range_label'] ?? __('Multiple years')) : ($pd['year'] ?? $request->input('year') ?? date('Y'));
+            $meta['is_multi_year'] = $allYearsMode;
 
             if ($month !== null && $month >= 1 && $month <= 12) {
                 $meta['year'] = $monthNames[$month - 1] . ' ' . $year;

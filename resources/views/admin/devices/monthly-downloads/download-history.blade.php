@@ -60,22 +60,6 @@
         </div>
 
         <div class="meta-grid">
-            <div class="card">
-                <h4>{{ __('Generated at') }}</h4>
-                <div class="value">{{ now()->format('Y-m-d H:i:s') }}</div>
-            </div>
-            <div class="card">
-                <h4>{{ __('Report year') }}</h4>
-                @php
-                    $reportYearValue = $year ?? date('Y');
-                    if (!empty($month)) {
-                        $mnum = intval($month);
-                        $mname = $__months_local[$mnum] ?? null;
-                        $reportYearValue = ($mname ? $mname . ' ' : '') . ($year ?? date('Y'));
-                    }
-                @endphp
-                <div class="value">{{ $reportYearValue }}</div>
-            </div>
             @php
                 $__months_local = [
                     '',
@@ -92,7 +76,27 @@
                     __('months.november'),
                     __('months.december')
                 ];
+            @endphp
+            <div class="card">
+                <h4>{{ __('Generated at') }}</h4>
+                <div class="value">{{ now()->format('Y-m-d H:i:s') }}</div>
+            </div>
+            <div class="card">
+                <h4>{{ __('Report year') }}</h4>
+                @php
+                    $reportYearValue = !empty($is_multi_year)
+                        ? ($year_range_label ?? __('Multiple years'))
+                        : ($year ?? date('Y'));
 
+                    if (empty($is_multi_year) && !empty($month)) {
+                        $mnum = intval($month);
+                        $mname = $__months_local[$mnum] ?? null;
+                        $reportYearValue = ($mname ? $mname . ' ' : '') . ($year ?? date('Y'));
+                    }
+                @endphp
+                <div class="value">{{ $reportYearValue }}</div>
+            </div>
+            @php
                 $isMonthlyEmailSummary = !empty($summary['is_monthly_email']) && !empty($month);                $isDeviceMonthMode = !empty($summary['is_device_month_mode']);
                 $top_raw = $summary['top_month_label'] ?? null;
                 $top_month_label = '—';
@@ -354,7 +358,7 @@
                                 @php
                                     $firstRecord = $records[0];
                                     $m = intval($firstRecord['month']);
-                                    $monthLabel = $monthsArr[$m] ?? $m;
+                                    $monthLabel = ($monthsArr[$m] ?? $m) . ' ' . ($firstRecord['year'] ?? '');
                                     $monthTotal = array_sum(array_map(fn($r) => intval($r['count']), $records));
                                 @endphp
                                 <div style="margin-bottom: 16px;">
