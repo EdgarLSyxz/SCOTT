@@ -31,6 +31,16 @@ class LogReportManager extends Component
     public $currentReportDate = null;
     public $expandedCategoryKey = null;
     public $accordionSearchTerm = '';
+    public $analyticsMode = 'top';
+    public $analyticsYear = '';
+    public $analyticsMonth = '';
+    public $selectedFileIds = [];
+    public $topLimit = 10;
+    public $selectedCategoryForTop = null;
+    public $consolidatedData = [];
+    public $compareFileA = null;
+    public $compareFileB = null;
+    public $comparisonResults = [];
 
     public function mount()
     {
@@ -70,6 +80,8 @@ class LogReportManager extends Component
             $this->selectedUploadId = $this->uploads[0]['id'];
             $this->loadSelectedUpload();
         }
+
+        $this->syncSelectedFileIds();
     }
 
     public function loadSelectedUpload()
@@ -314,5 +326,382 @@ class LogReportManager extends Component
     public function render()
     {
         return view('livewire.admin.devices.logs.log-report-manager');
+    }
+
+    public function updatedAnalyticsYear()
+    {
+        $this->analyticsMonth = '';
+        $this->resetAnalyticsState();
+    }
+
+    public function updatedAnalyticsMonth()
+    {
+        $this->resetAnalyticsState();
+    }
+
+    public function updatedCompareFileA()
+    {
+        if ($this->compareFileA && $this->compareFileB) {
+            $this->compareFiles();
+        }
+    }
+
+    public function updatedCompareFileB()
+    {
+        if ($this->compareFileA && $this->compareFileB) {
+            $this->compareFiles();
+        }
+    }
+
+    protected function resetAnalyticsState()
+    {
+        $this->consolidatedData = [];
+        $this->comparisonResults = [];
+        $this->selectedCategoryForTop = null;
+        $this->compareFileA = null;
+        $this->compareFileB = null;
+        $this->syncSelectedFileIds();
+    }
+
+    protected function syncSelectedFileIds()
+    {
+        if (!in_array($this->analyticsMode, ['top', 'global'], true)) {
+            return;
+        }
+
+        $this->selectedFileIds = array_column($this->getFilteredUploadsForAnalytics(), 'id');
+    }
+
+    public function getFilteredUploadsForAnalytics()
+    {
+        return collect($this->uploads)
+            ->filter(function ($upload) {
+                if (empty($upload['report_date']) || $upload['report_date'] === 'N/A') {
+                    return false;
+                }
+
+                try {
+                    $date = \Carbon\Carbon::parse($upload['report_date']);
+                } catch (\Exception $e) {
+                    return false;
+                }
+
+                if ($this->analyticsYear !== '' && (int) $date->year !== (int) $this->analyticsYear) {
+                    return false;
+                }
+
+                if ($this->analyticsMonth !== '' && (int) $date->month !== (int) $this->analyticsMonth) {
+                    return false;
+                }
+
+                return true;
+            })
+            ->values()
+            ->toArray();
+    }
+
+    public function getAvailableAnalyticsYears()
+    {
+        return collect($this->uploads)
+            ->pluck('report_date')
+            ->filter(fn($d) => !empty($d) && $d !== 'N/A')
+            ->map(function ($d) {
+                try {
+                    return (int) \Carbon\Carbon::parse($d)->year;
+                } catch (\Exception $e) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->toArray();
+    }
+
+    public function getAvailableAnalyticsMonths()
+    {
+        $months = collect($this->uploads)
+            ->filter(function ($upload) {
+                if (empty($upload['report_date']) || $upload['report_date'] === 'N/A') {
+                    return false;
+                }
+
+                if ($this->analyticsYear === '') {
+                    return true;
+                }
+
+                try {
+                    return (int) \Carbon\Carbon::parse($upload['report_date'])->year === (int) $this->analyticsYear;
+                } catch (\Exception $e) {
+                    return false;
+                }
+            })
+            ->pluck('report_date')
+            ->map(function ($d) {
+                try {
+                    return (int) \Carbon\Carbon::parse($d)->month;
+                } catch (\Exception $e) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        return $months->map(function ($month) {
+            return [
+                'value' => $month,
+                'label' => \Carbon\Carbon::createFromDate(null, $month, 1)->translatedFormat('F'),
+            ];
+        })->toArray();
+    }
+
+    public function getUniqueCategoriesForTop()
+    {
+        $unique = [];
+
+        if (!empty($this->consolidatedData)) {
+            foreach (array_keys($this->consolidatedData) as $categoryKey) {
+                $displayName = $this->formatCategoryName($categoryKey);
+                $nameKey = strtolower($displayName);
+
+                if (!isset($unique[$nameKey])) {
+                    $unique[$nameKey] = [
+                        'key' => $categoryKey,
+                        'name' => $displayName,
+                    ];
+                }
+            }
+        } else {
+            $user = Auth::user();
+            if ($user) {
+                $uploads = $this->analyticsScopedUploadsQuery($user)->get(['data']);
+
+                foreach ($uploads as $upload) {
+                    $data = is_array($upload->data) ? $upload->data : [];
+                    foreach (array_keys($data) as $categoryKey) {
+                        $displayName = $this->formatCategoryName($categoryKey);
+                        $nameKey = strtolower($displayName);
+
+                        if (!isset($unique[$nameKey])) {
+                            $unique[$nameKey] = [
+                                'key' => $categoryKey,
+                                'name' => $displayName,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($unique);
+    }
+
+    protected function analyticsScopedUploadsQuery($user)
+    {
+        $query = LogAnalytic::where('user_id', $user->id);
+
+        if ($this->analyticsYear !== '') {
+            $query->whereYear('report_date', (int) $this->analyticsYear);
+        }
+
+        if ($this->analyticsMonth !== '') {
+            $query->whereMonth('report_date', (int) $this->analyticsMonth);
+        }
+
+        return $query;
+    }
+
+    public function switchAnalyticsMode($mode)
+    {
+        $this->analyticsMode = $mode;
+        $this->consolidatedData = [];
+        $this->comparisonResults = [];
+        $this->syncSelectedFileIds();
+    }
+
+    public function consolidateData()
+    {
+        $user = Auth::user();
+        if (!$user || empty($this->selectedFileIds)) {
+            return [];
+        }
+
+        $uploads = $this->analyticsScopedUploadsQuery($user)
+            ->whereIn('id', $this->selectedFileIds)
+            ->get();
+
+        $consolidated = [];
+
+        foreach ($uploads as $upload) {
+            $data = $upload->data ?? [];
+            foreach ($data as $categoryKey => $items) {
+                if (!isset($consolidated[$categoryKey])) {
+                    $consolidated[$categoryKey] = [];
+                }
+
+                foreach ($items as $item) {
+                    if (!is_array($item)) continue;
+
+                    $label = $item['label'] ?? $item['name'] ?? null;
+                    $value = floatval($item['value'] ?? $item['count'] ?? 0);
+
+                    if (!$label) continue;
+
+                    if (!isset($consolidated[$categoryKey][$label])) {
+                        $consolidated[$categoryKey][$label] = [
+                            'label' => $label,
+                            'value' => 0,
+                            'sources' => []
+                        ];
+                    }
+
+                    $consolidated[$categoryKey][$label]['value'] += $value;
+                    $consolidated[$categoryKey][$label]['sources'][] = $upload->filename;
+                }
+            }
+        }
+
+        foreach ($consolidated as $catKey => &$items) {
+            usort($items, fn($a, $b) => $b['value'] <=> $a['value']);
+        }
+
+        $this->consolidatedData = $consolidated;
+        return $consolidated;
+    }
+
+    public function getTopByCategory($categoryKey, $limit = null)
+    {
+        $limit = $limit ?? $this->topLimit;
+
+        if (empty($this->consolidatedData)) {
+            $this->consolidateData();
+        }
+
+        $categoryData = $this->consolidatedData[$categoryKey] ?? [];
+        return array_slice($categoryData, 0, $limit);
+    }
+
+    public function getGlobalTop($limit = null)
+    {
+        $limit = $limit ?? $this->topLimit;
+
+        if (empty($this->consolidatedData)) {
+            $this->consolidateData();
+        }
+
+        $allItems = [];
+        foreach ($this->consolidatedData as $categoryKey => $items) {
+            foreach ($items as $item) {
+                $allItems[] = array_merge($item, ['category' => $categoryKey]);
+            }
+        }
+
+        usort($allItems, fn($a, $b) => $b['value'] <=> $a['value']);
+        return array_slice($allItems, 0, $limit);
+    }
+
+    public function compareFiles()
+    {
+        $user = Auth::user();
+        if (!$user || !$this->compareFileA || !$this->compareFileB) {
+            return;
+        }
+
+        $fileA = LogAnalytic::where('id', $this->compareFileA)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $fileB = LogAnalytic::where('id', $this->compareFileB)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$fileA || !$fileB) {
+            return;
+        }
+
+        $dataA = $fileA->data ?? [];
+        $dataB = $fileB->data ?? [];
+
+        $results = [];
+
+        $allCategories = array_unique(array_merge(array_keys($dataA), array_keys($dataB)));
+
+        foreach ($allCategories as $categoryKey) {
+            $itemsA = $dataA[$categoryKey] ?? [];
+            $itemsB = $dataB[$categoryKey] ?? [];
+
+            $indexA = [];
+            foreach ($itemsA as $item) {
+                if (!is_array($item)) continue;
+                $label = $item['label'] ?? $item['name'] ?? null;
+                if ($label) {
+                    $indexA[$label] = floatval($item['value'] ?? $item['count'] ?? 0);
+                }
+            }
+
+            $indexB = [];
+            foreach ($itemsB as $item) {
+                if (!is_array($item)) continue;
+                $label = $item['label'] ?? $item['name'] ?? null;
+                if ($label) {
+                    $indexB[$label] = floatval($item['value'] ?? $item['count'] ?? 0);
+                }
+            }
+
+            $categoryResults = [
+                'new' => [],
+                'removed' => [],
+                'changed' => [],
+                'unchanged' => []
+            ];
+
+            foreach ($indexB as $label => $valueB) {
+                if (!isset($indexA[$label])) {
+                    $categoryResults['new'][] = ['label' => $label, 'value' => $valueB];
+                }
+            }
+
+            foreach ($indexA as $label => $valueA) {
+                if (!isset($indexB[$label])) {
+                    $categoryResults['removed'][] = ['label' => $label, 'value' => $valueA];
+                }
+            }
+
+            foreach ($indexA as $label => $valueA) {
+                if (isset($indexB[$label])) {
+                    $valueB = $indexB[$label];
+                    $diff = $valueB - $valueA;
+                    $percentChange = $valueA > 0 ? (($diff / $valueA) * 100) : 0;
+
+                    if (abs($diff) > 0.01) {
+                        $categoryResults['changed'][] = [
+                            'label' => $label,
+                            'valueA' => $valueA,
+                            'valueB' => $valueB,
+                            'diff' => $diff,
+                            'percentChange' => $percentChange
+                        ];
+                    } else {
+                        $categoryResults['unchanged'][] = [
+                            'label' => $label,
+                            'value' => $valueA
+                        ];
+                    }
+                }
+            }
+
+            usort($categoryResults['changed'], fn($a, $b) => abs($b['diff']) <=> abs($a['diff']));
+
+            $results[$categoryKey] = $categoryResults;
+        }
+
+        $this->comparisonResults = [
+            'fileA' => ['id' => $fileA->id, 'filename' => $fileA->filename, 'date' => $fileA->report_date],
+            'fileB' => ['id' => $fileB->id, 'filename' => $fileB->filename, 'date' => $fileB->report_date],
+            'categories' => $results
+        ];
     }
 }
