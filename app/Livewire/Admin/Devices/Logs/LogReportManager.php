@@ -38,6 +38,7 @@ class LogReportManager extends Component
     public $selectedFileIds = [];
     public $topLimit = 10;
     public $selectedCategoryForTop = null;
+    public $selectedCategoryForChart = null;
     public $consolidatedData = [];
     public $compareFileA = null;
     public $compareFileB = null;
@@ -131,6 +132,13 @@ class LogReportManager extends Component
 
         $this->categories = $categories;
         $this->totalRecords = count($categories);
+
+        $availableCategoryKeys = array_column($categories, 'key');
+        if (empty($availableCategoryKeys)) {
+            $this->selectedCategoryForChart = null;
+        } elseif (!in_array($this->selectedCategoryForChart, $availableCategoryKeys, true)) {
+            $this->selectedCategoryForChart = $availableCategoryKeys[0];
+        }
     }
 
     protected function formatCategoryName($key)
@@ -516,6 +524,35 @@ class LogReportManager extends Component
         return array_values($unique);
     }
 
+    public function getChartCategoriesForSelectedFile()
+    {
+        $unique = [];
+
+        foreach ($this->categories as $category) {
+            $categoryKey = $category['key'] ?? null;
+            $categoryName = $category['name'] ?? null;
+            if (!$categoryKey || !$categoryName) {
+                continue;
+            }
+
+            $fingerprint = $this->categoryFingerprint($categoryName);
+            if ($fingerprint === '') {
+                continue;
+            }
+
+            if (!isset($unique[$fingerprint])) {
+                $unique[$fingerprint] = [
+                    'key' => $categoryKey,
+                    'name' => $categoryName,
+                ];
+            }
+        }
+
+        uasort($unique, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+
+        return array_values($unique);
+    }
+
     protected function analyticsScopedUploadsQuery($user)
     {
         $query = LogAnalytic::where('user_id', $user->id);
@@ -622,6 +659,64 @@ class LogReportManager extends Component
         return [
             'labels' => array_map(fn($key) => $this->formatCategoryName($key), array_keys($top)),
             'values' => array_values($top),
+        ];
+    }
+
+    public function getSelectedCategoryChartData()
+    {
+        if (!$this->selectedCategoryForChart || empty($this->categories)) {
+            return [
+                'labels' => [],
+                'values' => [],
+                'categoryName' => null,
+            ];
+        }
+
+        $selectedCategory = collect($this->categories)
+            ->firstWhere('key', $this->selectedCategoryForChart);
+
+        if (!$selectedCategory) {
+            return [
+                'labels' => [],
+                'values' => [],
+                'categoryName' => null,
+            ];
+        }
+
+        $aggregated = [];
+        foreach (($selectedCategory['items'] ?? []) as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $label = $item['label'] ?? $item['name'] ?? null;
+            if (!$label) {
+                continue;
+            }
+
+            $value = (float) ($item['value'] ?? $item['count'] ?? 0);
+            $normalizedLabelKey = $this->normalizeLabelKey($label);
+            if ($normalizedLabelKey === '') {
+                continue;
+            }
+
+            if (!isset($aggregated[$normalizedLabelKey])) {
+                $aggregated[$normalizedLabelKey] = [
+                    'label' => $label,
+                    'value' => 0,
+                ];
+            }
+
+            $aggregated[$normalizedLabelKey]['value'] += $value;
+        }
+
+        $rows = array_values($aggregated);
+        usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+
+        return [
+            'labels' => array_map(fn($row) => $row['label'], $rows),
+            'values' => array_map(fn($row) => (float) ($row['value'] ?? 0), $rows),
+            'categoryName' => $selectedCategory['name'] ?? $this->formatCategoryName($this->selectedCategoryForChart),
         ];
     }
 
