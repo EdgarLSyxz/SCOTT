@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Devices\Logs;
 use App\Models\LogAnalytic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
@@ -134,7 +135,40 @@ class LogReportManager extends Component
 
     protected function formatCategoryName($key)
     {
-        return ucfirst(str_replace('_', ' ', $key));
+        $formatted = str_replace(['_', '-'], ' ', (string) $key);
+        $formatted = preg_replace('/\s+/', ' ', trim($formatted));
+        return ucfirst($formatted);
+    }
+
+    protected function normalizeCategoryKey($key)
+    {
+        $normalized = Str::of((string) $key)
+            ->ascii()
+            ->replaceMatches('/[^A-Za-z0-9]+/', '_')
+            ->trim('_')
+            ->lower()
+            ->value();
+
+        return $normalized;
+    }
+
+    protected function categoryFingerprint($value)
+    {
+        return Str::of((string) $value)
+            ->ascii()
+            ->replace(['_', '-'], ' ')
+            ->squish()
+            ->lower()
+            ->value();
+    }
+
+    protected function normalizeLabelKey($label)
+    {
+        return Str::of((string) $label)
+            ->ascii()
+            ->squish()
+            ->lower()
+            ->value();
     }
 
     public function deleteUpload()
@@ -365,10 +399,6 @@ class LogReportManager extends Component
 
     protected function syncSelectedFileIds()
     {
-        if (!in_array($this->analyticsMode, ['top', 'global'], true)) {
-            return;
-        }
-
         $this->selectedFileIds = array_column($this->getFilteredUploadsForAnalytics(), 'id');
     }
 
@@ -460,41 +490,28 @@ class LogReportManager extends Component
 
     public function getUniqueCategoriesForTop()
     {
+        if (empty($this->consolidatedData)) {
+            $this->consolidateData();
+        }
+
         $unique = [];
+        foreach (array_keys($this->consolidatedData) as $categoryKey) {
+            $displayName = $this->formatCategoryName($categoryKey);
+            $fingerprint = $this->categoryFingerprint($displayName);
 
-        if (!empty($this->consolidatedData)) {
-            foreach (array_keys($this->consolidatedData) as $categoryKey) {
-                $displayName = $this->formatCategoryName($categoryKey);
-                $nameKey = strtolower($displayName);
-
-                if (!isset($unique[$nameKey])) {
-                    $unique[$nameKey] = [
-                        'key' => $categoryKey,
-                        'name' => $displayName,
-                    ];
-                }
+            if ($fingerprint === '') {
+                continue;
             }
-        } else {
-            $user = Auth::user();
-            if ($user) {
-                $uploads = $this->analyticsScopedUploadsQuery($user)->get(['data']);
 
-                foreach ($uploads as $upload) {
-                    $data = is_array($upload->data) ? $upload->data : [];
-                    foreach (array_keys($data) as $categoryKey) {
-                        $displayName = $this->formatCategoryName($categoryKey);
-                        $nameKey = strtolower($displayName);
-
-                        if (!isset($unique[$nameKey])) {
-                            $unique[$nameKey] = [
-                                'key' => $categoryKey,
-                                'name' => $displayName,
-                            ];
-                        }
-                    }
-                }
+            if (!isset($unique[$fingerprint])) {
+                $unique[$fingerprint] = [
+                    'key' => $categoryKey,
+                    'name' => $displayName,
+                ];
             }
         }
+
+        uasort($unique, fn($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return array_values($unique);
     }
@@ -538,8 +555,13 @@ class LogReportManager extends Component
         foreach ($uploads as $upload) {
             $data = $upload->data ?? [];
             foreach ($data as $categoryKey => $items) {
-                if (!isset($consolidated[$categoryKey])) {
-                    $consolidated[$categoryKey] = [];
+                $normalizedCategoryKey = $this->normalizeCategoryKey($categoryKey);
+                if ($normalizedCategoryKey === '') {
+                    continue;
+                }
+
+                if (!isset($consolidated[$normalizedCategoryKey])) {
+                    $consolidated[$normalizedCategoryKey] = [];
                 }
 
                 foreach ($items as $item) {
@@ -550,26 +572,57 @@ class LogReportManager extends Component
 
                     if (!$label) continue;
 
-                    if (!isset($consolidated[$categoryKey][$label])) {
-                        $consolidated[$categoryKey][$label] = [
+                    $normalizedLabelKey = $this->normalizeLabelKey($label);
+                    if ($normalizedLabelKey === '') {
+                        continue;
+                    }
+
+                    if (!isset($consolidated[$normalizedCategoryKey][$normalizedLabelKey])) {
+                        $consolidated[$normalizedCategoryKey][$normalizedLabelKey] = [
                             'label' => $label,
                             'value' => 0,
                             'sources' => []
                         ];
                     }
 
-                    $consolidated[$categoryKey][$label]['value'] += $value;
-                    $consolidated[$categoryKey][$label]['sources'][] = $upload->filename;
+                    $consolidated[$normalizedCategoryKey][$normalizedLabelKey]['value'] += $value;
+                    $consolidated[$normalizedCategoryKey][$normalizedLabelKey]['sources'][$upload->id] = $upload->filename;
                 }
             }
         }
 
-        foreach ($consolidated as $catKey => &$items) {
+        foreach ($consolidated as $catKey => $items) {
+            $items = array_values(array_map(function ($item) {
+                $item['sources'] = array_values($item['sources']);
+                return $item;
+            }, $items));
+
             usort($items, fn($a, $b) => $b['value'] <=> $a['value']);
+            $consolidated[$catKey] = $items;
         }
 
         $this->consolidatedData = $consolidated;
         return $consolidated;
+    }
+
+    public function getAnalyticsChartData($limit = 8)
+    {
+        if (empty($this->consolidatedData)) {
+            $this->consolidateData();
+        }
+
+        $totalsByCategory = [];
+        foreach ($this->consolidatedData as $categoryKey => $items) {
+            $totalsByCategory[$categoryKey] = collect($items)->sum(fn($item) => (float) ($item['value'] ?? 0));
+        }
+
+        arsort($totalsByCategory);
+        $top = array_slice($totalsByCategory, 0, (int) $limit, true);
+
+        return [
+            'labels' => array_map(fn($key) => $this->formatCategoryName($key), array_keys($top)),
+            'values' => array_values($top),
+        ];
     }
 
     public function getTopByCategory($categoryKey, $limit = null)
@@ -694,6 +747,8 @@ class LogReportManager extends Component
             }
 
             usort($categoryResults['changed'], fn($a, $b) => abs($b['diff']) <=> abs($a['diff']));
+            usort($categoryResults['new'], fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+            usort($categoryResults['removed'], fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
 
             $results[$categoryKey] = $categoryResults;
         }

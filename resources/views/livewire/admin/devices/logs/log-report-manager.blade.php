@@ -133,6 +133,7 @@
             $availableAnalyticsYears = $this->getAvailableAnalyticsYears();
             $availableAnalyticsMonths = $this->getAvailableAnalyticsMonths();
             $uniqueTopCategories = $this->getUniqueCategoriesForTop();
+            $analyticsChartData = $this->getAnalyticsChartData();
         @endphp
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <div class="flex items-start justify-between gap-4 mb-6">
@@ -145,7 +146,7 @@
                         {{ __('Focus on essential insights by period: Top by category and file comparison.') }}
                     </p>
                 </div>
-                <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700 whitespace-nowrap">
+                <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700 whitespace-nowrap font-semibold">
                     <i class="fa-solid fa-filter mr-1"></i>
                     {{ __('Files in period') }}: <span class="font-semibold">{{ count($filteredAnalyticsUploads) }}</span>
                 </div>
@@ -202,7 +203,7 @@
                     {{ __('No files found for selected period.') }}
                 </div>
             @elseif ($analyticsMode === 'top')
-                <div class="space-y-4">
+                <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -259,7 +260,7 @@
                     @endif
                 </div>
             @else
-                <div class="space-y-4">
+                <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -290,26 +291,118 @@
                     </div>
 
                     @if ($compareFileA && $compareFileB && !empty($comparisonResults))
-                        <div class="space-y-2">
-                            @foreach ($comparisonResults['categories'] as $catKey => $catResults)
+                        @php
+                            $comparisonCategories = $comparisonResults['categories'] ?? [];
+                            $summaryNew = collect($comparisonCategories)->sum(fn($results) => count($results['new'] ?? []));
+                            $summaryRemoved = collect($comparisonCategories)->sum(fn($results) => count($results['removed'] ?? []));
+                            $summaryChanged = collect($comparisonCategories)->sum(fn($results) => count($results['changed'] ?? []));
+                        @endphp
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-900/20 p-3">
+                                <p class="text-xs text-green-700 dark:text-green-300">{{ __('New') }}</p>
+                                <p class="text-xl font-semibold text-green-700 dark:text-green-200">{{ $summaryNew }}</p>
+                            </div>
+                            <div class="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 p-3">
+                                <p class="text-xs text-red-700 dark:text-red-300">{{ __('Removed (:count)', ['count' => 0]) }}</p>
+                                <p class="text-xl font-semibold text-red-700 dark:text-red-200">{{ $summaryRemoved }}</p>
+                            </div>
+                            <div class="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/20 p-3">
+                                <p class="text-xs text-blue-700 dark:text-blue-300">{{ __('Changed (:count)', ['count' => 0]) }}</p>
+                                <p class="text-xl font-semibold text-blue-700 dark:text-blue-200">{{ $summaryChanged }}</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            @foreach ($comparisonCategories as $catKey => $catResults)
                                 @php
                                     $newCount = count($catResults['new'] ?? []);
                                     $removedCount = count($catResults['removed'] ?? []);
                                     $changedCount = count($catResults['changed'] ?? []);
                                     $totalImpact = $newCount + $removedCount + $changedCount;
+
+                                    $newValue = collect($catResults['new'] ?? [])->sum('value');
+                                    $removedValue = collect($catResults['removed'] ?? [])->sum('value');
+                                    $changedDiff = collect($catResults['changed'] ?? [])->sum('diff');
+                                    $netImpact = $newValue - $removedValue + $changedDiff;
                                 @endphp
                                 @if ($totalImpact > 0)
-                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $this->formatCategoryName($catKey) }}</span>
-                                        <div class="flex items-center gap-2 text-xs">
+                                    <div class="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $this->formatCategoryName($catKey) }}</span>
+                                            <div class="flex items-center gap-2 text-xs">
+                                                @if ($newCount > 0)
+                                                    <span class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">+{{ $newCount }}</span>
+                                                @endif
+                                                @if ($removedCount > 0)
+                                                    <span class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">-{{ $removedCount }}</span>
+                                                @endif
+                                                @if ($changedCount > 0)
+                                                    <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">~{{ $changedCount }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">
+                                            {{ __('Net impact') }}:
+                                            <span class="font-semibold {{ $netImpact >= 0 ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300' }}">
+                                                {{ $netImpact >= 0 ? '+' : '' }}{{ number_format($netImpact, 2) }}
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-3">
                                             @if ($newCount > 0)
-                                                <span class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">+{{ $newCount }}</span>
+                                                <div class="rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50/70 dark:bg-green-900/10 p-3">
+                                                    <p class="text-xs font-semibold text-green-700 dark:text-green-300 mb-2">{{ __('New (:count)', ['count' => $newCount]) }}</p>
+                                                    <div class="space-y-1 text-xs">
+                                                        @foreach (array_slice($catResults['new'], 0, 4) as $row)
+                                                            <div class="flex items-center justify-between gap-2">
+                                                                <span class="truncate text-gray-700 dark:text-gray-300">{{ $row['label'] }}</span>
+                                                                <span class="font-semibold text-green-700 dark:text-green-300">+{{ number_format($row['value'] ?? 0, 2) }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    @if ($newCount > 4)
+                                                        <p class="mt-2 text-[11px] text-green-700 dark:text-green-300">{{ __('...and :count more', ['count' => $newCount - 4]) }}</p>
+                                                    @endif
+                                                </div>
                                             @endif
+
                                             @if ($removedCount > 0)
-                                                <span class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">-{{ $removedCount }}</span>
+                                                <div class="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50/70 dark:bg-red-900/10 p-3">
+                                                    <p class="text-xs font-semibold text-red-700 dark:text-red-300 mb-2">{{ __('Removed (:count)', ['count' => $removedCount]) }}</p>
+                                                    <div class="space-y-1 text-xs">
+                                                        @foreach (array_slice($catResults['removed'], 0, 4) as $row)
+                                                            <div class="flex items-center justify-between gap-2">
+                                                                <span class="truncate text-gray-700 dark:text-gray-300">{{ $row['label'] }}</span>
+                                                                <span class="font-semibold text-red-700 dark:text-red-300">-{{ number_format($row['value'] ?? 0, 2) }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    @if ($removedCount > 4)
+                                                        <p class="mt-2 text-[11px] text-red-700 dark:text-red-300">{{ __('...and :count more', ['count' => $removedCount - 4]) }}</p>
+                                                    @endif
+                                                </div>
                                             @endif
+
                                             @if ($changedCount > 0)
-                                                <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">~{{ $changedCount }}</span>
+                                                <div class="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-900/10 p-3">
+                                                    <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">{{ __('Changed (:count)', ['count' => $changedCount]) }}</p>
+                                                    <div class="space-y-1 text-xs">
+                                                        @foreach (array_slice($catResults['changed'], 0, 4) as $row)
+                                                            <div>
+                                                                <p class="truncate text-gray-700 dark:text-gray-300">{{ $row['label'] }}</p>
+                                                                <p class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold">
+                                                                    {{ number_format($row['valueA'] ?? 0, 2) }} -> {{ number_format($row['valueB'] ?? 0, 2) }}
+                                                                    ({{ ($row['diff'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($row['diff'] ?? 0, 2) }}, {{ number_format($row['percentChange'] ?? 0, 1) }}%)
+                                                                </p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    @if ($changedCount > 4)
+                                                        <p class="mt-2 text-[11px] text-blue-700 dark:text-blue-300">{{ __('...and :count more', ['count' => $changedCount - 4]) }}</p>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     </div>
@@ -574,7 +667,117 @@
             @endif
         </div>
     </div>
+
+    @if (!empty($analyticsChartData['labels']))
+        <div x-data="logAnalyticsChart(@js($analyticsChartData))" x-init="init()"
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-{{ $color }}-500"></i>
+                <span>{{ __('Category distribution by total value') }}</span>
+                </h3>
+            </div>
+            <canvas id="log-analytics-chart" class="max-w-full" aria-label="{{ __('Top categories in selected period') }}"></canvas>
+        </div>
+    @endif
+
 </div>
+
+@once
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+@endonce
+
+<script>
+    let __logAnalyticsChartInstance = null;
+
+    function renderLogAnalyticsChart(payload) {
+        const canvas = document.getElementById('log-analytics-chart');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        const labels = Array.isArray(payload?.labels) ? payload.labels : [];
+        const values = Array.isArray(payload?.values) ? payload.values : [];
+
+        if (!labels.length || !values.length) {
+            if (__logAnalyticsChartInstance) {
+                try { __logAnalyticsChartInstance.destroy(); } catch (e) { }
+                __logAnalyticsChartInstance = null;
+            }
+            return;
+        }
+
+        canvas.style.display = 'block';
+        canvas.style.width = '100%';
+        canvas.style.height = '180px';
+        canvas.height = 180;
+
+        const ctx = canvas.getContext('2d');
+
+        if (__logAnalyticsChartInstance) {
+            try { __logAnalyticsChartInstance.destroy(); } catch (e) { }
+            __logAnalyticsChartInstance = null;
+        }
+
+        __logAnalyticsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: '{{ __('Total value') }}',
+                        data: values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function (context) {
+                                return `{{ __('Total value') }}: ${Number(context.parsed.y || 0).toLocaleString()}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { usePointStyle: true, padding: 15 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: '{{ __('Total value') }}', font: { size: 12, weight: 'bold' } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { maxRotation: 35, minRotation: 20 }
+                    }
+                }
+            }
+        });
+    }
+
+    function logAnalyticsChart(payload) {
+        return {
+            payload,
+            init() {
+                renderLogAnalyticsChart(this.payload);
+            }
+        };
+    }
+</script>
 
 <script>
     function uploadForm() {

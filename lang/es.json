@@ -948,13 +948,16 @@
     "Removed (:count)": "Eliminados (:count)",
     "Changed (:count)": "Cambiados (:count)",
     "...and :count more": "...y :count más",
-    "Generate Global Top": "Generar Top Global",
-    "Global Top :limit (All Categories)": "Top Global :limit (Todas las Categorías)",
+    "Global top :limit (All Categories)": "Top global :limit (Todas las Categorías)",
     ":count file(s)": ":count archivo(s)",
     "All years": "Todos los años",
     "Files in period": "Archivos en el periodo",
     "No files found for selected period.": "No se encontraron archivos para el periodo seleccionado.",
     "Focus on essential insights by period: Top by category and file comparison.": "Enfoca el análisis esencial por periodo: top por categoría y comparación de archivos.",
-    "No records available.": "No hay registros disponibles."
+    "No records available.": "No hay registros disponibles.",
+    "Category distribution by total value": "Distribución de categorías por valor total",
+    "Top categories in selected period": "Top de categorías en el periodo seleccionado",
+    "Total value": "Valor total",
+    "Net impact": "Impacto neto"
 }
 
