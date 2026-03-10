@@ -158,7 +158,7 @@
                         {{ __('Year') }}
                     </label>
                     <select wire:model.live="analyticsYear"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         <option value="">{{ __('All years') }}</option>
                         @foreach ($availableAnalyticsYears as $year)
                             <option value="{{ $year }}">{{ $year }}</option>
@@ -171,7 +171,7 @@
                         {{ __('Month') }}
                     </label>
                     <select wire:model.live="analyticsMonth"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         <option value="">{{ __('All months') }}</option>
                         @foreach ($availableAnalyticsMonths as $month)
                             <option value="{{ $month['value'] }}">{{ ucfirst($month['label']) }}</option>
@@ -210,7 +210,7 @@
                                 {{ __('Category') }}
                             </label>
                             <select wire:model.live="selectedCategoryForTop"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                                 <option value="">{{ __('Select a category...') }}</option>
                                 @foreach ($uniqueTopCategories as $cat)
                                     <option value="{{ $cat['key'] }}">{{ $cat['name'] }}</option>
@@ -223,7 +223,7 @@
                                 {{ __('Top limit') }}
                             </label>
                             <select wire:model.live="topLimit"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                                 <option value="5">Top 5</option>
                                 <option value="10">Top 10</option>
                                 <option value="20">Top 20</option>
@@ -267,7 +267,7 @@
                                 {{ __('File A (Base)') }}
                             </label>
                             <select wire:model.live="compareFileA"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                                 <option value="">{{ __('Select file...') }}</option>
                                 @foreach ($filteredAnalyticsUploads as $u)
                                     <option value="{{ $u['id'] }}">{{ $u['filename'] }}</option>
@@ -280,7 +280,7 @@
                                 {{ __('File B (Compare)') }}
                             </label>
                             <select wire:model.live="compareFileB"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                                 <option value="">{{ __('Select file...') }}</option>
                                 @foreach ($filteredAnalyticsUploads as $u)
                                     <option value="{{ $u['id'] }}">{{ $u['filename'] }}</option>
