@@ -96,11 +96,11 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 md:p-4 flex-1 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie"></i>{{ __(key: 'Distribution by year:') }}<span style="font-weight:600;">{{ $selectedYear ?? date('Y') }}</span>
+                        <i class="fa-solid fa-chart-pie"></i>{{ __(key: 'Year:') }}<span style="font-weight:600;">{{ $selectedYear ?? date('Y') }}</span>
                     </h3>
 
                     <div class="ml-0 sm:ml-2 mt-0 sm:mt-0 flex items-center gap-2">
-                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="tooltip-wrapper relative inline-block">
                             <button type="button" id="exportPdfBtn" onclick="exportChartsPdf(event)"
                                 class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 focus:outline-none">
                                 <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
@@ -112,13 +112,13 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-75"
-                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
-                                 role="tooltip">
+                                 class="tooltip origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip" data-dynamic-tooltip="true">
                                 {{ __('Export PDF') }}
                             </div>
                         </div>
 
-                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="tooltip-wrapper relative inline-block">
                             <button type="button" id="exportCsvBtn" onclick="exportCsv()"
                                 class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 focus:outline-none">
                                 <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
@@ -127,13 +127,13 @@
                                 x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100"
                                 x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100"
                                 x-transition:leave-end="opacity-0 scale-75"
-                                class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
-                                role="tooltip">
+                                class="tooltip origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                role="tooltip" data-dynamic-tooltip="true">
                                 {{ __('Export CSV') }}
                             </div>
                         </div>
 
-                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="tooltip-wrapper relative inline-block">
                             <button type="button" id="emailExportBtn" onclick="exportMonthlyByEmail(event)"
                                 class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 focus:outline-none">
                                 <i class="fa-solid fa-envelope" aria-hidden="true"></i>
@@ -145,34 +145,16 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-75"
-                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
-                                 role="tooltip">
+                                 class="tooltip origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip" data-dynamic-tooltip="true">
                                 {{ __('Send by email') }}
                             </div>
                         </div>
 
-                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
-                            <button type="button" id="exportPdfAllYearsBtn" onclick="exportChartsPdf(event, true)"
-                                class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 focus:outline-none">
-                                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
-                            </button>
-                            <div x-show="open" x-cloak
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 scale-75"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-100"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-75"
-                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
-                                 role="tooltip">
-                                {{ __('Export PDF (all years)') }}
-                            </div>
-                        </div>
-
-                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+                        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="tooltip-wrapper relative inline-block">
                             <button type="button" id="emailExportAllYearsBtn" onclick="exportMonthlyByEmail(event, true)"
-                                class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 focus:outline-none">
-                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                                class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 focus:outline-none">
+                                <i class="fa-solid fa-calendar" aria-hidden="true"></i>
                             </button>
                             <div x-show="open" x-cloak
                                  x-transition:enter="transition ease-out duration-150"
@@ -181,8 +163,8 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-75"
-                                 class="origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
-                                 role="tooltip">
+                                 class="tooltip origin-center absolute left-1/2 transform -translate-x-1/2 mt-2 w-max bg-gray-800 text-white dark:bg-white dark:text-gray-800 text-xs rounded px-2 py-1 shadow-lg z-50"
+                                 role="tooltip" data-dynamic-tooltip="true">
                                 {{ __('Send all years by email') }}
                             </div>
                         </div>
@@ -843,6 +825,60 @@
                         alert('Could not start CSV export.');
                     }
                 }
+                // Dynamic tooltip positioning: keep tooltips within viewport
+                function positionTooltipWithinViewport(parent, tooltip) {
+                    if (!parent || !tooltip) return;
+                    const pad = 8;
+                    // Temporarily make visible to measure
+                    const prevVisibility = tooltip.style.visibility;
+                    const prevDisplay = tooltip.style.display;
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.display = 'block';
+
+                    const parentRect = parent.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+
+                    // center tooltip above parent by default
+                    let desiredLeft = parentRect.left + (parentRect.width / 2) - (tooltipRect.width / 2);
+                    const minLeft = pad;
+                    const maxLeft = viewportWidth - pad - tooltipRect.width;
+                    if (desiredLeft < minLeft) desiredLeft = minLeft;
+                    if (desiredLeft > maxLeft) desiredLeft = maxLeft;
+
+                    const leftRelative = desiredLeft - parentRect.left;
+                    tooltip.style.left = `${leftRelative}px`;
+                    tooltip.style.right = 'auto';
+                    tooltip.style.transform = 'none';
+
+                    // restore visibility/display
+                    tooltip.style.display = prevDisplay || '';
+                    tooltip.style.visibility = prevVisibility || '';
+                }
+
+                function bindDynamicTooltips() {
+                    const wrappers = document.querySelectorAll('.tooltip-wrapper');
+                    wrappers.forEach(wrap => {
+                        const tooltip = wrap.querySelector('[role="tooltip"]');
+                        if (!tooltip) return;
+                        function onShow() {
+                            // allow Alpine to toggle visibility first
+                            setTimeout(() => positionTooltipWithinViewport(wrap, tooltip), 10);
+                        }
+                        wrap.addEventListener('mouseenter', onShow);
+                        wrap.addEventListener('focusin', onShow);
+                    });
+                    window.addEventListener('resize', () => {
+                        document.querySelectorAll('.tooltip-wrapper').forEach(wrap => {
+                            const tooltip = wrap.querySelector('[role="tooltip"]');
+                            if (tooltip && tooltip.offsetParent !== null) {
+                                positionTooltipWithinViewport(wrap, tooltip);
+                            }
+                        });
+                    });
+                }
+
+                document.addEventListener('DOMContentLoaded', bindDynamicTooltips);
             </script>
     @endpush
 @endonce
