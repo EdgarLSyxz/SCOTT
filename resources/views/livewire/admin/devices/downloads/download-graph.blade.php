@@ -380,6 +380,210 @@
                     deviceSelect.addEventListener('change', loadMonthsForYear);
                 }
 
+                function buildYearlyAggregates(preData) {
+                    const rows = Array.isArray(preData?.download_rows) ? preData.download_rows : [];
+                    let years = Array.isArray(preData?.years)
+                        ? preData.years.map(y => parseInt(y, 10)).filter(y => Number.isFinite(y) && y > 0)
+                        : [];
+
+                    if (!years.length) {
+                        years = Array.from(new Set(rows
+                            .map(r => parseInt(r?.year, 10))
+                            .filter(y => Number.isFinite(y) && y > 0)));
+                    }
+
+                    years.sort((a, b) => b - a);
+
+                    const byYear = {};
+                    years.forEach((y) => {
+                        byYear[y] = {
+                            monthly: Array(12).fill(0),
+                            protocols: { HLS: 0, DASH: 0 },
+                        };
+                    });
+
+                    rows.forEach((row) => {
+                        const y = parseInt(row?.year, 10);
+                        if (!Number.isFinite(y) || y <= 0) return;
+                        if (!byYear[y]) {
+                            byYear[y] = {
+                                monthly: Array(12).fill(0),
+                                protocols: { HLS: 0, DASH: 0 },
+                            };
+                            years.push(y);
+                        }
+
+                        const month = parseInt(row?.month, 10);
+                        const count = parseInt(row?.count, 10) || 0;
+                        const protocol = String(row?.protocol || '').trim().toUpperCase();
+
+                        if (month >= 1 && month <= 12) {
+                            byYear[y].monthly[month - 1] += count;
+                        }
+
+                        if (protocol === 'HLS' || protocol === 'DASH') {
+                            byYear[y].protocols[protocol] += count;
+                        }
+                    });
+
+                    years = Array.from(new Set(years)).sort((a, b) => b - a);
+                    years = years.slice(0, 3);
+
+                    const filteredByYear = {};
+                    years.forEach((y) => {
+                        filteredByYear[y] = byYear[y] || {
+                            monthly: Array(12).fill(0),
+                            protocols: { HLS: 0, DASH: 0 },
+                        };
+                    });
+
+                    return { years, byYear: filteredByYear };
+                }
+
+                async function renderChartDataUrl(config, width = 1200, height = 520) {
+                    if (typeof Chart === 'undefined') {
+                        return null;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    let chart = null;
+
+                    try {
+                        chart = new Chart(ctx, config);
+                        await new Promise((resolve) => setTimeout(resolve, 60));
+                        return canvas.toDataURL('image/png');
+                    } catch (error) {
+                        console.warn('Could not render chart for annual export:', error);
+                        return null;
+                    } finally {
+                        if (chart) {
+                            try { chart.destroy(); } catch (_) {}
+                        }
+                    }
+                }
+
+                async function buildGlobalYearBarChart(preData) {
+                    const { years, byYear } = buildYearlyAggregates(preData);
+                    const sortedYears = [...years].sort((a, b) => a - b);
+                    const totals = sortedYears.map(y => {
+                        const entry = byYear[y] || { monthly: Array(12).fill(0) };
+                        return entry.monthly.reduce((sum, v) => sum + v, 0);
+                    });
+                    const grandTotal = totals.reduce((s, t) => s + t, 0);
+                    const pcts = totals.map(t => grandTotal > 0 ? ((t / grandTotal) * 100).toFixed(1) + '%' : '0%');
+                    const colors = ['rgba(99,102,241,0.85)', 'rgba(59,130,246,0.85)', 'rgba(6,182,212,0.85)'];
+                    const borderColors = ['rgb(99,102,241)', 'rgb(59,130,246)', 'rgb(6,182,212)'];
+                    const config = {
+                        type: 'bar',
+                        data: {
+                            labels: sortedYears.map(String),
+                            datasets: [{
+                                label: 'Downloads',
+                                data: totals,
+                                backgroundColor: sortedYears.map((_, i) => colors[i % colors.length]),
+                                borderColor: sortedYears.map((_, i) => borderColors[i % borderColors.length]),
+                                borderWidth: 2,
+                            }],
+                        },
+                        options: {
+                            animation: false,
+                            responsive: false,
+                            scales: {
+                                y: { beginAtZero: true, ticks: { font: { size: 14 } } },
+                                x: { ticks: { font: { size: 18, weight: 'bold' } } },
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false },
+                            },
+                        },
+                    };
+                    return await renderChartDataUrl(config, 1280, 520);
+                }
+
+                async function buildAllYearsCharts(preData) {
+                    const { years, byYear } = buildYearlyAggregates(preData);
+                    const chartsByYear = {};
+                    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                    for (const year of years) {
+                        const entry = byYear[year] || { monthly: Array(12).fill(0), protocols: { HLS: 0, DASH: 0 } };
+
+                        const monthlyConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: monthLabels,
+                                datasets: [{
+                                    label: `Downloads ${year}`,
+                                    data: entry.monthly,
+                                    backgroundColor: [
+                                        'rgba(6, 182, 212, 0.85)',
+                                        'rgba(59, 130, 246, 0.85)',
+                                        'rgba(99, 102, 241, 0.85)',
+                                        'rgba(139, 92, 246, 0.85)',
+                                        'rgba(168, 85, 247, 0.85)',
+                                        'rgba(236, 72, 153, 0.85)',
+                                        'rgba(239, 68, 68, 0.85)',
+                                        'rgba(249, 115, 22, 0.85)',
+                                        'rgba(245, 158, 11, 0.85)',
+                                        'rgba(34, 197, 94, 0.85)',
+                                        'rgba(16, 185, 129, 0.85)',
+                                        'rgba(14, 165, 233, 0.85)'
+                                    ],
+                                    borderColor: [
+                                        'rgb(6, 182, 212)',
+                                        'rgb(59, 130, 246)',
+                                        'rgb(99, 102, 241)',
+                                        'rgb(139, 92, 246)',
+                                        'rgb(168, 85, 247)',
+                                        'rgb(236, 72, 153)',
+                                        'rgb(239, 68, 68)',
+                                        'rgb(249, 115, 22)',
+                                        'rgb(245, 158, 11)',
+                                        'rgb(34, 197, 94)',
+                                        'rgb(16, 185, 129)',
+                                        'rgb(14, 165, 233)'
+                                    ],
+                                    borderWidth: 1,
+                                }],
+                            },
+                            options: {
+                                animation: false,
+                                responsive: false,
+                                scales: { y: { beginAtZero: true } },
+                                plugins: { legend: { display: false } },
+                            },
+                        };
+
+                        const protocolConfig = {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['HLS', 'DASH'],
+                                datasets: [{
+                                    data: [entry.protocols.HLS || 0, entry.protocols.DASH || 0],
+                                    backgroundColor: ['#06B6D4', '#8B5CF6'],
+                                }],
+                            },
+                            options: {
+                                animation: false,
+                                responsive: false,
+                                plugins: { legend: { position: 'bottom' } },
+                            },
+                        };
+
+                        const monthly = await renderChartDataUrl(monthlyConfig, 1280, 520);
+                        const pie = await renderChartDataUrl(protocolConfig, 760, 520);
+
+                        chartsByYear[String(year)] = { monthly, pie };
+                    }
+
+                    return chartsByYear;
+                }
+
                 async function exportChartsPdf(e, allYears = false) {
                     e && e.preventDefault();
 
@@ -438,6 +642,7 @@
 
                     let monthlyData = null;
                     let pieData = null;
+                    let chartsByYear = null;
                     if (!allYears) {
                         const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
                         const pieCanvas = document.getElementById('pieDownloadsChart');
@@ -448,11 +653,29 @@
 
                         monthlyData = monthlyCanvas.toDataURL('image/png');
                         pieData = pieCanvas.toDataURL('image/png');
+                    } else {
+                        chartsByYear = await buildAllYearsCharts(preData);
+                    }
+
+                    let globalBarChart = null;
+                    if (allYears) {
+                        globalBarChart = await buildGlobalYearBarChart(preData);
                     }
 
                     const fd = new FormData();
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
                     if (pieData) fd.append('charts[pie]', pieData);
+                    if (chartsByYear && typeof chartsByYear === 'object') {
+                        Object.entries(chartsByYear).forEach(([yearKey, images]) => {
+                            if (images?.monthly) {
+                                fd.append(`charts_by_year[${yearKey}][monthly]`, images.monthly);
+                            }
+                            if (images?.pie) {
+                                fd.append(`charts_by_year[${yearKey}][pie]`, images.pie);
+                            }
+                        });
+                    }
+                    if (globalBarChart) fd.append('chart_global_bar', globalBarChart);
                     if (allYears) {
                         fd.append('all_years', '1');
                         fd.append('year', 'all');
@@ -541,6 +764,7 @@
                     const pieCanvas = document.getElementById('pieDownloadsChart');
                     let monthlyData = null;
                     let pieData = null;
+                    let chartsByYear = null;
                     if (!allYears && monthlyCanvas) {
                         try {
                             monthlyData = monthlyCanvas.toDataURL('image/png');
@@ -551,11 +775,30 @@
                             pieData = pieCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture pie chart'); }
                     }
+                    if (allYears) {
+                        chartsByYear = await buildAllYearsCharts(preData);
+                    }
+
+                    let globalBarChartEmail = null;
+                    if (allYears) {
+                        globalBarChartEmail = await buildGlobalYearBarChart(preData);
+                    }
 
                     const fd = new FormData();
                     fd.append('data', JSON.stringify(preData));
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
                     if (pieData) fd.append('charts[pie]', pieData);
+                    if (chartsByYear && typeof chartsByYear === 'object') {
+                        Object.entries(chartsByYear).forEach(([yearKey, images]) => {
+                            if (images?.monthly) {
+                                fd.append(`charts_by_year[${yearKey}][monthly]`, images.monthly);
+                            }
+                            if (images?.pie) {
+                                fd.append(`charts_by_year[${yearKey}][pie]`, images.pie);
+                            }
+                        });
+                    }
+                    if (globalBarChartEmail) fd.append('chart_global_bar', globalBarChartEmail);
                     if (allYears) {
                         fd.append('all_years', '1');
                         fd.append('year', 'all');

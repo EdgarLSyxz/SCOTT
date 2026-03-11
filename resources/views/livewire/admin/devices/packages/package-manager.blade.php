@@ -22,6 +22,13 @@
                     </select>
                 </div>
                 <div class="ml-4 flex items-center space-x-4">
+                    <a
+                        x-data
+                        :href="'/admin/devices/packages/' + $wire.selectedUploadId + '/excel'"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg cursor-pointer transition inline-flex items-center">
+                        <i class="fa-solid fa-file-excel mr-1"></i>
+                        {{ __('Download Excel') }}
+                    </a>
                     <button
                         @click="confirmDelete()"
                         class="bg-red-600 hover:bg-red-800 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"

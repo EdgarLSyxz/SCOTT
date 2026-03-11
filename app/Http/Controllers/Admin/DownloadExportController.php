@@ -107,6 +107,78 @@ class DownloadExportController extends Controller
         return $summary;
     }
 
+    private function buildProtocolSummaryByYear(array $downloadRows, array $years = []): array
+    {
+        $rowsByYear = [];
+
+        foreach ($downloadRows as $row) {
+            $year = (int) ($row['year'] ?? 0);
+            if ($year <= 0) {
+                continue;
+            }
+
+            if (!isset($rowsByYear[$year])) {
+                $rowsByYear[$year] = [];
+            }
+
+            $rowsByYear[$year][] = $row;
+        }
+
+        if (empty($years)) {
+            $years = array_map('intval', array_keys($rowsByYear));
+        }
+
+        rsort($years);
+
+        $out = [];
+        foreach ($years as $year) {
+            $year = (int) $year;
+            $out[$year] = $this->buildProtocolSummary($rowsByYear[$year] ?? []);
+        }
+
+        return $out;
+    }
+
+    private function buildProtocolDeviceSummary(array $downloadRows): array
+    {
+        $protocols = ['HLS', 'DASH'];
+        $deviceSets = [
+            'HLS' => [],
+            'DASH' => [],
+        ];
+
+        foreach ($downloadRows as $row) {
+            $protocol = strtoupper(trim((string) ($row['protocol'] ?? '')));
+            if (!in_array($protocol, $protocols, true)) {
+                continue;
+            }
+
+            $deviceId = $row['device_id'] ?? null;
+            if ($deviceId === null || $deviceId === '') {
+                continue;
+            }
+
+            $deviceSets[$protocol][(string) $deviceId] = true;
+        }
+
+        $allDevices = array_unique(array_merge(array_keys($deviceSets['HLS']), array_keys($deviceSets['DASH'])));
+        $totalDevices = count($allDevices);
+
+        $summary = [
+            'device_total' => $totalDevices,
+        ];
+
+        foreach ($protocols as $protocol) {
+            $count = count($deviceSets[$protocol]);
+            $summary[$protocol] = [
+                'device_total' => $count,
+                'device_percent' => $totalDevices ? round(($count / $totalDevices) * 100, 1) : 0,
+            ];
+        }
+
+        return $summary;
+    }
+
     public function historyCSV(Request $request)
     {
         $start = $request->query('start');
@@ -632,6 +704,7 @@ class DownloadExportController extends Controller
     public function historyPDF(Request $request)
     {
         $charts = $request->input('charts', []);
+        $chartsByYearInput = $request->input('charts_by_year', []);
         $allYearsMode = $this->isAllYearsRequest($request);
         $year = $allYearsMode ? 'all' : $request->input('year', date('Y'));
         $deviceId = $request->input('device_id');
@@ -642,6 +715,10 @@ class DownloadExportController extends Controller
         $data = [
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
+            'charts_by_year' => is_array($chartsByYearInput) ? $chartsByYearInput : [],
+            'chart_global_bar' => $request->input('chart_global_bar'),
+            'protocol_summary_by_year' => [],
+            'protocol_device_summary_global' => null,
             'year' => $year,
             'years' => [],
             'is_multi_year' => $allYearsMode,
@@ -720,6 +797,11 @@ class DownloadExportController extends Controller
                     }
 
                     $data['protocol_summary'] = $this->buildProtocolSummary($data['download_rows'] ?? []);
+                    $data['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
+                        $data['download_rows'] ?? [],
+                        $data['years'] ?? []
+                    );
+                    $data['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($data['download_rows'] ?? []);
                 }
             } catch (\Throwable $_e) {
                 \Log::error('PDF prefetch JSON decode error', ['error' => $_e->getMessage()]);
@@ -797,6 +879,8 @@ class DownloadExportController extends Controller
 
                 $data['download_rows'] = $downloadRows;
                 $data['protocol_summary'] = $this->buildProtocolSummary($downloadRows);
+                $data['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear($downloadRows, [(int) $year]);
+                $data['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($downloadRows);
 
                 $devices = [];
                 foreach ($rows as $r) {
@@ -1086,6 +1170,8 @@ class DownloadExportController extends Controller
         $pdfData = [
             'monthlyImage' => $monthly,
             'pieImage' => $pie,
+            'charts_by_year' => is_array($request->input('charts_by_year', [])) ? $request->input('charts_by_year', []) : [],
+            'chart_global_bar' => $request->input('chart_global_bar'),
             'year' => $allYearsMode ? 'all' : ($pd['year'] ?? $request->input('year') ?? date('Y')),
             'years' => $pd['years'] ?? [],
             'is_multi_year' => $allYearsMode,
@@ -1101,6 +1187,7 @@ class DownloadExportController extends Controller
                 'top_month_label' => null,
                 'top_month_value' => 0,
             ],
+            'protocol_device_summary_global' => null,
         ];
 
         if (!empty($pdfData['month'])) {
@@ -1185,7 +1272,14 @@ class DownloadExportController extends Controller
             }
         }
 
-        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);        \Log::info('historyEmail: PDF data before render', [
+        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
+        $pdfData['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
+            $pdfData['download_rows'] ?? [],
+            $pdfData['years'] ?? []
+        );
+        $pdfData['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($pdfData['download_rows'] ?? []);
+
+        \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),
             'download_rows_sample_first' => !empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
             'devices_count' => count($pdfData['devices'] ?? []),

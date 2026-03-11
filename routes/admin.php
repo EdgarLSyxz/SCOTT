@@ -40,6 +40,10 @@ Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
     ->name('admin.devices.packages.data')
     ->middleware(['auth', 'verified']);
 
+Route::get('admin/devices/packages/{id}/excel', [PackageController::class, 'exportExcel'])
+    ->name('admin.devices.packages.excel')
+    ->middleware(['auth', 'verified']);
+
 Route::get('admin/devices/log-analytics', [DeviceController::class, 'logAnalytics'])
     ->name('admin.devices.log-analytics')
     ->middleware(['auth', 'verified']);
