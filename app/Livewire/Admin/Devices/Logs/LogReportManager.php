@@ -119,11 +119,13 @@ class LogReportManager extends Component
                     }
 
                     if (!empty($categoryItems)) {
+                        $aggForCount = $this->aggregateRecords($categoryItems);
                         $categories[] = [
                             'key' => $categoryKey,
                             'name' => $this->formatCategoryName($categoryKey),
                             'items' => $categoryItems,
                             'count' => count($categoryItems),
+                            'unique_count' => count($aggForCount),
                         ];
                     }
                 }
@@ -138,6 +140,23 @@ class LogReportManager extends Component
             $this->selectedCategoryForChart = null;
         } elseif (!in_array($this->selectedCategoryForChart, $availableCategoryKeys, true)) {
             $this->selectedCategoryForChart = $availableCategoryKeys[0];
+        }
+
+        $grouped = $this->getChartCategoriesForSelectedFile();
+        if (!empty($grouped)) {
+            $groupKeys = array_column($grouped, 'key');
+            if (!in_array($this->selectedCategoryForChart, $groupKeys, true)) {
+                foreach ($grouped as $g) {
+                    if (in_array($this->selectedCategoryForChart, $g['sourceKeys'] ?? [], true)) {
+                        $this->selectedCategoryForChart = $g['key'];
+                        break;
+                    }
+                }
+
+                if (!in_array($this->selectedCategoryForChart, $groupKeys, true)) {
+                    $this->selectedCategoryForChart = $grouped[0]['key'] ?? $this->selectedCategoryForChart;
+                }
+            }
         }
     }
 
@@ -172,11 +191,74 @@ class LogReportManager extends Component
 
     protected function normalizeLabelKey($label)
     {
-        return Str::of((string) $label)
+        $s = trim((string) $label);
+
+        $isUrl = false;
+        if (filter_var($s, FILTER_VALIDATE_URL)) {
+            $isUrl = true;
+            $url = $s;
+        } else {
+            if (strpos($s, '://') !== false || (strpos($s, '.') !== false && strpos($s, '/') !== false)) {
+                $isUrl = true;
+                $url = $s;
+            }
+        }
+
+        if ($isUrl) {
+            if (!preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . ltrim($url, '/');
+            }
+
+            $parts = parse_url($url);
+            if ($parts && isset($parts['host'])) {
+                $host = strtolower($parts['host']);
+                $path = $parts['path'] ?? '';
+                $path = rtrim($path, '/');
+                $path = rawurldecode($path);
+                $canon = $host . ($path !== '' ? '/' . ltrim($path, '/') : '');
+                return Str::of($canon)->ascii()->squish()->lower()->value();
+            }
+        }
+
+        return Str::of($s)
             ->ascii()
             ->squish()
             ->lower()
             ->value();
+    }
+
+    protected function aggregateRecords(array $items): array
+    {
+        $agg = [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+            $label = $item['label'] ?? $item['name'] ?? null;
+            if (!$label) continue;
+            $value = (float) ($item['value'] ?? $item['count'] ?? 0);
+
+            $key = $this->normalizeLabelKey($label);
+            if ($key === '') continue;
+
+            if (!isset($agg[$key])) {
+                $agg[$key] = [
+                    'label' => $label,
+                    'value' => 0.0,
+                    'occurrences' => 0,
+                    'examples' => [],
+                ];
+            }
+
+            $agg[$key]['value'] += $value;
+            $agg[$key]['occurrences'] += 1;
+            if (count($agg[$key]['examples']) < 3) {
+                $agg[$key]['examples'][] = $label;
+            }
+        }
+
+        $rows = array_values($agg);
+        usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+        return $rows;
     }
 
     public function deleteUpload()
@@ -227,18 +309,22 @@ class LogReportManager extends Component
         $cacheKey = 'log_records_' . $uploadId . '_' . $categoryKey . '_' . $user->id;
         Cache::put($cacheKey, $items, now()->addMinutes(10));
 
+        $agg = $this->aggregateRecords($items);
+        $cacheAggKey = $cacheKey . '_agg';
+        Cache::put($cacheAggKey, $agg, now()->addMinutes(10));
+
         $this->currentCategoryKey = $categoryKey;
         $this->currentUploadId = $uploadId;
         $this->selectedCategory = [
             'key' => $categoryKey,
             'name' => $this->formatCategoryName($categoryKey),
-            'records' => count($items),
+            'records' => count($agg),
         ];
-        $this->allRecordsCount = count($items);
+        $this->allRecordsCount = count($agg);
         $this->recordPage = 1;
         $this->modalSearchTerm = '';
         $this->modalHasMore = $this->allRecordsCount > $this->recordPageSize;
-        $this->filteredRecords = array_slice($items, 0, $this->recordPageSize);
+        $this->filteredRecords = array_slice($agg, 0, $this->recordPageSize);
         $this->modalOpen = true;
     }
 
@@ -248,6 +334,7 @@ class LogReportManager extends Component
             $user = Auth::user();
             $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . ($user?->id ?? '');
             Cache::forget($cacheKey);
+            Cache::forget($cacheKey . '_agg');
         }
 
         $this->modalOpen = false;
@@ -273,7 +360,8 @@ class LogReportManager extends Component
 
         $user = Auth::user();
         $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . $user->id;
-        $records = Cache::get($cacheKey, []);
+        $cacheAggKey = $cacheKey . '_agg';
+        $records = Cache::get($cacheAggKey, []);
 
         if ($term === '') {
             $this->recordPage = 1;
@@ -301,7 +389,7 @@ class LogReportManager extends Component
         if (!$this->currentCategoryKey || !$this->currentUploadId) return;
         $user = Auth::user();
         $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . $user->id;
-        $records = Cache::get($cacheKey, []);
+        $records = Cache::get($cacheKey . '_agg', []);
         if (empty($records)) return;
 
         $this->recordPage++;
@@ -353,13 +441,14 @@ class LogReportManager extends Component
         }
 
         $items = $upload->getCategory($categoryKey) ?? [];
-        $term = strtolower($this->accordionSearchTerm);
+        $aggregated = $this->aggregateRecords($items);
 
+        $term = strtolower($this->accordionSearchTerm);
         if ($term === '') {
-            return $items;
+            return $aggregated;
         }
 
-        return array_values(array_filter($items, function ($record) use ($term) {
+        return array_values(array_filter($aggregated, function ($record) use ($term) {
             $searchable = json_encode($record);
             return strpos(strtolower($searchable), $term) !== false;
         }));
@@ -531,6 +620,7 @@ class LogReportManager extends Component
         foreach ($this->categories as $category) {
             $categoryKey = $category['key'] ?? null;
             $categoryName = $category['name'] ?? null;
+            $count = (int) ($category['unique_count'] ?? $category['count'] ?? 0);
             if (!$categoryKey || !$categoryName) {
                 continue;
             }
@@ -544,7 +634,12 @@ class LogReportManager extends Component
                 $unique[$fingerprint] = [
                     'key' => $categoryKey,
                     'name' => $categoryName,
+                    'count' => $count,
+                    'sourceKeys' => [$categoryKey],
                 ];
+            } else {
+                $unique[$fingerprint]['count'] += $count;
+                $unique[$fingerprint]['sourceKeys'][] = $categoryKey;
             }
         }
 
@@ -672,42 +767,27 @@ class LogReportManager extends Component
             ];
         }
 
-        $selectedCategory = collect($this->categories)
-            ->firstWhere('key', $this->selectedCategoryForChart);
-
-        if (!$selectedCategory) {
-            return [
-                'labels' => [],
-                'values' => [],
-                'categoryName' => null,
-            ];
-        }
+        $grouped = $this->getChartCategoriesForSelectedFile();
+        $groupEntry = collect($grouped)->firstWhere('key', $this->selectedCategoryForChart);
+        $sourceKeys = $groupEntry['sourceKeys'] ?? [$this->selectedCategoryForChart];
+        $categoryName = $groupEntry['name'] ?? $this->formatCategoryName($this->selectedCategoryForChart);
 
         $aggregated = [];
-        foreach (($selectedCategory['items'] ?? []) as $item) {
-            if (!is_array($item)) {
-                continue;
-            }
+        foreach ($this->categories as $cat) {
+            if (!in_array($cat['key'] ?? null, $sourceKeys, true)) continue;
+            foreach (($cat['items'] ?? []) as $item) {
+                if (!is_array($item)) continue;
+                $label = $item['label'] ?? $item['name'] ?? null;
+                if (!$label) continue;
+                $value = (float) ($item['value'] ?? $item['count'] ?? 0);
+                $normalizedLabelKey = $this->normalizeLabelKey($label);
+                if ($normalizedLabelKey === '') continue;
 
-            $label = $item['label'] ?? $item['name'] ?? null;
-            if (!$label) {
-                continue;
+                if (!isset($aggregated[$normalizedLabelKey])) {
+                    $aggregated[$normalizedLabelKey] = ['label' => $label, 'value' => 0];
+                }
+                $aggregated[$normalizedLabelKey]['value'] += $value;
             }
-
-            $value = (float) ($item['value'] ?? $item['count'] ?? 0);
-            $normalizedLabelKey = $this->normalizeLabelKey($label);
-            if ($normalizedLabelKey === '') {
-                continue;
-            }
-
-            if (!isset($aggregated[$normalizedLabelKey])) {
-                $aggregated[$normalizedLabelKey] = [
-                    'label' => $label,
-                    'value' => 0,
-                ];
-            }
-
-            $aggregated[$normalizedLabelKey]['value'] += $value;
         }
 
         $rows = array_values($aggregated);
@@ -716,7 +796,7 @@ class LogReportManager extends Component
         return [
             'labels' => array_map(fn($row) => $row['label'], $rows),
             'values' => array_map(fn($row) => (float) ($row['value'] ?? 0), $rows),
-            'categoryName' => $selectedCategory['name'] ?? $this->formatCategoryName($this->selectedCategoryForChart),
+            'categoryName' => $categoryName,
         ];
     }
 

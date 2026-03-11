@@ -422,7 +422,7 @@
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-simple text-{{ $color }}-400"></i>
+                    <i class="fa-solid fa-chart-simple text-{{ $color }}-400 mr-1"></i>
                     <span>{{ __('Summary') }}</span>
                 </h3>
             </div>
@@ -502,14 +502,18 @@
                                             {{ $cat['name'] }}
                                         </h4>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                            {{ $cat['count'] ?? 0 }} {{ $cat['count'] === 1 ? __('Record') : __('Records') }}
+                                            <span class="font-semibold">{{ $cat['unique_count'] ?? $cat['count'] ?? 0 }}</span>
+                                            <span class="text-xs">{{ __('Unique') }}</span>
+                                            &nbsp;•&nbsp;
+                                            <span class="text-xs">{{ $cat['count'] ?? 0 }}</span>
+                                            <span class="text-xs">{{ __('Total') }}</span>
                                         </p>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-3 ml-4 flex-shrink-0">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900/50 dark:text-{{ $color }}-200">
-                                        {{ $cat['count'] ?? 0 }}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900/50 dark:text-{{ $color }}-200" title="{{ __('Unique / Total') }}">
+                                        {{ $cat['unique_count'] ?? $cat['count'] ?? 0 }}
                                     </span>
                                     <i class="fa-solid fa-chevron-down text-{{ $color }}-500 dark:text-{{ $color }}-400 transition-transform duration-300 text-sm {{ $expandedCategoryKey === $cat['key'] ? 'rotate-180' : '' }}"></i>
                                 </div>
@@ -556,17 +560,7 @@
                                                         </div>
                                                         <div class="text-xs text-gray-700 dark:text-gray-300 space-y-2">
                                                             <div class="flex items-start justify-between gap-2">
-                                                                <span class="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">
-                                                                    <i class="fa-solid fa-tag mr-2 text-gray-500 dark:text-gray-400"></i>
-                                                                    {{ __('Label') }}:
-                                                                </span>
                                                                 <span class="text-gray-800 dark:text-gray-200 text-right break-all">{{ $record['label'] ?? 'N/A' }}</span>
-                                                            </div>
-                                                            <div class="flex items-start justify-between gap-2">
-                                                                <span class="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">
-                                                                    <i class="fa-solid fa-hashtag mr-2 text-gray-500 dark:text-gray-400"></i>
-                                                                    {{ __('Value') }}:
-                                                                </span>
                                                                 <span class="text-gray-800 dark:text-gray-200 font-mono">{{ $record['value'] ?? 'N/A' }}</span>
                                                             </div>
                                                         </div>
@@ -636,8 +630,21 @@
 
                     <div id="log-records-list" class="space-y-2 max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-{{ $color }}-200 dark:border-{{ $color }}-700">
                         @forelse ($filteredRecords as $record)
-                            <div class="py-3 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-300 font-mono break-words max-w-full">
-                                <pre class="whitespace-pre-wrap word-break">{{ json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                            <div class="py-3 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 break-words max-w-full">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <div class="truncate font-medium text-gray-900 dark:text-white" title="{{ $record['label'] ?? '' }}">{{ $record['label'] ?? '' }}</div>
+                                        @if(!empty($record['examples']))
+                                            <div class="text-xs text-gray-500 mt-1 truncate">{{ implode(' — ', $record['examples'] ?? []) }}</div>
+                                        @endif
+                                    </div>
+                                    <div class="text-right ml-4">
+                                        <div class="font-mono text-sm text-gray-900 dark:text-white">{{ number_format($record['value'] ?? 0, 0) }}</div>
+                                        @if(!empty($record['occurrences']) && $record['occurrences'] > 1)
+                                            <div class="text-xs text-gray-500">{{ $record['occurrences'] }} agrup.</div>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         @empty
                             <div class="py-4 text-center text-gray-500 dark:text-gray-400 flex items-center justify-center">
@@ -671,16 +678,30 @@
         $selectedFileChartCategories = $this->getChartCategoriesForSelectedFile();
         $selectedFileChartData = $this->getSelectedCategoryChartData();
     @endphp
+
     @if (!empty($selectedFileChartCategories))
         <div wire:key="selected-file-category-chart-{{ $selectedUploadId }}-{{ $selectedCategoryForChart }}"
             x-data="logAnalyticsChart(@js($selectedFileChartData))" x-init="init()"
             class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
-            <div class="flex items-center justify-between mb-4 gap-4">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-column text-{{ $color }}-500"></i>
-                    <span>{{ __('Category detail chart') }}</span>
-                </h3>
-                <div class="w-full max-w-sm">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+                <div class="flex items-start md:items-center gap-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                            <i class="fa-solid fa-chart-column text-{{ $color }}-500 text-xl mt-1 mr-1"></i>
+                            {{ __('Category detail chart') }}
+                        </h3>
+                        <div class="mt-3 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
+                            <p class="mb-1 truncate">
+                                <span class="text-xs text-gray-500">{{ __('Selected file') }}:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white mr-4">{{ collect($uploads)->firstWhere('id', $selectedUploadId)['filename'] ?? '-' }}</span>
+                                <span class="text-xs text-gray-500">{{ __('Category') }}:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white">{{ $selectedFileChartData['categoryName'] ?? '-' }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-80 lg:w-96">
                     <label class="block font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm">
                         <i class="fa-solid fa-tags mr-2 text-gray-500 dark:text-gray-400"></i>
                         {{ __('Category') }}
@@ -688,18 +709,13 @@
                     <select wire:model.live="selectedCategoryForChart"
                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full text-sm py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         @foreach ($selectedFileChartCategories as $cat)
-                            <option value="{{ $cat['key'] }}">{{ $cat['name'] }}</option>
+                            <option value="{{ $cat['key'] }}">{{ $cat['name'] }}@if(isset($cat['count'])) ({{ $cat['count'] }})@endif</option>
                         @endforeach
                     </select>
                 </div>
             </div>
 
             @if (!empty($selectedFileChartData['labels']))
-                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {{ __('Selected file') }}: <span class="font-semibold text-gray-900 dark:text-white">{{ collect($uploads)->firstWhere('id', $selectedUploadId)['filename'] ?? '-' }}</span>
-                    <span class="mx-2">•</span>
-                    {{ __('Category') }}: <span class="font-semibold text-gray-900 dark:text-white">{{ $selectedFileChartData['categoryName'] ?? '-' }}</span>
-                </p>
                 <canvas id="log-analytics-chart" class="max-w-full" aria-label="{{ __('Category detail chart') }}"></canvas>
             @else
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No data available for this category.') }}</p>
