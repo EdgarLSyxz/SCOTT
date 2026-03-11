@@ -239,6 +239,23 @@
     </div>
 </div>
 
+@php
+    $__monthLabelsTranslated = [
+        1 => __('January'),
+        2 => __('February'),
+        3 => __('March'),
+        4 => __('April'),
+        5 => __('May'),
+        6 => __('June'),
+        7 => __('July'),
+        8 => __('August'),
+        9 => __('September'),
+        10 => __('October'),
+        11 => __('November'),
+        12 => __('December'),
+    ];
+@endphp
+
 @once
     @push('js')
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -248,6 +265,7 @@
                 const downloadsDataUrl = "{{ route('admin.downloads.history.data') }}";
                 const downloadsEmailUrl = "{{ route('admin.downloads.history.email') }}";
                 const getMonthsUrl = "{{ route('admin.downloads.months') }}";
+                const monthLabelsTranslated = @json($__monthLabelsTranslated, JSON_UNESCAPED_UNICODE);
 
                 if (window && typeof Livewire !== 'undefined') {
                     try {
@@ -301,7 +319,7 @@
                                     data.months.forEach(month => {
                                         const option = document.createElement('option');
                                         option.value = month.value;
-                                        option.textContent = month.label;
+                                        option.textContent = (monthLabelsTranslated[month.value] ?? month.label ?? month.value);
                                         monthSelect.appendChild(option);
                                     });
                                 }
