@@ -1,7 +1,7 @@
 <div class="space-y-6">
     @php
-        $area = auth()->user()->area ?? session('area') ?? 'OTT';
-        $color = $area === 'DTH' ? 'secondary' : 'primary';
+$area = auth()->user()->area ?? session('area') ?? 'OTT';
+$color = $area === 'DTH' ? 'secondary' : 'primary';
     @endphp
 
     @if (!empty($uploads))
@@ -77,6 +77,17 @@
     @endif
 
     @if (!empty($packages))
+        <div wire:ignore x-data="packagesChart(@entangle('packages'))" x-init="init()"
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-{{ $color }}-400"></i>
+                <span>{{ __('Package distribution') }}</span>
+            </h3>
+            <canvas id="packages-chart" x-ref="chartCanvas" class="max-w-full"></canvas>
+        </div>
+    @endif
+
+    @if (!empty($packages))
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
             <div class="flex items-center justify-between p-8">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -106,7 +117,7 @@
             <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
                 <div class="overflow-x-auto">
                 @php
-                    $filteredPackages = $this->getFilteredPackages();
+    $filteredPackages = $this->getFilteredPackages();
                 @endphp
                 </div>
                 @if (!empty($filteredPackages))
@@ -145,17 +156,6 @@
                     </div>
                 @endif
             </div>
-        </div>
-    @endif
-
-    @if (!empty($packages))
-        <div wire:ignore x-data="packagesChart(@entangle('packages'))" x-init="init()"
-            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-{{ $color }}-400"></i>
-                <span>{{ __('Package distribution') }}</span>
-            </h3>
-            <canvas id="packages-chart" x-ref="chartCanvas" class="max-w-full"></canvas>
         </div>
     @endif
 

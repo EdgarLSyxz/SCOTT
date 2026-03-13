@@ -455,6 +455,55 @@
         </div>
     @endif
 
+    @php
+        $selectedFileChartCategories = $this->getChartCategoriesForSelectedFile();
+        $selectedFileChartData = $this->getSelectedCategoryChartData();
+    @endphp
+
+    @if (!empty($selectedFileChartCategories))
+        <div wire:key="selected-file-category-chart-{{ $selectedUploadId }}-{{ $selectedCategoryForChart }}"
+            x-data="logAnalyticsChart(@js($selectedFileChartData))" x-init="init()"
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+                <div class="flex items-start md:items-center gap-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                            <i class="fa-solid fa-chart-pie text-{{ $color }}-500 text-xl mt-1 mr-1"></i>
+                            {{ __('Category detail') }}
+                        </h3>
+                        <div class="mt-3 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
+                            <p class="mb-1 truncate">
+                                <span class="text-xs text-gray-500">{{ __('Selected file') }}:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white mr-4">{{ collect($uploads)->firstWhere('id', $selectedUploadId)['filename'] ?? '-' }}</span>
+                                <span class="text-xs text-gray-500">{{ __('Category') }}:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white">{{ $selectedFileChartData['categoryName'] ?? '-' }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-80 lg:w-96">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm">
+                        <i class="fa-solid fa-tags mr-2 text-gray-500 dark:text-gray-400"></i>
+                        {{ __('Category') }}
+                    </label>
+                    <select wire:model.live="selectedCategoryForChart"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full text-sm py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
+                        @foreach ($selectedFileChartCategories as $cat)
+                            <option value="{{ $cat['key'] }}">{{ $cat['name'] }}@if(isset($cat['count'])) ({{ $cat['count'] }})@endif</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            @if (!empty($selectedFileChartData['labels']))
+                <canvas id="log-analytics-chart" class="max-w-full" aria-label="{{ __('Category detail chart') }}"></canvas>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No data available for this category.') }}</p>
+            @endif
+        </div>
+    @endif
+
     @if (!empty($categories))
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-6">
@@ -673,55 +722,6 @@
             @endif
         </div>
     </div>
-
-    @php
-        $selectedFileChartCategories = $this->getChartCategoriesForSelectedFile();
-        $selectedFileChartData = $this->getSelectedCategoryChartData();
-    @endphp
-
-    @if (!empty($selectedFileChartCategories))
-        <div wire:key="selected-file-category-chart-{{ $selectedUploadId }}-{{ $selectedCategoryForChart }}"
-            x-data="logAnalyticsChart(@js($selectedFileChartData))" x-init="init()"
-            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-                <div class="flex items-start md:items-center gap-3">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                            <i class="fa-solid fa-chart-column text-{{ $color }}-500 text-xl mt-1 mr-1"></i>
-                            {{ __('Category detail chart') }}
-                        </h3>
-                        <div class="mt-3 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
-                            <p class="mb-1 truncate">
-                                <span class="text-xs text-gray-500">{{ __('Selected file') }}:</span>
-                                <span class="font-semibold text-gray-900 dark:text-white mr-4">{{ collect($uploads)->firstWhere('id', $selectedUploadId)['filename'] ?? '-' }}</span>
-                                <span class="text-xs text-gray-500">{{ __('Category') }}:</span>
-                                <span class="font-semibold text-gray-900 dark:text-white">{{ $selectedFileChartData['categoryName'] ?? '-' }}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="w-full md:w-80 lg:w-96">
-                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm">
-                        <i class="fa-solid fa-tags mr-2 text-gray-500 dark:text-gray-400"></i>
-                        {{ __('Category') }}
-                    </label>
-                    <select wire:model.live="selectedCategoryForChart"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full text-sm py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
-                        @foreach ($selectedFileChartCategories as $cat)
-                            <option value="{{ $cat['key'] }}">{{ $cat['name'] }}@if(isset($cat['count'])) ({{ $cat['count'] }})@endif</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            @if (!empty($selectedFileChartData['labels']))
-                <canvas id="log-analytics-chart" class="max-w-full" aria-label="{{ __('Category detail chart') }}"></canvas>
-            @else
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No data available for this category.') }}</p>
-            @endif
-        </div>
-    @endif
 
 </div>
 
