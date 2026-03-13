@@ -258,6 +258,10 @@ class LogReportManager extends Component
 
         $rows = array_values($agg);
         usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+        foreach ($rows as $i => &$r) {
+            $r['rank'] = $i + 1;
+        }
+        unset($r);
         return $rows;
     }
 
