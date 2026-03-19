@@ -46,10 +46,36 @@ class LogAnalyticsController extends Controller
                 ]);
             }
 
+            $rawReportDate = $result['report_date'] ?? null;
+            $normalizedReportDate = null;
+            if (!empty($rawReportDate)) {
+                try {
+                    $dt = \Carbon\Carbon::parse($rawReportDate);
+                    $normalizedReportDate = $dt->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $formats = [
+                        'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d'
+                    ];
+                    foreach ($formats as $fmt) {
+                        try {
+                            $dt = \Carbon\Carbon::createFromFormat($fmt, $rawReportDate);
+                            if ($dt !== false) {
+                                $normalizedReportDate = $dt->format('Y-m-d');
+                                break;
+                            }
+                        } catch (\Exception $_) {}
+                    }
+                }
+            }
+
+            if (empty($normalizedReportDate)) {
+                $normalizedReportDate = now()->format('Y-m-d');
+            }
+
             $logAnalytic = LogAnalytic::create([
                 'user_id' => $user->id,
                 'filename' => $originalName,
-                'report_date' => $result['report_date'] ?? now()->format('Y-m-d'),
+                'report_date' => $normalizedReportDate,
                 'data' => $result['data'] ?? [],
             ]);
 

@@ -5,6 +5,9 @@ namespace App\Livewire\Admin\Devices\Logs;
 use App\Models\LogAnalytic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -43,9 +46,16 @@ class LogReportManager extends Component
     public $compareFileA = null;
     public $compareFileB = null;
     public $comparisonResults = [];
+    public $auditApiUrl;
+    public $auditApiToken;
 
     public function mount()
     {
+        $services = config('services', []);
+        $this->auditApiUrl = data_get($services, 'audit_api.url')
+            ?: data_get($services, 'python_log_analytics_api.url')
+            ?: data_get($services, 'log_parser.url');
+        $this->auditApiToken = data_get($services, 'audit_api.token');
         $this->loadUploads();
     }
 
@@ -68,13 +78,62 @@ class LogReportManager extends Component
 
         $this->uploads = $models->map(function ($m) {
             $attrs = $m->getAttributes();
+
+            $reportDateFormatted = 'N/A';
+            try {
+                $rd = $m->report_date;
+                if ($rd instanceof \DateTimeInterface) {
+                    $reportDateFormatted = $rd->format('Y-m-d');
+                } elseif (!empty($rd)) {
+                    try {
+                        $reportDateFormatted = \Carbon\Carbon::parse($rd)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $formats = [
+                            'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d'
+                        ];
+                        foreach ($formats as $fmt) {
+                            try {
+                                $dt = \Carbon\Carbon::createFromFormat($fmt, $rd);
+                                if ($dt !== false) {
+                                    $reportDateFormatted = $dt->format('Y-m-d');
+                                    break;
+                                }
+                            } catch (\Exception $_) {
+                            }
+                        }
+
+                        if ($reportDateFormatted === 'N/A' && is_string($rd)) {
+                            $reportDateFormatted = $rd;
+                        }
+                    }
+                }
+            } catch (\Exception $_) {
+                $reportDateFormatted = 'N/A';
+            }
+
+            $createdAtDisplay = null;
+            try {
+                if ($m->created_at instanceof \DateTimeInterface) {
+                    $createdAtDisplay = $m->created_at->format('d/m/Y H:i');
+                } elseif (!empty($attrs['created_at'])) {
+                    try {
+                        $createdAtDisplay = \Carbon\Carbon::parse($attrs['created_at'])->format('d/m/Y H:i');
+                    } catch (\Exception $_) {
+                        $createdAtDisplay = $attrs['created_at'];
+                    }
+                }
+            } catch (\Exception $_) {
+                $createdAtDisplay = $attrs['created_at'] ?? null;
+            }
+
             return [
                 'id' => $m->id,
                 'user_id' => $m->user_id,
                 'filename' => $m->filename,
-                'report_date' => $m->report_date ? $m->report_date->format('Y-m-d') : 'N/A',
+                'report_date' => $reportDateFormatted,
                 'created_at' => $m->created_at ? $m->created_at->format('d/m/Y H:i:s') : ($attrs['created_at'] ?? null),
                 'created_at_raw' => $attrs['created_at'] ?? null,
+                'created_at_display' => $createdAtDisplay,
             ];
         })->toArray();
 
@@ -225,6 +284,45 @@ class LogReportManager extends Component
             ->squish()
             ->lower()
             ->value();
+    }
+
+    protected function safeParseDateToCarbon($dateValue)
+    {
+        if (empty($dateValue) || $dateValue === 'N/A') {
+            return null;
+        }
+
+        if ($dateValue instanceof \DateTimeInterface) {
+            return $dateValue instanceof \Carbon\Carbon ? $dateValue : \Carbon\Carbon::instance($dateValue);
+        }
+
+        $dateStr = (string) $dateValue;
+
+        try {
+            return \Carbon\Carbon::parse($dateStr);
+        } catch (\Exception $_) {
+        }
+
+        $formats = [
+            'd/m/Y H:i:s', 'd/m/Y H:i', 'd/m/Y',
+            'd-m-Y H:i:s', 'd-m-Y H:i', 'd-m-Y',
+            'd.m.Y H:i:s', 'd.m.Y H:i', 'd.m.Y',
+            'Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d',
+            'm/d/Y H:i:s', 'm/d/Y',
+            'Y/m/d H:i:s', 'Y/m/d'
+        ];
+
+        foreach ($formats as $fmt) {
+            try {
+                $dt = \Carbon\Carbon::createFromFormat($fmt, $dateStr);
+                if ($dt !== false) {
+                    return $dt;
+                }
+            } catch (\Exception $_) {
+            }
+        }
+
+        return null;
     }
 
     protected function aggregateRecords(array $items): array
@@ -511,9 +609,8 @@ class LogReportManager extends Component
                     return false;
                 }
 
-                try {
-                    $date = \Carbon\Carbon::parse($upload['report_date']);
-                } catch (\Exception $e) {
+                $date = $this->safeParseDateToCarbon($upload['report_date']);
+                if (!$date) {
                     return false;
                 }
 
@@ -537,11 +634,8 @@ class LogReportManager extends Component
             ->pluck('report_date')
             ->filter(fn($d) => !empty($d) && $d !== 'N/A')
             ->map(function ($d) {
-                try {
-                    return (int) \Carbon\Carbon::parse($d)->year;
-                } catch (\Exception $e) {
-                    return null;
-                }
+                $date = $this->safeParseDateToCarbon($d);
+                return $date ? (int) $date->year : null;
             })
             ->filter()
             ->unique()
@@ -562,19 +656,17 @@ class LogReportManager extends Component
                     return true;
                 }
 
-                try {
-                    return (int) \Carbon\Carbon::parse($upload['report_date'])->year === (int) $this->analyticsYear;
-                } catch (\Exception $e) {
+                $date = $this->safeParseDateToCarbon($upload['report_date']);
+                if (!$date) {
                     return false;
                 }
+
+                return (int) $date->year === (int) $this->analyticsYear;
             })
             ->pluck('report_date')
             ->map(function ($d) {
-                try {
-                    return (int) \Carbon\Carbon::parse($d)->month;
-                } catch (\Exception $e) {
-                    return null;
-                }
+                $date = $this->safeParseDateToCarbon($d);
+                return $date ? (int) $date->month : null;
             })
             ->filter()
             ->unique()
@@ -937,5 +1029,251 @@ class LogReportManager extends Component
             'fileB' => ['id' => $fileB->id, 'filename' => $fileB->filename, 'date' => $fileB->report_date],
             'categories' => $results
         ];
+    }
+
+    protected function buildImageManifestFromUpload($upload): array
+    {
+        $manifest = [];
+        $data = is_array($upload->data) ? $upload->data : [];
+
+        foreach ($data as $cat => $items) {
+            if (!is_array($items)) continue;
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+                $serviceId = $item['service_id'] ?? $item['channel_id'] ?? $item['id'] ?? null;
+                if ($serviceId) {
+                    $manifest[$serviceId] = url('/storage/logos/'.$serviceId.'.png');
+                }
+            }
+        }
+
+        return $manifest;
+    }
+
+    protected function locateUploadTxtFile($upload): ?string
+    {
+        $filename = $upload->filename ?? null;
+        if ($filename) {
+            $candidates = [
+                storage_path('app/'.$filename),
+                storage_path('app/logs/'.$filename),
+                storage_path('app/uploads/'.$filename),
+                public_path('uploads/'.$filename),
+                public_path('storage/'.$filename),
+                public_path('storage/logs/'.$filename),
+                public_path('storage/uploads/'.$filename),
+            ];
+            foreach ($candidates as $p) {
+                if ($p && file_exists($p)) return $p;
+            }
+
+            foreach (['local','public'] as $disk) {
+                if (Storage::disk($disk)->exists($filename)) {
+                    try { return Storage::disk($disk)->path($filename); } catch (\Throwable $_) { }
+                }
+                $candidate = 'logs/'.$filename;
+                if (Storage::disk($disk)->exists($candidate)) {
+                    try { return Storage::disk($disk)->path($candidate); } catch (\Throwable $_) {}
+                }
+            }
+        }
+
+        $raw = $upload->raw_text ?? $upload->content ?? null;
+        if (empty($raw) && is_array($upload->data)) {
+            $raw = $upload->data['raw'] ?? $upload->data['txt'] ?? null;
+        }
+        if ($raw) {
+            $tmp = tempnam(sys_get_temp_dir(), 'audit_txt_');
+            file_put_contents($tmp, $raw);
+            return $tmp;
+        }
+
+        return null;
+    }
+
+    protected function extractServiceIdsFromTxtUsingPython(string $localPath): array
+    {
+        $result = [];
+        if (empty($localPath) || !file_exists($localPath) || empty($this->auditApiUrl)) {
+            return $result;
+        }
+
+        try {
+            $baseUrl = rtrim($this->auditApiUrl, '/');
+
+            if (str_contains($baseUrl, '/api/audit-report')) {
+                $url = preg_replace('#/pdf$#', '', $baseUrl) . '/extract-service-ids';
+            } else {
+                $url = $baseUrl . '/api/audit-report/extract-service-ids';
+            }
+
+            $client = Http::timeout(60);
+            if ($this->auditApiToken) {
+                $client = $client->withHeaders(['Authorization' => 'Bearer '.$this->auditApiToken]);
+            }
+
+            $response = $client->attach('txt_file', fopen($localPath, 'r'), basename($localPath))->post($url);
+            if (! $response->successful()) {
+                Log::warning('extractServiceIdsFromTxtUsingPython: non-success response', ['status' => $response->status(), 'body' => $response->body()]);
+                return [];
+            }
+
+            $json = $response->json();
+            if (is_array($json)) {
+                if (!empty($json['service_ids']) && is_array($json['service_ids'])) {
+                    $result = array_map('strval', $json['service_ids']);
+                } elseif (!empty($json['ids']) && is_array($json['ids'])) {
+                    $result = array_map('strval', $json['ids']);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('extractServiceIdsFromTxtUsingPython exception: '.$e->getMessage());
+        }
+
+        return array_values(array_unique($result));
+    }
+
+    public function generatePdfForSelectedUpload()
+    {
+        $user = Auth::user();
+        if (!$user || !$this->selectedUploadId) {
+            $this->dispatch('notify', type: 'error', message: 'No hay archivo seleccionado');
+            return;
+        }
+
+        if (empty($this->auditApiUrl)) {
+            $this->dispatch('notify', type: 'error', message: 'No se ha configurado AUDIT_API_URL');
+            return;
+        }
+
+        $upload = LogAnalytic::where('id', $this->selectedUploadId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $upload) {
+            $this->dispatch('notify', type: 'error', message: 'Upload no encontrado');
+            return;
+        }
+
+        $localPath = $this->locateUploadTxtFile($upload);
+        $canAttachTxt = !empty($localPath) && file_exists($localPath);
+
+        $serviceIds = [];
+        if ($canAttachTxt) {
+            $serviceIds = $this->extractServiceIdsFromTxtUsingPython($localPath);
+        }
+
+        if (empty($serviceIds)) {
+            $data = is_array($upload->data) ? $upload->data : [];
+            foreach ($data as $cat => $items) {
+                if (!is_array($items)) continue;
+                foreach ($items as $item) {
+                    if (!is_array($item)) continue;
+                    $sid = $item['service_id'] ?? $item['channel_id'] ?? $item['id'] ?? null;
+                    if ($sid) $serviceIds[] = (string)$sid;
+                }
+            }
+        }
+        $serviceIds = array_values(array_unique($serviceIds));
+
+        $manifest = [];
+        foreach ($serviceIds as $sid) {
+            $candidates = [
+                'logos/'.$sid.'.png',
+                'logos/'.Str::slug($sid).'.png',
+                'logos/'.Str::lower($sid).'.png',
+            ];
+            foreach ($candidates as $candidate) {
+                try {
+                    if (Storage::disk('public')->exists($candidate)) {
+                        $manifest[$sid] = Storage::disk('public')->url($candidate);
+                        break;
+                    }
+                } catch (\Throwable $_) {
+                }
+            }
+        }
+
+        if (empty($manifest)) {
+            $this->dispatch('notify', type: 'error', message: 'No se encontraron imagenes de canales para este reporte.');
+            return;
+        }
+
+        $imageManifestJson = !empty($manifest) ? json_encode($manifest) : null;
+        $reportDataJson = json_encode(is_array($upload->data) ? $upload->data : []);
+
+        $tempCreated = $canAttachTxt && (strpos((string)$localPath, sys_get_temp_dir()) === 0);
+
+        try {
+            $baseUrl = rtrim($this->auditApiUrl, '/');
+            $url = str_contains($baseUrl, '/api/audit-report/pdf')
+                ? $baseUrl
+                : $baseUrl.'/api/audit-report/pdf';
+
+            $client = Http::timeout(120);
+            if ($this->auditApiToken) {
+                $client = $client->withHeaders(['Authorization' => 'Bearer '.$this->auditApiToken]);
+            }
+
+            $payload = [
+                'image_url_template' => url('/storage/logos/{service_id}.png'),
+                'image_manifest_json' => $imageManifestJson,
+                'report_data_json' => $reportDataJson,
+                'report_id' => (string) $upload->id,
+                'report_filename' => (string) ($upload->filename ?? ('upload-'.$upload->id.'.txt')),
+                'report_date' => (string) ($upload->report_date ?? ''),
+                'output_filename' => 'reporte-auditoria-'.$upload->id.'.pdf',
+            ];
+
+            if ($canAttachTxt) {
+                $response = $client->attach(
+                    'txt_file',
+                    fopen($localPath, 'r'),
+                    basename($localPath) ?: 'report.txt'
+                )->post($url, $payload);
+            } else {
+                $response = $client->post($url, $payload);
+            }
+
+            if (! $response->successful()) {
+                $this->dispatch('notify', type: 'error', message: 'Error Python generando PDF: '.$response->status());
+                return;
+            }
+
+            $contentType = strtolower((string) ($response->header('content-type') ?? ''));
+            $outName = 'reports/reporte-auditoria-'.$upload->id.'-'.now()->format('Ymd_His').'.pdf';
+
+            if (str_contains($contentType, 'application/pdf')) {
+                Storage::disk('public')->put($outName, $response->body());
+                $publicUrl = asset('storage/'.$outName);
+                $this->dispatch('report-generated', url: $publicUrl, message: 'PDF generado correctamente por Python');
+                return;
+            }
+
+            $json = $response->json();
+            if (is_array($json) && !empty($json['pdf_base64'])) {
+                $decoded = base64_decode((string) $json['pdf_base64'], true);
+                if ($decoded !== false) {
+                    Storage::disk('public')->put($outName, $decoded);
+                    $publicUrl = asset('storage/'.$outName);
+                    $this->dispatch('report-generated', url: $publicUrl, message: 'PDF generado correctamente por Python');
+                    return;
+                }
+            }
+
+            if (is_array($json) && !empty($json['pdf_url'])) {
+                $this->dispatch('report-generated', url: (string) $json['pdf_url'], message: 'PDF generado correctamente por Python');
+                return;
+            }
+
+            $this->dispatch('notify', type: 'error', message: 'Python respondio sin PDF valido.');
+        } catch (\Exception $e) {
+            Log::error('PDF generation failed: '.$e->getMessage());
+            $this->dispatch('notify', type: 'error', message: 'Excepcion generando PDF: '.$e->getMessage());
+        } finally {
+            if ($tempCreated && file_exists($localPath)) {
+                @unlink($localPath);
+            }
+        }
     }
 }

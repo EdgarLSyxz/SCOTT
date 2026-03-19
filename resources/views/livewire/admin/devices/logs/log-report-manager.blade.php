@@ -109,12 +109,22 @@
                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full md:w-auto p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-600 focus:border-{{ $color }}-600 dark:focus:ring-{{ $color }}-500 dark:focus:border-{{ $color }}-500">
                         @foreach ($uploads as $u)
                             <option value="{{ $u['id'] }}">
-                                {{ $u['filename'] }} — {{ \Carbon\Carbon::parse($u['created_at'])->format('d/m/Y H:i') }}
+                                {{ $u['filename'] }} — {{ $u['created_at_display'] ?? $u['created_at'] ?? $u['created_at_raw'] ?? '' }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <div class="mt-3 sm:mt-0 sm:ml-4 flex items-center w-full sm:w-auto">
+                <div class="mt-3 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row items-center w-full sm:w-auto gap-2">
+                    <button
+                        wire:click="generatePdfForSelectedUpload"
+                        wire:loading.attr="disabled"
+                        wire:target="generatePdfForSelectedUpload"
+                        class="w-full sm:w-auto inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"
+                        aria-label="{{ __('Generate PDF') }}">
+                        <i class="fa-solid fa-file-pdf mr-2"></i>
+                        <span wire:loading.remove wire:target="generatePdfForSelectedUpload">{{ __('Generate PDF') }}</span>
+                        <span wire:loading wire:target="generatePdfForSelectedUpload">{{ __('Generating...') }}</span>
+                    </button>
                     <button
                         @click="confirmDelete()"
                         class="w-full sm:w-auto inline-flex items-center justify-center bg-red-600 hover:bg-red-800 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"
@@ -942,5 +952,37 @@
             toast: true,
             position: 'top-right'
         });
+    });
+
+    window.addEventListener('notify', function (e) {
+        const type = (e && e.detail && e.detail.type) ? e.detail.type : 'info';
+        const msg = (e && e.detail && e.detail.message) ? e.detail.message : '{{ __('Action completed') }}';
+
+        Swal.fire({
+            icon: type,
+            title: msg,
+            timer: type === 'error' ? 4000 : 2500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-right'
+        });
+    });
+
+    window.addEventListener('report-generated', function (e) {
+        const url = (e && e.detail && e.detail.url) ? e.detail.url : null;
+        const msg = (e && e.detail && e.detail.message) ? e.detail.message : '{{ __('PDF generated successfully') }}';
+
+        Swal.fire({
+            icon: 'success',
+            title: msg,
+            timer: 2200,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-right'
+        });
+
+        if (url) {
+            window.open(url, '_blank');
+        }
     });
 </script>
