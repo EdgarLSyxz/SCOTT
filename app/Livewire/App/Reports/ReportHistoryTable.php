@@ -155,9 +155,12 @@ class ReportHistoryTable extends Component
                         $q->where('name', 'like', "%{$this->search}%")
                             ->orWhere('number', 'like', "%{$this->search}%")
                             ->orWhereRaw("CONCAT(number, ' ', name) LIKE ?", ["%{$this->search}%"]);
+                    })
+                    ->orWhereHas('deviceStoreAvailabilities.device', function ($q) {
+                        $q->where('name', 'like', "%{$this->search}%");
                     });
             })
-            ->with(['reportedBy', 'stages', 'reportDetails.channel', 'reportDetails.reportContentLosses']);
+            ->with(['reportedBy', 'stages', 'reportDetails.channel', 'reportDetails.reportContentLosses', 'deviceStoreAvailabilities.device']);
 
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);

@@ -85,6 +85,11 @@ class Report extends Model
         return $this->hasMany(ChannelTest::class);
     }
 
+    public function deviceStoreAvailabilities()
+    {
+        return $this->hasMany(DeviceStoreAvailability::class);
+    }
+
     public function canBeViewedBy($user): bool
     {
         if (! $user) {

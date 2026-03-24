@@ -40,9 +40,16 @@
                     {{ __('Function report') }}
                 </button>
 
+                <button type="button" data-modal-target="create-device-store-report-modal"
+                    data-modal-toggle="create-device-store-report-modal"
+                    class="w-full bg-emerald-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">
+                    <i class="fa-solid fa-store mr-2"></i>
+                    {{ __('Availability report') }}
+                </button>
+
                 <button type="button" data-modal-target="create-chromecast-report-modal"
                     data-modal-toggle="create-chromecast-report-modal"
-                    class="w-full bg-indigo-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">
+                    class="w-full bg-purple-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">
                     <i class="fa-brands fa-chromecast mr-2"></i>
                     {{ __('Chromecast report') }}
                 </button>
@@ -90,7 +97,7 @@
                     <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                         <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 class="text-xl font-medium text-gray-900 dark:text-white truncate">
-                                <i class="fa-brands fa-chromecast mr-2 text-indigo-600"></i>
+                                <i class="fa-brands fa-chromecast mr-2 text-purple-600"></i>
                                 {{ __('Chromecast Feature Report') }}
                             </h3>
                             <button type="button"
@@ -139,10 +146,38 @@
                 </div>
             </div>
         @endif
+        @if(Auth::user()?->area === 'OTT')
+            <div id="create-device-store-report-modal" tabindex="-1"
+                class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                <div class="relative w-full max-w-7xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <h3 class="text-xl font-medium text-gray-900 dark:text-white truncate">
+                                <i class="fa-solid fa-store mr-2 text-emerald-600"></i>
+                                {{ __('Availability report') }}
+                            </h3>
+                            <button type="button"
+                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                data-modal-hide="create-device-store-report-modal">
+                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5 space-y-4">
+                            @livewire('app.reports.create.create-device-store-availability-report')
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         @livewire('app.reports.report-momently-table')
     </div>
 
-    @role('master|admin')
+    {{-- @role('master|admin')
     <div class="w-full mt-6 px-4 mb-4 flex flex-col lg:flex-row gap-6">
         <div class="lg:w-3/4 w-full flex flex-col gap-6">
             <div class="flex flex-col md:flex-row gap-6">
@@ -167,7 +202,7 @@
             @livewire('app.logs.latest-logs')
         </div>
     </div>
-    @endrole
+    @endrole --}}
 
     <div id="create-momently-report-modal" tabindex="-1"
         class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -195,6 +230,7 @@
             </div>
         </div>
     </div>
+
     {{-- <div id="create-hourly-report-modal" tabindex="-1"
         class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative w-full max-w-7xl max-h-full">

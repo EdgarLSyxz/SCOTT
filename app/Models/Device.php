@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Download;
+use App\Models\DeviceStoreAvailability;
 
 class Device extends Model
 {
@@ -43,5 +44,10 @@ class Device extends Model
     public function downloads()
     {
         return $this->hasMany(Download::class);
+    }
+
+    public function storeAvailabilityChecks()
+    {
+        return $this->hasMany(DeviceStoreAvailability::class);
     }
 }

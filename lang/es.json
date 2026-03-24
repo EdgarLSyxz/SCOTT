@@ -984,6 +984,13 @@
     "Category detail": "Detalle de las categorías",
     "Unique": "Único",
     "Total": "Total",
-    "Selected file": "Archivo seleccionado"
+    "Selected file": "Archivo seleccionado",
+    "Availability report": "Informe de disponibilidad",
+    "StarTV Stream availability": "Disponibilidad de StarTV Stream",
+    "Store link": "Enlace a la tienda",
+    "Notes": "Notas",
+    "Optional notes about the app status in the store...": "Notas opcionales sobre el estado de la app en la tienda...",
+    "Available in app store": "Disponible en la tienda de aplicaciones",
+    "Confirms the Startv Stream app is currently listed in the platform store.": "Confirma que la aplicación Startv Stream está actualmente listada en la tienda de la plataforma."
 }
 
