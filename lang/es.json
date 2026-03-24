@@ -991,6 +991,7 @@
     "Notes": "Notas",
     "Optional notes about the app status in the store...": "Notas opcionales sobre el estado de la app en la tienda...",
     "Available in app store": "Disponible en la tienda de aplicaciones",
-    "Confirms the Startv Stream app is currently listed in the platform store.": "Confirma que la aplicación Startv Stream está actualmente listada en la tienda de la plataforma."
+    "Confirms the Startv Stream app is currently listed in the platform store.": "Confirma que la aplicación Startv Stream está actualmente listada en la tienda de la plataforma.",
+    "Availability report created successfully.": "Informe de disponibilidad creado con éxito.",
+    "Startv Stream Availability": "Disponibilidad de Startv Stream"
 }
-
