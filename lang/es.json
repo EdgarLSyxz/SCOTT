@@ -1000,5 +1000,11 @@
     "Not available": "No disponible",
     "No notes": "Sin notas",
     "Coverage": "Cobertura",
-    "There are devices where the app is not currently available in store. Review each row for details.": "Hay dispositivos donde la aplicación no está actualmente disponible en la tienda. Revise cada fila para más detalles."
+    "There are devices where the app is not currently available in store. Review each row for details.": "Hay dispositivos donde la aplicación no está actualmente disponible en la tienda. Revise cada fila para más detalles.",
+    "No additional notes.": "No hay notas adicionales.",
+    "Open store": "Abrir tienda",
+    "devices": "dispositivos",
+    "The StarTV Stream app does not appear in the web version of the Samsung app store.": "La aplicación StarTV Stream no aparece en la versión web de la tienda de aplicaciones de Samsung.",
+    "Not configured": "No configurado",
+    "Store availability report created successfully.": "Informe de disponibilidad en tienda creado con éxito."
 }
