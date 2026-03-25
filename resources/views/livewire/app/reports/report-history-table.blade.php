@@ -244,7 +244,7 @@
                             <td class="py-3 px-4 text-xs font-bold whitespace-nowrap">
                                 {{ $report->id }}
                             </td>
-                            <td title="{{ $report->category }}"
+                            <td title="{{ __($report->category) }}"
                                 class="py-3 px-4 text-xs font-bold leading-tight truncate whitespace-nowrap overflow-hidden text-ellipsis sm:max-w-xs">
                                 {{ __($report->category) }}
                             </td>

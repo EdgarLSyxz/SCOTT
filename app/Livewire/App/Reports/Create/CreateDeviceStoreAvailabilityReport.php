@@ -89,7 +89,7 @@ class CreateDeviceStoreAvailabilityReport extends Component
             $report = Report::create([
                 'title' => null,
                 'type' => 'Functions',
-                'category' => 'Startv Stream Availability',
+                'category' => 'StarTV Stream Availability',
                 'duration' => null,
                 'reported_by' => Auth::id(),
                 'area' => Auth::user()->area ?? Report::AREA_OTT,

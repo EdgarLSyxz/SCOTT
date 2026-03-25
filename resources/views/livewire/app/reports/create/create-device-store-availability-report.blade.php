@@ -99,7 +99,7 @@
                                             class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                                         <div>
                                             <p class="text-sm font-semibold text-gray-800 dark:text-white mb-2">{{ __('Available in app store') }}</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Confirms the Startv Stream app is currently listed in the platform store.') }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Confirms the StarTV Stream app is currently listed in the platform store.') }}</p>
                                         </div>
                                     </label>
                                     @error('reportData.devices.' . $index . '.is_available_in_store')

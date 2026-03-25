@@ -288,7 +288,7 @@
                 </div>
             @elseif ($report->type === 'Functions' && $report->category === 'Speed Profiles')
                 <x-report-profile-table :report="$report" />
-            @elseif ($report->type === 'Functions' && $report->category === 'Startv Stream Store Availability')
+            @elseif ($report->type === 'Functions' && $report->category === 'StarTV Stream Availability')
                 <x-report-device-store-table :report="$report" />
             @else
                 @php

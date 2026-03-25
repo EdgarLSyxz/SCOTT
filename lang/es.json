@@ -991,7 +991,14 @@
     "Notes": "Notas",
     "Optional notes about the app status in the store...": "Notas opcionales sobre el estado de la app en la tienda...",
     "Available in app store": "Disponible en la tienda de aplicaciones",
-    "Confirms the Startv Stream app is currently listed in the platform store.": "Confirma que la aplicación Startv Stream está actualmente listada en la tienda de la plataforma.",
+    "Confirms the StarTV Stream app is currently listed in the platform store.": "Confirma que la aplicación StarTV Stream está actualmente listada en la tienda de la plataforma.",
     "Availability report created successfully.": "Informe de disponibilidad creado con éxito.",
-    "Startv Stream Availability": "Disponibilidad de Startv Stream"
+    "StarTV Stream Availability": "Disponibilidad de StarTV Stream",
+    "Quick overview of store publication status by device.": "Visión general rápida del estado de publicación en la tienda por dispositivo.",
+    "Total devices": "Total de dispositivos",
+    "Available": "Disponible",
+    "Not available": "No disponible",
+    "No notes": "Sin notas",
+    "Coverage": "Cobertura",
+    "There are devices where the app is not currently available in store. Review each row for details.": "Hay dispositivos donde la aplicación no está actualmente disponible en la tienda. Revise cada fila para más detalles."
 }
