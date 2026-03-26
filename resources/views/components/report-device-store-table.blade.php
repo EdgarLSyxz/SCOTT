@@ -1,16 +1,16 @@
 @php
-$rows = collect($report->deviceStoreAvailabilities ?? [])
-    ->sortBy(function ($item) {
-        $protocol = strtoupper($item->device?->protocol ?? '');
-        $order = $protocol === 'HLS' ? 0 : ($protocol === 'DASH' ? 1 : 2);
-        return [$order, $item->device?->name ?? ''];
-    })
-    ->values();
-$total = $rows->count();
-$availableCount = $rows->where('is_available_in_store', true)->count();
-$notAvailableCount = $rows->where('is_available_in_store', false)->count();
-$withoutNotesCount = $rows->filter(fn($item) => blank($item->notes))->count();
-$coveragePct = $total > 0 ? round(($availableCount / $total) * 100) : 0;
+    $rows = collect($report->deviceStoreAvailabilities ?? [])
+        ->sortBy(function ($item) {
+            $protocol = strtoupper($item->device?->protocol ?? '');
+            $order = $protocol === 'HLS' ? 0 : ($protocol === 'DASH' ? 1 : 2);
+            return [$order, $item->device?->name ?? ''];
+        })
+        ->values();
+    $total = $rows->count();
+    $availableCount = $rows->where('is_available_in_store', true)->count();
+    $notAvailableCount = $rows->where('is_available_in_store', false)->count();
+    $withoutNotesCount = $rows->filter(fn($item) => blank($item->notes))->count();
+    $coveragePct = $total > 0 ? round(($availableCount / $total) * 100) : 0;
 @endphp
 
 <style>
@@ -117,9 +117,9 @@ $coveragePct = $total > 0 ? round(($availableCount / $total) * 100) : 0;
             <tbody>
                 @forelse ($rows as $index => $item)
                     @php
-    $protocol = strtoupper($item->device?->protocol ?? '');
-    $prevProtocol = $index > 0 ? strtoupper($rows[$index - 1]->device?->protocol ?? '') : null;
-    $showGroupHeader = $prevProtocol !== $protocol && in_array($protocol, ['HLS', 'DASH']);
+                        $protocol = strtoupper($item->device?->protocol ?? '');
+                        $prevProtocol = $index > 0 ? strtoupper($rows[$index - 1]->device?->protocol ?? '') : null;
+                        $showGroupHeader = $prevProtocol !== $protocol && in_array($protocol, ['HLS', 'DASH']);
                     @endphp
 
                     @if ($showGroupHeader)
@@ -138,8 +138,8 @@ $coveragePct = $total > 0 ? round(($availableCount / $total) * 100) : 0;
 
                     <tr class="transition-all duration-200 align-middle border-l-4
                         {{ $item->is_available_in_store
-        ? 'border-l-emerald-400 bg-white dark:bg-gray-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
-        : 'border-l-red-400 bg-white dark:bg-gray-800 hover:bg-red-50/50 dark:hover:bg-red-900/10'
+                            ? 'border-l-emerald-400 bg-white dark:bg-gray-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
+                            : 'border-l-red-400 bg-white dark:bg-gray-800 hover:bg-red-50/50 dark:hover:bg-red-900/10'
                         }}">
                         <td class="px-4 py-3.5 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-4">
