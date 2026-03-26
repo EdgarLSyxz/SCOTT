@@ -1006,5 +1006,9 @@
     "devices": "dispositivos",
     "The StarTV Stream app does not appear in the web version of the Samsung app store.": "La aplicación StarTV Stream no aparece en la versión web de la tienda de aplicaciones de Samsung.",
     "Not configured": "No configurado",
-    "Store availability report created successfully.": "Informe de disponibilidad en tienda creado con éxito."
+    "Store availability report created successfully.": "Informe de disponibilidad en tienda creado con éxito.",
+    "Available in browser": "Disponible en navegador",
+    "Confirms StarTV Stream is available through the web browser.": "Confirma que StarTV Stream está disponible a través del navegador web.",
+    "Website": "Sitio web",
+    "Requires attention": "Requiere atención"
 }

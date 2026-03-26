@@ -31,8 +31,8 @@ class CreateDeviceStoreAvailabilityReport extends Component
     {
         return [
             'device_id' => $device?->id ?? '',
-            'is_active' => (bool) ($device?->status ?? true),
-            'is_available_in_store' => !empty($device?->store_url),
+            'is_active' => false,
+            'is_available_in_store' => false,
             'notes' => '',
         ];
     }
