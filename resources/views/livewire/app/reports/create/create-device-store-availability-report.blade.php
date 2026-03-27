@@ -142,14 +142,14 @@
             </div>
 
             <div class="flex flex-col-reverse md:flex-row justify-end gap-2 md:gap-4 mt-4 md:mt-6">
+                <button type="submit"
+                    class="w-full md:w-auto py-2 px-3 md:px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold text-sm md:text-base transition-all">
+                    <i class="fas fa-file-lines mr-1.5"></i> {{ __('Generate report') }}
+                </button>
                 <button data-modal-hide="create-device-store-report-modal" type="button"
                     class="py-2 px-3 md:px-4 text-sm md:text-base font-bold text-gray-700 bg-white rounded-lg border border-gray-400 hover:border-primary-600 hover:text-primary-600 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:hover:text-primary-400 dark:hover:bg-gray-700 transition-all">
                     <i class="fa-solid fa-xmark"></i>
                     {{ __('Discard') }}
-                </button>
-                <button type="submit"
-                    class="w-full md:w-auto py-2 px-3 md:px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold text-sm md:text-base transition-all">
-                    <i class="fas fa-file-lines mr-1.5"></i> {{ __('Generate report') }}
                 </button>
             </div>
         </div>

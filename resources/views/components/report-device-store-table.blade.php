@@ -11,6 +11,7 @@
     $notAvailableCount = $rows->where('is_available_in_store', false)->count();
     $withoutNotesCount = $rows->filter(fn($item) => blank($item->notes))->count();
     $coveragePct = $total > 0 ? round(($availableCount / $total) * 100) : 0;
+    $samsungNeedsAttentionCount = $rows->filter(fn($item) => str_contains(strtolower($item->device?->name ?? ''), 'samsung') && !$item->is_available_in_store)->count();
 @endphp
 
 <style>
@@ -46,20 +47,30 @@
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
                     <i class="fa-solid fa-bag-shopping text-emerald-600 dark:text-emerald-400"></i>
                 </div>
-                <div>
-                    <p class="text-2xl font-extrabold text-emerald-600 leading-none">{{ $availableCount }}</p>
-                    <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Available') }}</p>
-                </div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-emerald-600 leading-none">{{ $availableCount }} / {{ $total }}</p>
+                        <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Available') }}</p>
+                    </div>
             </div>
 
             <div class="p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-store-slash text-red-600 dark:text-red-400"></i>
-                </div>
-                <div>
-                    <p class="text-2xl font-extrabold text-red-600 leading-none">{{ $notAvailableCount }}</p>
-                    <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Not available') }}</p>
-                </div>
+                @if ($notAvailableCount > 0 && $notAvailableCount === $samsungNeedsAttentionCount)
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 dark:text-amber-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-amber-600 leading-none">{{ $samsungNeedsAttentionCount }} / {{ $total }}</p>
+                        <p class="text-[11px] uppercase tracking-wide text-amber-800 dark:text-amber-200 mt-0.5">{{ __('Requires attention') }}</p>
+                    </div>
+                @else
+                    <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-store-slash text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-red-600 leading-none">{{ $notAvailableCount }} / {{ $total }}</p>
+                        <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Not available') }}</p>
+                    </div>
+                @endif
             </div>
 
             <div class="p-4 flex items-center gap-3">
@@ -67,7 +78,7 @@
                     <i class="fa-solid fa-comment-slash text-slate-500 dark:text-slate-300"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-extrabold text-slate-700 dark:text-slate-200 leading-none">{{ $withoutNotesCount }}</p>
+                    <p class="text-2xl font-extrabold text-slate-700 dark:text-slate-200 leading-none">{{ $withoutNotesCount }} / {{ $total }}</p>
                     <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{{ __('No notes') }}</p>
                 </div>
             </div>
