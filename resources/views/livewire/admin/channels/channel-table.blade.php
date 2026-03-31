@@ -43,6 +43,12 @@
                     <i class="fa-solid fa-chevron-down ml-1.5"></i>
                 </button>
                 <div id="filterDropdown" class="z-10 hidden w-64 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div class="mb-2">
+                        <x-checkbox id="active-filter" wire:model.live="showActive"></x-checkbox>
+                        <label for="active-filter" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            {{ __('Show only active channels') }}
+                        </label>
+                    </div>
                     <x-checkbox id="inactive-filter" wire:model.live="showInactive"></x-checkbox>
                     <label for="inactive-filter" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                         {{ __('Show only inactive channels') }}

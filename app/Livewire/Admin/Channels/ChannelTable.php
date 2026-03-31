@@ -14,10 +14,11 @@ class ChannelTable extends Component
 
     public $search = '';
     public $showInactive = false;
+    public $showActive = false;
     public $originFilter = null;
     public $categoryFilter = null;
     public $areaFilter = 'all';
-    protected $queryString = ['search', 'showInactive', 'originFilter', 'categoryFilter', 'areaFilter' => ['except' => 'all']];
+    protected $queryString = ['search', 'showInactive', 'showActive', 'originFilter', 'categoryFilter', 'areaFilter' => ['except' => 'all']];
 
     public function updatingSearch()
     {
@@ -26,6 +27,19 @@ class ChannelTable extends Component
 
     public function updatingShowInactive()
     {
+        if ($this->showInactive) {
+            $this->showActive = false;
+        }
+
+        $this->resetPage();
+    }
+
+    public function updatingShowActive()
+    {
+        if ($this->showActive) {
+            $this->showInactive = false;
+        }
+
         $this->resetPage();
     }
 
@@ -73,6 +87,7 @@ class ChannelTable extends Component
         $this->resetPage();
         $this->search = '';
         $this->showInactive = false;
+        $this->showActive = false;
         $this->originFilter = null;
         $this->categoryFilter = null;
     }
@@ -96,6 +111,10 @@ class ChannelTable extends Component
 
         if ($this->showInactive) {
             $query->where('status', '0');
+        }
+
+        if ($this->showActive) {
+            $query->where('status', '1');
         }
 
         if ($this->originFilter) {

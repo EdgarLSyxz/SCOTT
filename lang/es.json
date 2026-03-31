@@ -1012,5 +1012,6 @@
     "Website": "Sitio web",
     "Requires attention": "Requiere atención",
     "No logs available": "No hay registros disponibles",
-    "Logs will appear here as events occur": "Los registros aparecerán aquí a medida que ocurran eventos"
+    "Logs will appear here as events occur": "Los registros aparecerán aquí a medida que ocurran eventos",
+    "Show only active channels": "Mostrar solo canales activos"
 }
