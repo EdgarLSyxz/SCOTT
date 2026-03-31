@@ -73,7 +73,7 @@
                     </span>
                     <div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ __('Last update') }}</p>
-                        <p class="text-gray-900 dark:text-gray-100 font-medium">{{ __('March') }} 2026</p>
+                        <p class="text-gray-900 dark:text-gray-100 font-medium">{{ __('April') }} 2026</p>
                     </div>
                 </div>
             </div>
