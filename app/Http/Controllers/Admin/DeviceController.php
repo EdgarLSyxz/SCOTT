@@ -24,7 +24,7 @@ class DeviceController extends Controller
                 abort(403);
             }
 
-            if (! $user->can('viewAny', Device::class) && ! $user->can('view', Device::class)) {
+            if (! $user->can('viewAny', Device::class)) {
                 abort(403);
             }
         }
@@ -50,10 +50,6 @@ class DeviceController extends Controller
 
     public function show(Device $device)
     {
-        if ($device->id === 10 && (! Auth::user() || Auth::id() !== 1)) {
-            abort(403);
-        }
-
         $this->authorize('view', $device);
 
         return view('admin.devices.show', compact('device'));

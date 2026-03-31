@@ -22,16 +22,13 @@ class DevicePolicy
         return $user->can('devices.view');
     }
 
-    public function view(User $user, Device $device)
+    public function view(User $user, ?Device $device = null)
     {
         if (! $user->can('devices.view')) {
             return false;
         }
 
-        $userArea = strtolower(trim($user->area ?? ''));
-        $deviceArea = strtolower(trim($device->area ?? ''));
-
-        return $userArea === 'ott' || $userArea === $deviceArea;
+        return true;
     }
 
     public function create(User $user)
@@ -39,7 +36,7 @@ class DevicePolicy
         if (! $user->can('devices.create')) {
             return false;
         }
-        return strtolower(trim($user->area ?? '')) === 'OTT';
+        return strtolower(trim($user->area ?? '')) === 'ott';
     }
 
     public function update(User $user, Device $device)
@@ -47,7 +44,7 @@ class DevicePolicy
         if (! $user->can('devices.edit')) {
             return false;
         }
-        return strtolower(trim($user->area ?? '')) === 'OTT';
+        return strtolower(trim($user->area ?? '')) === 'ott';
     }
 
     public function delete(User $user, Device $device)
@@ -55,6 +52,6 @@ class DevicePolicy
         if (! $user->can('devices.delete')) {
             return false;
         }
-        return strtolower(trim($user->area ?? '')) === 'OTT';
+        return strtolower(trim($user->area ?? '')) === 'ott';
     }
 }
