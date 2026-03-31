@@ -38,22 +38,9 @@ class GrafanaRadios extends Component
 
     public function getGrafanaUrlProperty(): string
     {
-        $grafanaPanel = $this->resolvePanel();
-        $base = $grafanaPanel?->url;
-
-        if (blank($base)) {
-            return '';
-        }
-
         [$from, $to] = $this->resolveTimeParams();
 
-        $parsedQuery = [];
-        $queryString = parse_url($base, PHP_URL_QUERY);
-        if (is_string($queryString) && $queryString !== '') {
-            parse_str($queryString, $parsedQuery);
-        }
-
-        $urlWithoutQuery = str_replace('/d/', '/d-solo/', (string) strtok($base, '?'));
+        $urlWithoutQuery = 'http://172.16.126.169:3000/d-solo/adjqd2b/radio-stations';
 
         $params = [
             'orgId'    => 3,
@@ -63,9 +50,12 @@ class GrafanaRadios extends Component
             'refresh'  => '5s',
             'panelId'  => 'panel-1',
             'theme'    => $this->theme,
+            '__feature.dashboardSceneSolo' => 'true',
         ];
 
-        return 'http://172.16.126.169:3000/d-solo/adjqd2b/radio-stations?orgId=3&from=1774910861371&to=1774911161371&timezone=browser&refresh=5s&panelId=panel-1&__feature.dashboardSceneSolo=true';
+        $params['_k'] = substr(md5(json_encode([$from, $to, $this->theme])), 0, 10);
+
+        return $urlWithoutQuery . '?' . http_build_query($params);
     }
 
     public function getIframeKeyProperty(): string

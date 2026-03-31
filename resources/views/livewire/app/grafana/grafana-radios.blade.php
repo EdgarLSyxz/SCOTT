@@ -18,7 +18,7 @@
         </div>
 
         <div class="p-4 flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
-            <div class="w-full md:basis-1/2 flex flex-col">
+            <div class="w-full flex flex-col">
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-200 mb-1">
                     <i class="fa-solid fa-clock mr-1.5 mb-2"></i>
                     {{ __('Time range') }}
