@@ -44,7 +44,7 @@
                     {{ __('No Grafana panel configured for radios.') }}
                 </div>
             @else
-                <iframe wire:key="{{ $this->iframeKey }}" src="{{ $this->grafanaUrl }}" height="260" frameborder="0"
+                <iframe wire:key="{{ $this->iframeKey }}" src="{{ $this->grafanaUrl }}" height="220" frameborder="0"
                     loading="lazy" referrerpolicy="no-referrer"
                     class="w-full rounded-lg border shadow-inner transition-all duration-200"
                     x-data="{ theme: localStorage.getItem('color-theme') === 'dark' ? 'dark' : 'light' }" x-init="
@@ -61,7 +61,8 @@
                         });
                         theme = localStorage.getItem('color-theme') === 'dark' ? 'dark' : 'light';
                         $wire.set('theme', theme);
-                    "></iframe>
+                    ">
+                </iframe>
             @endif
         </div>
     </div>
