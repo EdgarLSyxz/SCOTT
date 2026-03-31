@@ -129,13 +129,15 @@
         </div>
     </div>
 
-    {{-- <div class="mt-6">
+    <div class="mt-6">
         @if(in_array($panel->id, [1, 3]))
             @livewire('app.grafana.grafana-dynamic', ['dashboardId' => $panel->id, 'showSwitch' => false])
         @elseif($panel->id == 2)
             @livewire('app.grafana.grafana-cutv')
+        @elseif($panel->id == 4)
+            @livewire('app.grafana.grafana-radios', ['dashboardId' => $panel->id])
         @endif
-    </div> --}}
+    </div>
 
     <div class="lg:hidden mt-6 space-y-5">
         <a href="{{ route('admin.grafana.index') }}"
