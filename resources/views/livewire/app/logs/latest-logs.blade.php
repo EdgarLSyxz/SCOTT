@@ -54,12 +54,14 @@
               <span class="text-xs text-gray-300">=</span>
               <span>{{ __('Info') }}</span>
             </div>
-            <div class="mb-1"><span class="font-mono font-bold {{ $cutvColor }}">CUTV_EU</span>:
-              {{ __('CUTV error on end user') }}
-            </div>
-            <div class="mb-1"><span class="font-mono font-bold {{ $cutvColor }}">CUTV_OR</span>:
-              {{ __('CUTV error on origin') }}
-            </div>
+            @if ($area !== 'DTH')
+              <div class="mb-1"><span class="font-mono font-bold {{ $cutvColor }}">CUTV_EU</span>:
+                {{ __('CUTV error on end user') }}
+              </div>
+              <div class="mb-1"><span class="font-mono font-bold {{ $cutvColor }}">CUTV_OR</span>:
+                {{ __('CUTV error on origin') }}
+              </div>
+            @endif
             <div class="mb-1"><span class="font-mono font-bold {{ $cutvColor }}">CHANNEL_DL</span>:
               {{ __('DTH Downlink error') }}
             </div>
@@ -68,7 +70,7 @@
       </div>
     </div>
     <div id="logs-container" wire:poll.visible.30s="fetchLogs"
-      class="overflow-y-auto font-mono text-[12px] leading-relaxed px-2 py-5 space-y-1 bg-gray-50 dark:bg-gray-800 relative"
+      class="overflow-y-auto font-mono text-[12px] leading-relaxed px-2 py-5 space-y-1 bg-gray-50 dark:bg-gray-800 relative flex flex-col"
       style="scrollbar-width: thin; scrollbar-color: #4b5563 transparent; height: 320px; max-height: 320px; min-height: 0;"
       x-data="{}" x-init="
         const store = window.ensureLogsStore();
@@ -82,7 +84,16 @@
           'LOW' => 'text-gray-500',
         ];
       @endphp
-      @foreach (($logs ?? []) as $i => $log)
+      @if (empty($logs ?? []))
+        <div class="flex flex-col items-center justify-center h-full gap-3">
+          <i class="fa-solid fa-inbox text-3xl {{ $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-200 dark:text-primary-800' }} opacity-60"></i>
+          <div class="text-center">
+            <p class="text-gray-400 dark:text-gray-500 text-xs font-medium">{{ __('No logs available') }}</p>
+            <p class="text-gray-350 dark:text-gray-600 text-[10px] mt-1">{{ __('Logs will appear here as events occur') }}</p>
+          </div>
+        </div>
+      @else
+        @foreach (($logs ?? []) as $i => $log)
         @if ($i === (count($logs ?? []) - 1))
           <script>window.dispatchEvent(new Event('logs-updated'));</script>
         @endif
@@ -126,6 +137,7 @@
           </div>
         </div>
       @endforeach
+      @endif
       <button x-show="Alpine.store('logsState').showBtn" @click="window.ensureLogsStore().jumpToBottom()"
         :class="{'animate-pulse': Alpine.store('logsState').newLogs}"
         class="sticky float-right bottom-2 right-2 z-50 {{ $btnClass }} bg-opacity-80 text-white rounded-full shadow-lg p-1.5 transition-all duration-200 flex items-center justify-center"

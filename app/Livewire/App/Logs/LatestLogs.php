@@ -18,6 +18,7 @@ class LatestLogs extends Component
 
     public function fetchLogs()
     {
+        $userArea = auth()->user()?->area;
         $issues = Issue::orderByDesc('created_at')->limit(28)->get()->reverse();
         $this->latestIssueId = Issue::max('id') ?? 0;
         $channelNumbers = collect($issues)->map(function ($issue) {
@@ -58,6 +59,14 @@ class LatestLogs extends Component
                 'tag' => $issue->tag ?? '',
                 'channel_image' => $channelImage,
             ];
+        })->filter(function ($log) use ($userArea) {
+            if (strtolower($userArea ?? '') === 'dth') {
+                $type = strtoupper($log['type'] ?? '');
+                if (in_array($type, ['CUTV_EU', 'CUTV_OR'], true)) {
+                    return false;
+                }
+            }
+            return true;
         })->values()->toArray();
     }
 

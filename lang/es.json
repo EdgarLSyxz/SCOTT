@@ -1010,5 +1010,7 @@
     "Available in browser": "Disponible en navegador",
     "Confirms StarTV Stream is available through the web browser.": "Confirma que StarTV Stream está disponible a través del navegador web.",
     "Website": "Sitio web",
-    "Requires attention": "Requiere atención"
+    "Requires attention": "Requiere atención",
+    "No logs available": "No hay registros disponibles",
+    "Logs will appear here as events occur": "Los registros aparecerán aquí a medida que ocurran eventos"
 }
