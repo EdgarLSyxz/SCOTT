@@ -89,6 +89,7 @@
                     __('months.november'),
                     __('months.december')
                 ];
+                $isMonthlySelected = !empty($month);
             @endphp
             <div class="card">
                 <h4>{{ __('Generated at') }}</h4>
@@ -200,7 +201,13 @@
 
             @if(!empty($summary))
                 <div class="card">
-                    <h4>{{ __('Total downloads') }}</h4>
+                    <h4>
+                        @if($isMonthlySelected)
+                            {{ __('Monthly downloads') }}: {{ $__months_local[intval($month)] ?? $month }}
+                        @else
+                            {{ __('Total downloads') }}
+                        @endif
+                    </h4>
                     <div class="value">{{ number_format($summary['total'] ?? 0) }}</div>
                 </div>
                 <div class="card">
@@ -228,7 +235,7 @@
             ksort($protocolSummaryByYear);
         @endphp
 
-        @if(!empty($is_multi_year) && !empty($download_rows))
+        @if((!empty($is_multi_year) || !empty($month)) && !empty($download_rows))
             @php
                 $plataformas = [];
                 foreach ($download_rows as $_r) {
@@ -248,11 +255,21 @@
                     return $pa !== $pb ? $pa - $pb : strcmp($a['name'], $b['name']);
                 });
                 $plataformasTotal = array_sum(array_column($plataformas, 'total'));
+                $platformsMonthLabel = null;
+                if (!empty($month)) {
+                    $platformsMonthLabel = $__months_local[intval($month)] ?? $month;
+                }
             @endphp
             @if(!empty($plataformas))
             <div class="section" style="page-break-before: always; page-break-inside: avoid;">
                 <h3>{{ __('Platforms') }}</h3>
-                <div class="note" style="margin-bottom: 8px;">{{ __('Total platform downloads across all selected years.') }}</div>
+                <div class="note" style="margin-bottom: 8px;">
+                    @if(!empty($platformsMonthLabel))
+                        {{ __('Total platform downloads for :month across selected years.', ['month' => $platformsMonthLabel]) }}
+                    @else
+                        {{ __('Total platform downloads across all selected years.') }}
+                    @endif
+                </div>
                 <table class="compact-table">
                     <thead>
                         <tr>
@@ -289,6 +306,7 @@
                     </tfoot>
                 </table>
             </div>
+            <div style="page-break-after: always;"></div>
             @endif
         @endif
 
