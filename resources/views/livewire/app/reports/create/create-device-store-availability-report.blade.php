@@ -8,7 +8,7 @@
                             <i :class="open ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
                         </button>
                         <div class="dark:text-white font-semibold relative min-w-0">
-                            <h3 class="cursor-pointer px-2 md:px-3 py-1 md:py-2 rounded-full shadow-md flex items-center gap-1 md:gap-2 transition bg-gray-50 border dark:bg-gray-700 dark:border-white truncate text-sm md:text-base">
+                            <h3 class="cursor-pointer px-2 md:px-3 py-1 md:py-2 rounded-full shadow-md flex items-center gap-1 md:gap-4 transition bg-gray-50 border dark:bg-gray-700 dark:border-white truncate text-sm md:text-base">
                                 <i class="fa-solid fa-store text-gray-800 dark:text-gray-200 text-sm md:text-base"></i>
                                 <span class="truncate">{{ __('StarTV Stream availability') }}</span>
                             </h3>
@@ -52,7 +52,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex flex-wrap gap-1 md:gap-2 text-xs mt-2 ml-0 md:ml-1">
+                                    <div class="flex flex-wrap gap-1 md:gap-2 text-xs mt-2 ml-0">
                                         @if(strtoupper($currentDevice['protocol']) === 'HLS')
                                             <span
                                                 class="inline-flex items-center px-1.5 md:px-2 py-0.5 md:py-1 text-xs font-medium text-blue-800 bg-blue-200 dark:bg-blue-800 dark:text-blue-200 rounded-full">
