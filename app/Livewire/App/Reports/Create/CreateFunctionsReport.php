@@ -21,7 +21,7 @@ class CreateFunctionsReport extends Component
     public $categories = [];
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
     public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
-    public $allowedStages = ['CDN BPK', 'CDN CEF+'];
+    public $allowedStages = ['CDN CEF+', 'CDN BPK', 'CDN CEF+/BPK'];
 
     public function mount()
     {
@@ -322,6 +322,7 @@ class CreateFunctionsReport extends Component
             ]);
         }
     }
+
     public function render()
     {
         return view('livewire.app.reports.create.create-functions-report', [
