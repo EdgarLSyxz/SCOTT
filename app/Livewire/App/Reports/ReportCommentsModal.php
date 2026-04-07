@@ -4,7 +4,6 @@ namespace App\Livewire\App\Reports;
 
 use Livewire\Component;
 use App\Models\Comment;
-use App\Models\Report;
 use App\Events\CommentAdded;
 
 class ReportCommentsModal extends Component
