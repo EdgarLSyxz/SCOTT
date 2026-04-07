@@ -1,7 +1,7 @@
 <div class="space-y-6">
     @php
-$area = auth()->user()->area ?? session('area') ?? 'OTT';
-$color = $area === 'DTH' ? 'secondary' : 'primary';
+        $area = auth()->user()->area ?? session('area') ?? 'OTT';
+        $color = $area === 'DTH' ? 'secondary' : 'primary';
     @endphp
 
     @if (!empty($uploads))
@@ -22,13 +22,13 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
                     </select>
                 </div>
                 <div class="ml-4 flex items-center space-x-4">
-                    <a
+                    {{-- <a
                         x-data
                         :href="'/admin/devices/packages/' + $wire.selectedUploadId + '/excel'"
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg cursor-pointer transition inline-flex items-center">
                         <i class="fa-solid fa-file-excel mr-1"></i>
                         {{ __('Download Excel') }}
-                    </a>
+                    </a> --}}
                     <button
                         @click="confirmDelete()"
                         class="bg-red-600 hover:bg-red-800 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"
@@ -117,7 +117,7 @@ $color = $area === 'DTH' ? 'secondary' : 'primary';
             <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden border-t border-{{ $color }}-300/50 dark:border-none">
                 <div class="overflow-x-auto">
                 @php
-    $filteredPackages = $this->getFilteredPackages();
+                    $filteredPackages = $this->getFilteredPackages();
                 @endphp
                 </div>
                 @if (!empty($filteredPackages))
