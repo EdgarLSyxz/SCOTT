@@ -1013,5 +1013,8 @@
     "Requires attention": "Requiere atención",
     "No logs available": "No hay registros disponibles",
     "Logs will appear here as events occur": "Los registros aparecerán aquí a medida que ocurran eventos",
-    "Show only active channels": "Mostrar solo canales activos"
+    "Show only active channels": "Mostrar solo canales activos",
+    "Upload TXT": "Subir TXT",
+    "Drop your TXT here": "Suelta tu TXT aquí",
+    "Process TXT": "Procesar TXT"
 }

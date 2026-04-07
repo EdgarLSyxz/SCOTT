@@ -27,19 +27,19 @@
     <div class="w-full mx-auto space-y-6">
         <div
             class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
-            <form id="pdf-upload-form" class="p-8">
+            <form id="txt-upload-form" class="p-8">
                 @csrf
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-file-pdf text-{{ $color }}-400"></i>
-                        <span>{{ __('Upload PDF') }}</span>
+                        <i class="fa-solid fa-file text-{{ $color }}-400"></i>
+                        <span>{{ __('Upload TXT') }}</span>
                     </h2>
                 </div>
 
                 <div class="relative group">
                     <div class="border-3 border-dashed border-{{ $color }}-300 dark:border-{{ $color }}-600 rounded-xl p-12 text-center cursor-pointer transition-all duration-300 hover:border-{{ $color }}-400 dark:hover:border-{{ $color }}-500 hover:bg-gray-200/50 dark:hover:bg-gray-800"
                         id="drop-zone">
-                        <input type="file" id="pdf-file" name="pdf_file" accept=".pdf" class="hidden" />
+                        <input type="file" id="txt-file" name="txt_file" accept=".txt" class="hidden" />
 
                         <div class="space-y-4 transition-all duration-300" id="upload-prompt">
                             <div
@@ -48,7 +48,7 @@
                             </div>
                             <div>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ __('Drop your PDF here') }}
+                                    {{ __('Drop your TXT here') }}
                                 </p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                     {{ __('or click to browse') }}
@@ -86,7 +86,7 @@
                     class="w-full mt-6 bg-{{ $color }}-600 hover:bg-{{ $color }}-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     id="submit-btn" disabled>
                     <i class="fa-solid fa-gears text-lg"></i>
-                    <span>{{ __('Process PDF') }}</span>
+                    <span>{{ __('Process TXT') }}</span>
                 </button>
 
                 <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-4">
@@ -101,9 +101,9 @@
                     <i class="fa-solid fa-spinner text-{{ $color }}-600 dark:text-{{ $color }}-400 text-2xl"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ __('Processing PDF...') }}</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ __('Processing TXT...') }}</p>
                     <p class="text-xs text-gray-600 dark:text-gray-400">
-                        {{ __('Extracting package and customer information') }}
+                        {{ __('Extracting package and customer information from TXT') }}
                     </p>
                 </div>
             </div>
@@ -123,10 +123,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const dropZone = document.getElementById('drop-zone');
-            const pdfFileInput = document.getElementById('pdf-file');
+            const txtFileInput = document.getElementById('txt-file');
             const fileInfo = document.getElementById('file-info');
             const fileName = document.getElementById('file-name');
-            const form = document.getElementById('pdf-upload-form');
+            const form = document.getElementById('txt-upload-form');
             const loadingIndicator = document.getElementById('loading-indicator');
             const errorContainer = document.getElementById('error-container');
             const errorMessage = document.getElementById('error-message');
@@ -146,7 +146,7 @@
             }
 
             function resetForm() {
-                pdfFileInput.value = '';
+                txtFileInput.value = '';
                 uploadPrompt.classList.remove('hidden');
                 uploadInfo.classList.add('hidden');
                 submitBtn.disabled = true;
@@ -156,7 +156,7 @@
                 if (fileNameDisplay) fileNameDisplay.textContent = '';
             }
 
-            dropZone.addEventListener('click', () => pdfFileInput.click());
+            dropZone.addEventListener('click', () => txtFileInput.click());
             dropZone.addEventListener('dragover', e => {
                 e.preventDefault();
                 dropZone.style.borderColor = 'var(--color-primary)';
@@ -171,16 +171,16 @@
                 dropZone.style.borderColor = '';
                 dropZone.style.backgroundColor = '';
                 const files = e.dataTransfer.files;
-                if (files.length) pdfFileInput.files = files;
+                if (files.length) txtFileInput.files = files;
                 handleFileSelect();
             });
 
-            pdfFileInput.addEventListener('change', handleFileSelect);
+            txtFileInput.addEventListener('change', handleFileSelect);
 
             function handleFileSelect() {
-                const file = pdfFileInput.files[0];
-                if (!file || !file.name.endsWith('.pdf')) {
-                    showError('{{ __('Please select a PDF file') }}');
+                const file = txtFileInput.files[0];
+                if (!file || !/\.txt$/i.test(file.name)) {
+                    showError('{{ __('Please select a TXT file') }}');
                     resetForm();
                     return;
                 }
@@ -209,11 +209,11 @@
 
             form.addEventListener('submit', async e => {
                 e.preventDefault();
-                const file = pdfFileInput.files[0];
+                const file = txtFileInput.files[0];
                 if (!file) return;
 
                 const formData = new FormData();
-                formData.append('pdf_file', file);
+                formData.append('txt_file', file);
 
                 try {
                     submitBtn.disabled = true;
@@ -253,7 +253,7 @@
                                         }
                                     }, 300);
                                 } else {
-                                    const msg = (json && (json.error || json.message)) || xhr.responseText || '{{ __('Failed to process PDF') }}';
+                                    const msg = (json && (json.error || json.message)) || xhr.responseText || '{{ __('Failed to process TXT') }}';
                                     showError(msg);
                                     submitBtn.disabled = false;
                                     uploadProgress.classList.add('hidden');
@@ -279,7 +279,7 @@
                     const metaCsrf = document.querySelector('meta[name="csrf-token"]');
                     let csrfToken = metaCsrf ? metaCsrf.getAttribute('content') : null;
                     if (!csrfToken) {
-                        const inputToken = document.querySelector('#pdf-upload-form input[name="_token"]');
+                        const inputToken = document.querySelector('#txt-upload-form input[name="_token"]');
                         csrfToken = inputToken ? inputToken.value : null;
                     }
 

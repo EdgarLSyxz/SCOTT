@@ -160,11 +160,8 @@ class PackageManager extends Component
 
         if ($upload) {
             $upload->delete();
-            $this->loadUploads();
             $this->selectedPackage = null;
-            $this->packages = [];
-            $this->totalPackages = 0;
-            $this->totalCustomers = 0;
+            $this->loadUploads();
             $this->dispatch('package-upload-deleted', [
                 'message' => __('Upload removed successfully'),
             ]);

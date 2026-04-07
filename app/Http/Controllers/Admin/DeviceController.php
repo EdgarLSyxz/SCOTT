@@ -127,21 +127,24 @@ class DeviceController extends Controller
             abort(403);
         }
 
+        $fileInputName = $request->hasFile('txt_file') ? 'txt_file' : 'pdf_file';
+
         $phpFilesInfo = [];
-        if (isset($_FILES['pdf_file'])) {
+        if (isset($_FILES[$fileInputName])) {
             $phpFilesInfo = [
-                'name' => $_FILES['pdf_file']['name'] ?? null,
-                'type' => $_FILES['pdf_file']['type'] ?? null,
-                'size' => $_FILES['pdf_file']['size'] ?? null,
-                'error' => $_FILES['pdf_file']['error'] ?? null,
-                'error_message' => $this->getUploadErrorMessage($_FILES['pdf_file']['error'] ?? 0),
-                'tmp_name' => isset($_FILES['pdf_file']['tmp_name']) ? 'set' : 'not set',
-                'tmp_exists' => isset($_FILES['pdf_file']['tmp_name']) && file_exists($_FILES['pdf_file']['tmp_name']),
+                'name' => $_FILES[$fileInputName]['name'] ?? null,
+                'type' => $_FILES[$fileInputName]['type'] ?? null,
+                'size' => $_FILES[$fileInputName]['size'] ?? null,
+                'error' => $_FILES[$fileInputName]['error'] ?? null,
+                'error_message' => $this->getUploadErrorMessage($_FILES[$fileInputName]['error'] ?? 0),
+                'tmp_name' => isset($_FILES[$fileInputName]['tmp_name']) ? 'set' : 'not set',
+                'tmp_exists' => isset($_FILES[$fileInputName]['tmp_name']) && file_exists($_FILES[$fileInputName]['tmp_name']),
             ];
         }
 
-        \Log::info('processPDF received', [
-            'has_file' => $request->hasFile('pdf_file'),
+        \Log::info('processTXT received', [
+            'has_file' => $request->hasFile($fileInputName),
+            'input_name' => $fileInputName,
             'files_count' => count($request->files->all()),
             'files_keys' => array_keys($request->files->all()),
             'input_keys' => array_keys($request->all()),
@@ -162,40 +165,45 @@ class DeviceController extends Controller
             }, $request->files->all()),
         ]);
 
-        $pdfFile = null;
-        if ($request->hasFile('pdf_file')) {
-            $pdfFile = $request->file('pdf_file');
+        $uploadedFile = null;
+        if ($request->hasFile($fileInputName)) {
+            $uploadedFile = $request->file($fileInputName);
         }
 
-        if (!$pdfFile) {
-            \Log::warning('processPDF no file received', [
+        if (!$uploadedFile) {
+            \Log::warning('processTXT no file received', [
                 'user_id' => $userId,
-                'has_files' => $request->hasFile('pdf_file'),
+                'has_files' => $request->hasFile($fileInputName),
                 'all_files' => array_keys($request->files->all()),
                 'php_files_info' => $phpFilesInfo,
             ]);
-            return response()->json(['success' => true, 'message' => 'Request received but no pdf_file found. Check logs.'], 200);
+            return response()->json(['success' => false, 'message' => 'No txt_file found in request.'], 422);
+        }
+
+        $originalName = (string) $uploadedFile->getClientOriginalName();
+        if (!str_ends_with(strtolower($originalName), '.txt')) {
+            return response()->json(['success' => false, 'message' => 'Only TXT files allowed'], 422);
         }
 
         try {
 
-            \Log::info('processPDF called', [
+            \Log::info('processTXT called', [
                 'user_id' => $userId,
                 'user_email' => $user->email ?? null,
-                'filename' => $pdfFile ? $pdfFile->getClientOriginalName() : null,
-                'size' => $pdfFile ? $pdfFile->getSize() : null,
+                'filename' => $uploadedFile ? $uploadedFile->getClientOriginalName() : null,
+                'size' => $uploadedFile ? $uploadedFile->getSize() : null,
             ]);
 
-            $pythonResponse = $this->callPythonAPI($pdfFile);
+            $pythonResponse = $this->callPythonAPI($uploadedFile);
 
-            \Log::info('processPDF python response', [
+            \Log::info('processTXT python response', [
                 'user_id' => $userId,
                 'status' => is_array($pythonResponse) && isset($pythonResponse['success']) ? $pythonResponse['success'] : 'unknown',
                 'summary_keys' => is_array($pythonResponse) ? array_keys($pythonResponse) : null,
             ]);
 
             if (is_array($pythonResponse) && isset($pythonResponse['success']) && $pythonResponse['success'] === false) {
-                $message = $pythonResponse['message'] ?? __('Error processing PDF via Python API');
+                $message = $pythonResponse['message'] ?? __('Error processing TXT via Python API');
                 $payload = ['success' => false, 'message' => $message];
 
                 if (isset($pythonResponse['status'])) {
@@ -212,7 +220,7 @@ class DeviceController extends Controller
             try {
                 $package = new Package();
                 $package->user_id = $user->id;
-                $package->filename = $pdfFile->getClientOriginalName();
+                $package->filename = $uploadedFile->getClientOriginalName();
                 $package->data = $pythonResponse['packages'] ?? $pythonResponse;
                 $package->save();
             } catch (\Exception $e) {
@@ -228,16 +236,16 @@ class DeviceController extends Controller
         }
     }
 
-    private function callPythonAPI($pdfFile)
+    private function callPythonAPI($uploadedFile)
     {
         try {
             $pythonUrl = config('services.python_packages_api.url', 'http://172.16.126.166:8000');
-            $endpoint = rtrim($pythonUrl, '/') . '/api/process-pdf';
+            $endpoint = rtrim($pythonUrl, '/') . '/api/process-txt';
 
             \Log::info('callPythonAPI start', [
                 'endpoint' => $endpoint,
-                'filename' => $pdfFile ? $pdfFile->getClientOriginalName() : null,
-                'realpath' => $pdfFile ? $pdfFile->getRealPath() : null,
+                'filename' => $uploadedFile ? $uploadedFile->getClientOriginalName() : null,
+                'realpath' => $uploadedFile ? $uploadedFile->getRealPath() : null,
             ]);
 
             $client = new \GuzzleHttp\Client();
@@ -245,9 +253,9 @@ class DeviceController extends Controller
             $response = $client->post($endpoint, [
                 'multipart' => [
                     [
-                        'name' => 'pdf_file',
-                        'contents' => fopen($pdfFile->getRealPath(), 'r'),
-                        'filename' => $pdfFile->getClientOriginalName(),
+                        'name' => 'txt_file',
+                        'contents' => fopen($uploadedFile->getRealPath(), 'r'),
+                        'filename' => $uploadedFile->getClientOriginalName(),
                     ],
                 ],
                 'timeout' => config('services.python_packages_api.timeout', 120),
