@@ -1024,5 +1024,6 @@
     "Updated :count hour ago": "Actualizado hace :count hora",
     "Updated :count hours ago": "Actualizado hace :count horas",
     "Updated :count d ago": "Actualizado hace :count d",
-    "Updated :count days ago": "Actualizado hace :count días"
+    "Updated :count days ago": "Actualizado hace :count días",
+    "SLA": "SLA"
 }
