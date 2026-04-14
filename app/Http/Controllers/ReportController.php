@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Services\ReportSlaService;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -34,7 +35,7 @@ class ReportController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Report $report)
+    public function show(Report $report, ReportSlaService $slaService)
     {
         $currentUser = auth()->user();
         try {
@@ -46,7 +47,17 @@ class ReportController extends Controller
             abort(403);
         }
 
-        return view("app.reports.show", compact("report"));
+        // Calculate SLA for momentary reports
+        $sla = null;
+        if ($report->type === 'Momentary') {
+            $lastCommentAt = $report->comments()->latest('created_at')->first()?->created_at;
+            $sla = $slaService->evaluate($report, $lastCommentAt);
+        }
+
+        // Get comments
+        $comments = $report->comments()->with('user')->latest()->get();
+
+        return view("app.reports.show", compact("report", "sla", "comments"));
     }
 
     /**
