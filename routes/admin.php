@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
+use App\Http\Controllers\Admin\ReportSlaController;
 use App\Http\Controllers\Admin\StageController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -85,5 +86,13 @@ Route::resource('/radios', RadioController::class)
 
 Route::resource('/grafana', GrafanaController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\GrafanaPanel']);
+
+Route::get('/reports/sla', [ReportSlaController::class, 'index'])
+    ->name('admin.reports.sla.index')
+    ->middleware(['auth', 'verified']);
+
+Route::put('/reports/sla', [ReportSlaController::class, 'update'])
+    ->name('admin.reports.sla.update')
+    ->middleware(['auth', 'verified']);
 
 Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])->name('user.switch-area')->middleware(['auth', 'verified']);

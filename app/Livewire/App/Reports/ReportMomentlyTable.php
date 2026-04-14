@@ -4,9 +4,11 @@ namespace App\Livewire\App\Reports;
 
 use App\Models\Report;
 use App\Mail\Reports\ReportResolvedMail;
+use App\Services\ReportSlaService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 
@@ -22,6 +24,7 @@ class ReportMomentlyTable extends Component
     protected $queryString = ['search', 'areaFilter' => ['except' => 'all']];
     protected $listeners = [
         'reportCreated' => '$refresh',
+        'refreshReportsSla' => '$refresh',
         'markAsSolvedFromModal',
         'closeReportDetailsFromModal'
     ];
@@ -140,6 +143,7 @@ class ReportMomentlyTable extends Component
                     });
             })
             ->with(['reportDetails.channel', 'reportedBy', 'attendedBy'])
+            ->withMax('comments', 'created_at')
             ->orderBy('created_at', $this->order)
         ;
 
@@ -163,16 +167,19 @@ class ReportMomentlyTable extends Component
             }
         }
 
+        $slaService = app(ReportSlaService::class);
+
         $reports = $query->paginate(5);
 
-        $collection = $reports->getCollection();
-        $collection = $collection->map(function ($report) {
+        $collection = collect($reports->items())->map(function ($report) use ($slaService) {
             $report->formatted_date = $this->formatDate($report->created_at);
             $report->channels_preview = $report->reportDetails->take(3)
                 ->map(fn($detail) => $detail->channel->name)
                 ->implode(', ') . ($report->reportDetails->count() > 3 ? '...' : '');
+            $report->sla = $slaService->evaluate($report, $report->comments_max_created_at);
             return $report;
         });
+
         $reports->setCollection($collection);
 
         return view('livewire.app.reports.report-momently-table', [

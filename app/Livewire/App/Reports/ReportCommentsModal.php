@@ -4,6 +4,7 @@ namespace App\Livewire\App\Reports;
 
 use Livewire\Component;
 use App\Models\Comment;
+use App\Models\Report;
 use App\Events\CommentAdded;
 
 class ReportCommentsModal extends Component
@@ -32,10 +33,12 @@ class ReportCommentsModal extends Component
             'body' => $this->body,
         ]);
 
+        $this->touchReportActivity();
         $this->body = '';
         event(new CommentAdded($comment));
         broadcast(new CommentAdded($comment))->toOthers();
         $this->dispatch('refreshComments');
+        $this->dispatch('refreshReportsSla');
     }
 
     public function editComment($id)
@@ -55,11 +58,13 @@ class ReportCommentsModal extends Component
             return;
         $comment->body = $this->editBody;
         $comment->save();
+        $this->touchReportActivity();
         $this->editingId = null;
         $this->editBody = '';
         event(new CommentAdded($comment));
         broadcast(new CommentAdded($comment))->toOthers();
         $this->dispatch('refreshComments');
+        $this->dispatch('refreshReportsSla');
     }
 
     public function cancelEdit()
@@ -74,9 +79,16 @@ class ReportCommentsModal extends Component
         if ($comment->user_id !== auth()->id())
             return;
         $comment->delete();
+        $this->touchReportActivity();
         event(new CommentAdded($comment));
         broadcast(new CommentAdded($comment))->toOthers();
         $this->dispatch('refreshComments');
+        $this->dispatch('refreshReportsSla');
+    }
+
+    private function touchReportActivity(): void
+    {
+        Report::where('id', $this->reportId)->update(['updated_at' => now()]);
     }
 
     public function render()

@@ -68,6 +68,9 @@
                             <i class="fa-solid fa-calendar mr-1"></i> {{ __('It was reported ago') }}
                             <i class="fa-solid {{ $order === 'asc' ? 'fa-sort-up' : 'fa-sort-down' }} ml-1"></i>
                         </th>
+                        <th class="py-3 px-4 w-[210px] text-left whitespace-nowrap">
+                            <i class="fa-solid fa-traffic-light mr-1"></i> {{ __('SLA') }}
+                        </th>
                         <th class="px-4 py-3 w-[80px] text-center">
                             <span class="sr-only">
                                 <i class="fa-solid fa-sliders-h mr-1"></i> {{ __('Options') }}
@@ -128,13 +131,24 @@
                                     <i class="fa-solid fa-clock mr-1.5 pt-[1px]"></i> {{ $report->formatted_date }}
                                 </span>
                             </td>
+                            <td class="py-3 px-4 w-[210px]">
+                                <div class="flex flex-col">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
+                                        <i class="fa-solid fa-circle mr-1 text-[9px]"></i>
+                                        {{ $report->sla['label'] }}
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                                        {{ __('Last activity') }}: {{ $report->sla['elapsed_human'] }}
+                                    </span>
+                                </div>
+                            </td>
                             <td class="py-3 px-4 w-[80px] text-center whitespace-nowrap">
                                 <i class="fa-solid fa-chevron-right text-gray-600 dark:text-gray-300"></i>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-4 pt-10 text-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
+                            <td colspan="7" class="py-4 pt-10 text-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
                                 <i class="fa-solid fa-circle-info mr-1"></i>
                                 {{ __('There are no reports available at this time.') }}
                             </td>
@@ -152,8 +166,8 @@
             class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start md:items-center overflow-y-auto">
             @if ($selectedReport)
                 <div class="flex flex-col md:flex-row gap-0 md:gap-4 w-full md:w-auto max-h-[90vh] md:max-h-[90vh]">
-                    @livewire('app.reports.report-detail-modal', ['reporteId' => $selectedReport->id], key($selectedReport->id))
-                    @livewire('app.reports.report-comments-modal', ['reportId' => $selectedReport->id], key('comments-' . $selectedReport->id))
+                    @livewire('app.reports.report-detail-modal', ['reporteId' => $selectedReport->id], 'detail-' . $selectedReport->id)
+                    @livewire('app.reports.report-comments-modal', ['reportId' => $selectedReport->id], 'comments-' . $selectedReport->id)
                 </div>
             @endif
         </div>

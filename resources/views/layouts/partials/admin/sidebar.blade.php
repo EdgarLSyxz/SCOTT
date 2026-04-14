@@ -32,6 +32,12 @@
             'active' => request()->routeIs('admin.stages.*'),
         ],
         [
+            'name' => __('Reports SLA'),
+            'icon' => 'fa-solid fa-traffic-light',
+            'route' => route('admin.reports.sla.index'),
+            'active' => request()->routeIs('admin.reports.sla.*'),
+        ],
+        [
             'name' => __('Devices'),
             'icon' => 'fa-solid fa-hard-drive',
             'route' => route('admin.devices.index'),

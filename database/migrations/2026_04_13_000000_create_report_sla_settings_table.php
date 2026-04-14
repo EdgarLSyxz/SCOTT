@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('report_sla_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('area', 10)->unique();
+            $table->boolean('is_active')->default(true);
+            $table->unsignedInteger('level_1_minutes')->default(30);
+            $table->unsignedInteger('level_2_minutes')->default(90);
+            $table->unsignedInteger('level_3_minutes')->default(180);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('report_sla_settings');
+    }
+};
