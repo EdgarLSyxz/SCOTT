@@ -168,20 +168,14 @@
                     </div>
                 </div>
                 @if(!empty($sla))
-                    <div class="flex items-center gap-3 bg-white/20 dark:bg-gray-800 px-4 py-3 rounded-lg shadow-md w-full sm:w-auto">
-                        <div
-                            class="flex items-center justify-center w-10 h-10 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-full shadow-md">
+                    <div class="flex items-center gap-3 bg-white/20 dark:bg-gray-800 px-4 py-2 rounded-lg shadow-md w-full sm:w-auto">
+                        <div class="flex items-center justify-center w-10 h-10 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-full shadow-md">
                             <i class="fa-solid fa-traffic-light text-lg"></i>
                         </div>
                         <div>
-                            <h4 class="text-sm text-white dark:text-gray-300">
-                                {{ __('SLA') }}
-                            </h4>
-                            <p class="text-xs font-bold inline-flex items-center px-2 py-1 rounded-full {{ $sla['badge'] }}">
+                            <h4 class="text-sm text-white dark:text-gray-300">{{ __('SLA') }}</h4>
+                            <p class="text-sm font-bold text-white dark:text-gray-100 mt-1 flex items-center uppercase">
                                 {{ $sla['label'] }}
-                            </p>
-                            <p class="text-[11px] text-gray-200 dark:text-gray-300 mt-1">
-                                {{ __('Last activity') }}: {{ $sla['elapsed_human'] }}
                             </p>
                         </div>
                     </div>

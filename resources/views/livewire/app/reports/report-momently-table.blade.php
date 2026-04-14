@@ -33,8 +33,20 @@
                 </a>
             </div>
         </div>
+
+        <div class="hidden">
+            <span class="text-amber-800 bg-amber-200 dark:text-amber-200 dark:bg-amber-800"></span>
+            <span class="bg-amber-500"></span>
+            <span class="text-orange-800 bg-orange-200 dark:text-orange-200 dark:bg-orange-800"></span>
+            <span class="bg-orange-500"></span>
+            <span class="text-red-800 bg-red-200 dark:text-red-200 dark:bg-red-800 animate-pulse"></span>
+            <span class="bg-red-500 animate-pulse"></span>
+            <span class="text-emerald-800 bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-800"></span>
+            <span class="bg-emerald-500"></span>
+        </div>
+
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-sm text-left text-gray-500 dark:text-gray-400">
+            <table class="w-full min-w-[640px] text-xs text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-600 dark:text-white">
                     <tr>
                         <th class="py-3 px-4 w-[240px] text-left whitespace-nowrap">
@@ -83,10 +95,10 @@
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer"
                             wire:click="openReportDetails({{ $report->id }})">
                             <td
-                                class="py-3 px-4 w-[240px] font-bold leading-tight truncate whitespace-nowrap overflow-hidden text-ellipsis">
+                                class="py-2 px-3 w-[240px] font-bold leading-tight truncate whitespace-nowrap overflow-hidden text-ellipsis">
                                 {{ $report->category }}
                             </td>
-                            <td class="px-4 py-3 w-[150px] whitespace-nowrap">
+                            <td class="px-3 py-2 w-[150px] whitespace-nowrap">
                                 <div class="flex items-center space-x-3">
                                     @foreach ($report->reportDetails->sortBy(fn($detail) => $detail->channel->number)->take(3) as $detail)
                                         <div class="relative w-8 h-8 overflow-hidden">
@@ -103,7 +115,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-4 py-3 w-[120px] truncate whitespace-nowrap overflow-hidden">
+                            <td class="px-3 py-2 w-[120px] truncate whitespace-nowrap overflow-hidden">
                                 <span
                                     class="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full
                                         {{ $report->area === 'DTH'
@@ -119,30 +131,33 @@
                                     {{ $report->area ?? __('N/A') }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 w-[150px] whitespace-nowrap">
+                            <td class="py-2 px-3 w-[150px] whitespace-nowrap">
                                 <span
-                                    class="inline-flex items-center px-2 py-1 text-sm font-medium text-yellow-800 bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-200 rounded-full">
+                                    class="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-800 bg-blue-200 dark:bg-blue-800 dark:text-blue-200 rounded-full">
                                     <i class="fa-solid fa-user mr-1.5"></i> {{ __($report->reviewed_by) }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 w-[180px] whitespace-nowrap">
+                            <td class="py-2 px-3 w-[180px] whitespace-nowrap">
                                 <span
                                     class="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-800 bg-blue-200 dark:bg-blue-800 dark:text-blue-200 rounded-full">
                                     <i class="fa-solid fa-clock mr-1.5 pt-[1px]"></i> {{ $report->formatted_date }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 w-[210px]">
+                            <td class="py-2 px-3 w-[220px]">
                                 <div class="flex flex-col">
-                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
-                                        <i class="fa-solid fa-circle mr-1 text-[9px]"></i>
+                                    <span class="inline-flex self-start items-center whitespace-nowrap px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
+                                        <span class="inline-block flex-shrink-0 w-2 h-2 rounded-full mr-1.5 {{ $report->sla['dot'] }}"></span>
                                         {{ $report->sla['label'] }}
                                     </span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                                        {{ __('Last activity') }}: {{ $report->sla['elapsed_human'] }}
+                                    <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap"
+                                        x-data="slaElapsedTimer({{ (int) ($report->sla['last_activity_unix'] ?? now()->timestamp) }})"
+                                        x-init="init()">
+                                        <i class="fa-regular fa-clock mr-0.5"></i>
+                                        <span x-text="label"></span>
                                     </span>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 w-[80px] text-center whitespace-nowrap">
+                            <td class="py-2 px-3 w-[80px] text-center whitespace-nowrap">
                                 <i class="fa-solid fa-chevron-right text-gray-600 dark:text-gray-300"></i>
                             </td>
                         </tr>
@@ -190,5 +205,50 @@ function downloadM3U(url, number, name) {
             URL.revokeObjectURL(a.href);
             document.body.removeChild(a);
         }, 100);
+    }
+
+    const SLA_TRANSLATIONS = {
+        just_now: @json(__('Updated just now')),
+        min_one: @json(__('Updated :count min ago', ['count' => ':count'])),
+        min_other: @json(__('Updated :count min ago', ['count' => ':count'])),
+        hour_one: @json(__('Updated :count hour ago', ['count' => ':count'])),
+        hour_other: @json(__('Updated :count hours ago', ['count' => ':count'])),
+        day_one: @json(__('Updated :count d ago', ['count' => ':count'])),
+        day_other: @json(__('Updated :count days ago', ['count' => ':count']))
+    };
+
+    function slaElapsedTimer(lastActivityUnix) {
+        return {
+            label: '',
+            timer: null,
+            init() {
+                this.tick();
+                this.timer = setInterval(() => this.tick(), 60000);
+            },
+            tick() {
+                const now = Math.floor(Date.now() / 1000);
+                const diff = Math.max(0, now - Number(lastActivityUnix || now));
+                const mins = Math.floor(diff / 60);
+                const hours = Math.floor(mins / 60);
+                const days = Math.floor(hours / 24);
+
+                if (mins < 1) {
+                    this.label = SLA_TRANSLATIONS.just_now;
+                    return;
+                }
+
+                if (mins < 60) {
+                    this.label = (mins === 1 ? SLA_TRANSLATIONS.min_one : SLA_TRANSLATIONS.min_other).replace(':count', mins);
+                    return;
+                }
+
+                if (hours < 24) {
+                    this.label = (hours === 1 ? SLA_TRANSLATIONS.hour_one : SLA_TRANSLATIONS.hour_other).replace(':count', hours);
+                    return;
+                }
+
+                this.label = (days === 1 ? SLA_TRANSLATIONS.day_one : SLA_TRANSLATIONS.day_other).replace(':count', days);
+            }
+        };
     }
 </script>

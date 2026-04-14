@@ -1016,5 +1016,13 @@
     "Show only active channels": "Mostrar solo canales activos",
     "Upload TXT": "Subir TXT",
     "Drop your TXT here": "Suelta tu TXT aquí",
-    "Process TXT": "Procesar TXT"
+    "Process TXT": "Procesar TXT",
+    "Urgent review": "Revisión urgente",
+    "Follow up": "Seguimiento",
+    "Updated just now": "Actualizado justo ahora",
+    "Updated :count min ago": "Actualizado hace :count min",
+    "Updated :count hour ago": "Actualizado hace :count hora",
+    "Updated :count hours ago": "Actualizado hace :count horas",
+    "Updated :count d ago": "Actualizado hace :count d",
+    "Updated :count days ago": "Actualizado hace :count días"
 }
