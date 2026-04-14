@@ -174,7 +174,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm text-white dark:text-gray-300">{{ __('SLA') }}</h4>
-                            <p class="text-sm font-bold text-white dark:text-gray-100 mt-1 flex items-center uppercase">
+                            <p class="text-sm font-bold text-white dark:text-gray-100 flex items-center uppercase">
                                 {{ $sla['label'] }}
                             </p>
                         </div>
