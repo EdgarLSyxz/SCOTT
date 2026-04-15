@@ -87,11 +87,11 @@ Route::resource('/radios', RadioController::class)
 Route::resource('/grafana', GrafanaController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\GrafanaPanel']);
 
-Route::get('/reports/sla', [ReportSlaController::class, 'index'])
+Route::get('admin/reports/sla', [ReportSlaController::class, 'index'])
     ->name('admin.reports.sla.index')
     ->middleware(['auth', 'verified']);
 
-Route::put('/reports/sla', [ReportSlaController::class, 'update'])
+Route::put('admin/reports/sla', [ReportSlaController::class, 'update'])
     ->name('admin.reports.sla.update')
     ->middleware(['auth', 'verified']);
 
