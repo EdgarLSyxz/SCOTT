@@ -154,11 +154,13 @@
                                 <i class="fa-solid fa-arrow-left"></i>
                                 <span>{{ __('Go back') }}</span>
                             </a>
-                            <button type="submit"
-                                class="inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-900 hover:bg-black text-white">
+                            <x-button type="submit"
+                                class="{{ Auth::user()?->area === 'DTH'
+                                ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                                : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} text-white rounded-lg px-5 py-2 focus:outline-none shadow-xl">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span>{{ __('Save') }}</span>
-                            </button>
+                            </x-button>
                         </div>
                     </div>
                 </div>
