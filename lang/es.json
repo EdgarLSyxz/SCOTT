@@ -1025,5 +1025,18 @@
     "Updated :count hours ago": "Actualizado hace :count horas",
     "Updated :count d ago": "Actualizado hace :count d",
     "Updated :count days ago": "Actualizado hace :count días",
-    "SLA": "SLA"
+    "SLA": "SLA",
+    "SLA Parameters": "Parámetros de SLA",
+    "The SLA is calculated based on the last activity (creation or update of the report or last comment).": "El SLA se calcula a partir de la última actividad (creación o actualización del informe o último comentario).",
+    "Level 1": "Nivel 1",
+    "Level 2": "Nivel 2",
+    "Level 3": "Nivel 3",
+    "Traffic light: L1 = Follow-up, L2 = Warning, L3 = High priority.": "Semáforo: N1 = Seguimiento, N2 = Advertencia, N3 = Alta prioridad.",
+    "Normal follow-up threshold.": "Umbral de seguimiento normal.",
+    "Warning threshold for delayed attention.": "Umbral de advertencia por atención retrasada.",
+    "High priority threshold.": "Umbral de alta prioridad.",
+    "Enable SLA for this area": "Habilitar SLA para esta área",
+    "Level 1 • Minutes": "Nivel 1 • Minutos",
+    "Level 2 • Minutes": "Nivel 2 • Minutos",
+    "Level 3 • Minutes": "Nivel 3 • Minutos"
 }

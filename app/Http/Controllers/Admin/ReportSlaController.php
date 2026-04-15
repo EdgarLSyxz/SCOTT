@@ -18,7 +18,7 @@ class ReportSlaController extends Controller
             ->get()
             ->keyBy('area');
 
-        return view('admin.reports.sla-settings', [
+        return view('admin.sla.index', [
             'areas' => $areas,
             'settings' => $settings,
         ]);

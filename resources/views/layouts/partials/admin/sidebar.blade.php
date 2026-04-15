@@ -52,8 +52,8 @@
         [
             'name' => __('SLA'),
             'icon' => 'fa-solid fa-traffic-light',
-            'route' => route('admin.reports.sla.index'),
-            'active' => request()->routeIs('admin.reports.sla.*'),
+            'route' => route('admin.sla.index'),
+            'active' => request()->routeIs('admin.sla.*'),
         ],
         [
             'name' => __('MySQL'),
