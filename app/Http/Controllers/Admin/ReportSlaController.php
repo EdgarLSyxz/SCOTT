@@ -14,6 +14,7 @@ class ReportSlaController extends Controller
         $this->authorizeAccess();
 
         $areas = Report::getAreas();
+
         $settings = ReportSlaSetting::whereIn('area', $areas)
             ->get()
             ->keyBy('area');
@@ -53,7 +54,7 @@ class ReportSlaController extends Controller
                 return back()
                     ->withInput()
                     ->withErrors([
-                        "settings.$area.level_1_minutes" => __('SLA levels for :area must be ascending (L1 < L2 < L3).', ['area' => $area]),
+                        "settings.$area.level_1_minutes" => __('SLA Levels for :area must be ascending (L1 < L2 < L3).', ['area' => $area]),
                     ]);
             }
 
@@ -78,7 +79,7 @@ class ReportSlaController extends Controller
     private function authorizeAccess(): void
     {
         $user = auth()->user();
-        $allowedUserIds = [1, 3, 5];
+        $allowedUserIds = [1, 2, 3, 5, 7, 8];
 
         if (! $user || ! in_array((int) $user->id, $allowedUserIds, true)) {
             abort(403);

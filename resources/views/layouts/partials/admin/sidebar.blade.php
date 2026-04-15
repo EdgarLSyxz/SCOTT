@@ -65,7 +65,7 @@
     ];
 
     $currentUser = Auth::user();
-    $allowedSlaUserIds = [1, 3, 5];
+    $allowedSlaUserIds = [1, 2, 3, 5, 7, 8];
     $canAccessSla = $currentUser && in_array((int) $currentUser->id, $allowedSlaUserIds, true);
 
     if (! $canAccessSla) {

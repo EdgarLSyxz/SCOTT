@@ -80,9 +80,11 @@
                             <i class="fa-solid fa-calendar mr-1"></i> {{ __('It was reported ago') }}
                             <i class="fa-solid {{ $order === 'asc' ? 'fa-sort-up' : 'fa-sort-down' }} ml-1"></i>
                         </th>
-                        <th class="py-3 px-4 w-[210px] text-left whitespace-nowrap">
-                            <i class="fa-solid fa-traffic-light mr-1"></i> {{ __('SLA') }}
-                        </th>
+                        @if($showSlaColumn)
+                            <th class="py-3 px-4 w-[210px] text-left whitespace-nowrap">
+                                <i class="fa-solid fa-traffic-light mr-1"></i> {{ __('SLA') }}
+                            </th>
+                        @endif
                         <th class="px-4 py-3 w-[80px] text-center">
                             <span class="sr-only">
                                 <i class="fa-solid fa-sliders-h mr-1"></i> {{ __('Options') }}
@@ -143,27 +145,33 @@
                                     <i class="fa-solid fa-clock mr-1.5 pt-[1px]"></i> {{ $report->formatted_date }}
                                 </span>
                             </td>
-                            <td class="py-2 px-3 w-[220px]">
-                                <div class="flex flex-col">
-                                    <span class="inline-flex self-start items-center whitespace-nowrap px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
-                                        <span class="inline-block flex-shrink-0 w-2 h-2 rounded-full mr-1.5 {{ $report->sla['dot'] }}"></span>
-                                        {{ $report->sla['label'] }}
-                                    </span>
-                                    <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap"
-                                        x-data="slaElapsedTimer({{ (int) ($report->sla['last_activity_unix'] ?? now()->timestamp) }})"
-                                        x-init="init()">
-                                        <i class="fa-regular fa-clock mr-0.5"></i>
-                                        <span x-text="label"></span>
-                                    </span>
-                                </div>
-                            </td>
+                            @if($showSlaColumn)
+                                <td class="py-2 px-3 w-[220px]">
+                                    @if(data_get($report, 'sla.enabled', false))
+                                        <div class="flex flex-col">
+                                            <span class="inline-flex self-start items-center whitespace-nowrap px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
+                                                <span class="inline-block flex-shrink-0 w-2 h-2 rounded-full mr-1.5 {{ $report->sla['dot'] }}"></span>
+                                                {{ $report->sla['label'] }}
+                                            </span>
+                                            <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap"
+                                                x-data="slaElapsedTimer({{ (int) ($report->sla['last_activity_unix'] ?? now()->timestamp) }})"
+                                                x-init="init()">
+                                                <i class="fa-regular fa-clock mr-0.5"></i>
+                                                <span x-text="label"></span>
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-[11px] text-gray-400 dark:text-gray-500">-</span>
+                                    @endif
+                                </td>
+                            @endif
                             <td class="py-2 px-3 w-[80px] text-center whitespace-nowrap">
                                 <i class="fa-solid fa-chevron-right text-gray-600 dark:text-gray-300"></i>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-4 pt-10 text-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
+                            <td colspan="{{ $showSlaColumn ? 7 : 6 }}" class="py-4 pt-10 text-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
                                 <i class="fa-solid fa-circle-info mr-1"></i>
                                 {{ __('There are no reports available at this time.') }}
                             </td>
@@ -190,7 +198,7 @@
 </div>
 
 <script>
-function downloadM3U(url, number, name) {
+    function downloadM3U(url, number, name) {
         const content = url + "\n";
         let cleanName = (number ? number + '_' : '') + (name ? name : 'canal');
         cleanName = cleanName.replace(/[^a-zA-Z0-9-_]/g, '_');

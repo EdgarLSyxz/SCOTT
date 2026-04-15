@@ -180,10 +180,24 @@ class ReportMomentlyTable extends Component
             return $report;
         });
 
-        $reports->setCollection($collection);
+        $showSlaColumn = $collection->contains(function ($report) {
+            return (bool) data_get($report, 'sla.enabled', false);
+        });
+
+        $reports = new LengthAwarePaginator(
+            $collection,
+            $reports->total(),
+            $reports->perPage(),
+            $reports->currentPage(),
+            [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
+        );
 
         return view('livewire.app.reports.report-momently-table', [
             'reports' => $reports,
+            'showSlaColumn' => $showSlaColumn,
         ]);
     }
 }

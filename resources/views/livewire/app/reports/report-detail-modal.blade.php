@@ -167,7 +167,7 @@
                         </p>
                     </div>
                 </div>
-                @if(!empty($sla))
+                @if(!empty($sla) && ($sla['enabled'] ?? false))
                     <div class="flex items-center gap-3 bg-white/20 dark:bg-gray-800 px-4 py-2 rounded-lg shadow-md w-full sm:w-auto">
                         <div class="flex items-center justify-center w-10 h-10 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-full shadow-md">
                             <i class="fa-solid fa-traffic-light text-lg"></i>

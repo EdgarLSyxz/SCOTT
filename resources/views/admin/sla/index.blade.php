@@ -72,7 +72,7 @@
                         : 'peer-checked:bg-primary-600 dark:peer-checked:bg-primary-500 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800';
                 @endphp
 
-                <section class="w-full bg-white rounded-lg shadow-2xl dark:border dark:bg-gray-800 {{ $cardRing }} overflow-hidden">
+                <section class="w-full bg-white rounded-lg shadow-2xl border dark:bg-gray-800 {{ $cardRing }} overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 {{ $headerBg }}">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div class="flex items-center gap-2">
@@ -87,7 +87,8 @@
                                     class="sr-only peer" />
 
                                 <div
-                                    class="relative h-6 w-11 rounded-full bg-gray-300 transition-colors peer-focus:outline-none peer-focus:ring-4 dark:bg-gray-600 {{ $toggleCheckedClass }} after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-200 after:bg-white after:transition-transform after:content-[''] peer-checked:after:translate-x-5 dark:after:border-gray-500 dark:after:bg-gray-100"></div>
+                                    class="relative h-6 w-11 rounded-full bg-gray-300 transition-colors peer-focus:outline-none peer-focus:ring-4 dark:bg-gray-600 {{ $toggleCheckedClass }} after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-200 after:bg-white after:transition-transform after:content-[''] peer-checked:after:translate-x-5 dark:after:bg-gray-100">
+                                </div>
 
                                 <span>{{ __('Enable SLA for this area') }}</span>
                             </label>
@@ -150,7 +151,7 @@
 
                         <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
                             <a href="{{ route('admin.dashboard') }}"
-                                class="inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200">
+                                class="inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">
                                 <i class="fa-solid fa-arrow-left"></i>
                                 <span>{{ __('Go back') }}</span>
                             </a>
