@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,6 +21,27 @@ return new class extends Migration
             $table->unsignedInteger('level_3_minutes')->default(180);
             $table->timestamps();
         });
+
+        DB::table('report_sla_settings')->insert([
+            [
+                'area' => 'OTT',
+                'is_active' => true,
+                'level_1_minutes' => 30,
+                'level_2_minutes' => 90,
+                'level_3_minutes' => 180,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'area' => 'DTH',
+                'is_active' => true,
+                'level_1_minutes' => 30,
+                'level_2_minutes' => 90,
+                'level_3_minutes' => 180,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**

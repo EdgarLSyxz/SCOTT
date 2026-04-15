@@ -65,6 +65,14 @@
     ];
 
     $currentUser = Auth::user();
+    $allowedSlaUserIds = [1, 3, 5];
+    $canAccessSla = $currentUser && in_array((int) $currentUser->id, $allowedSlaUserIds, true);
+
+    if (! $canAccessSla) {
+        $links = array_values(array_filter($links, function ($l) {
+            return !isset($l['route']) || $l['route'] !== route('admin.sla.index');
+        }));
+    }
 
     $userArea = strtolower(trim((string) ($currentUser?->default_area ?? '')));
 
@@ -112,19 +120,19 @@
                         </button>
                         <ul x-show="openDropdown === {{ $index }}" x-transition class="pl-8 mt-1 space-y-1">
                             @foreach ($link['children'] as $child)
-                                    <li>
-                                        <a href="{{ $child['route'] }}"
-                                            class="flex items-center gap-2 justify-between px-3 py-1.5 rounded-md text-sm transition-colors duration-150 {{ $child['active']
-                                ? "$childActiveBg $childActiveText"
-                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 $hoverText" }}">
-                                            <span class="flex items-center gap-2">
-                                                @if(isset($child['icon']))
-                                                    <i class="{{ $child['icon'] }} text-xs"></i>
-                                                @endif
-                                                <span>{{ $child['name'] }}</span>
-                                            </span>
-                                        </a>
-                                    </li>
+                                <li>
+                                    <a href="{{ $child['route'] }}"
+                                        class="flex items-center gap-2 justify-between px-3 py-1.5 rounded-md text-sm transition-colors duration-150 {{ $child['active']
+                                        ? "$childActiveBg $childActiveText"
+                                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 $hoverText" }} ">
+                                        <span class="flex items-center gap-2">
+                                            @if(isset($child['icon']))
+                                                <i class="{{ $child['icon'] }} text-xs"></i>
+                                            @endif
+                                            <span>{{ $child['name'] }}</span>
+                                        </span>
+                                    </a>
+                                </li>
                             @endforeach
                         </ul>
                     </li>
@@ -146,8 +154,8 @@
                         @elseif(!isset($link['external']))
                             <a href="{{ $link['route'] }}"
                                 class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150 {{ $link['active']
-                            ? "$activeBg $activeText $activeFont"
-                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 $hoverText" }}"
+                                ? "$activeBg $activeText $activeFont"
+                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 $hoverText" }}"
                                 aria-current="{{ $link['active'] ? 'page' : false }}">
                                 <i class="{{ $link['icon'] }} text-base"></i>
                                 <span class="truncate">{{ $link['name'] }}</span>

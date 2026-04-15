@@ -70,16 +70,17 @@ class ReportSlaController extends Controller
 
         return back()->with('swal', [
             'icon' => 'success',
-            'title' => __('Saved'),
-            'text' => __('SLA parameters were updated successfully.'),
+            'title' => __('Well done!'),
+            'text' => __('SLA Parameters were updated successfully.'),
         ]);
     }
 
     private function authorizeAccess(): void
     {
         $user = auth()->user();
+        $allowedUserIds = [1, 3, 5];
 
-        if (! $user || ((int) $user->id !== 1 && ! $user->hasRole('master'))) {
+        if (! $user || ! in_array((int) $user->id, $allowedUserIds, true)) {
             abort(403);
         }
     }

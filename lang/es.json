@@ -1038,5 +1038,6 @@
     "Enable SLA for this area": "Habilitar SLA para esta área",
     "Level 1 • Minutes": "Nivel 1 • Minutos",
     "Level 2 • Minutes": "Nivel 2 • Minutos",
-    "Level 3 • Minutes": "Nivel 3 • Minutos"
+    "Level 3 • Minutes": "Nivel 3 • Minutos",
+    "SLA Parameters were updated successfully.": "Parámetros de SLA actualizados con éxito."
 }
