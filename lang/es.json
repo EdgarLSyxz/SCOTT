@@ -1040,5 +1040,12 @@
     "Level 2 • Minutes": "Nivel 2 • Minutos",
     "Level 3 • Minutes": "Nivel 3 • Minutos",
     "SLA Parameters were updated successfully.": "Parámetros de SLA actualizados con éxito.",
-    "This message is fixed for Samsung store web availability reports.": "Este mensaje es fijo para los informes de disponibilidad en la tienda web de Samsung."
+    "This message is fixed for Samsung store web availability reports.": "Este mensaje es fijo para los informes de disponibilidad en la tienda web de Samsung.",
+    "User & Device Growth": "Crecimiento de Usuarios y Dispositivos",
+    "Historical growth of subscribers and registered devices.": "Crecimiento histórico de suscriptores y dispositivos registrados.",
+    "Add record": "Agregar registro",
+    "No growth records yet. Add the first one!": "No hay registros de crecimiento aún. ¡Agrega el primero!",
+    "New record": "Nuevo registro",
+    "Edit record": "Editar registro",
+    "Date": "Fecha"
 }

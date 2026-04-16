@@ -1,34 +1,49 @@
-<div
+<div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden mb-6"
     x-data="userGrowthChart(@js($chartLabels), @js($chartCustomers), @js($chartDevices))"
     x-init="init()"
     @user-growth-saved.window="refreshChart(@js($chartLabels), @js($chartCustomers), @js($chartDevices))"
 >
 
-<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-    <div>
-        <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
-            <i class="fa-solid fa-chart-line mr-2 text-primary-500"></i>
+<div class="flex flex-col gap-4 p-4 bg-white dark:bg-gray-800 md:flex-row md:items-center md:justify-between">
+    <div class="min-w-0 flex-1">
+        <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate leading-tight">
+            <i class="fa-solid fa-chart-line mr-2"></i>
             {{ __('User & Device Growth') }}
         </h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
             {{ __('Historical growth of subscribers and registered devices.') }}
         </p>
+
+        @if($records->isNotEmpty())
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">
+                    <i class="fa-solid fa-table-list"></i>
+                    {{ __('Records') }}: {{ $records->count() }}
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    <i class="fa-regular fa-clock"></i>
+                    {{ __('Last update') }}: {{ optional($records->last()?->recorded_at)->format('d/m/Y') }}
+                </span>
+            </div>
+        @endif
     </div>
+
     @unless($showForm)
         <button
             wire:click="openForm"
             type="button"
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm"
-        >
-            <i class="fa-solid fa-plus"></i>
+            class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
+            ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+            : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+            <i class="fa-solid fa-plus mr-1"></i>
             {{ __('Add record') }}
         </button>
     @endunless
 </div>
 
 @if($showForm)
-    <div class="mb-5 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/40 dark:bg-primary-900/10 shadow-sm">
-        <h3 class="text-sm font-semibold text-primary-700 dark:text-primary-300 mb-3">
+    <div class="m-4 mt-5 p-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-lg">
+        <h3 class="text-sm font-semibold mb-4 text-gray-900 dark:text-gray-100 flex items-center">
             <i class="fa-solid fa-{{ $editingId ? 'pen' : 'plus' }} mr-1.5"></i>
             {{ $editingId ? __('Edit record') : __('New record') }}
         </h3>
@@ -36,13 +51,13 @@
         <form wire:submit.prevent="save" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    <i class="fa-regular fa-calendar mr-1"></i>{{ __('Date') }}
+                    <i class="fa-regular fa-calendar mr-2 mb-2"></i>{{ __('Date') }}
                 </label>
-                <input
+                <x-input
                     type="date"
                     wire:model.defer="recordedAt"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
-                >
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                />
                 @error('recordedAt')
                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                 @enderror
@@ -50,15 +65,15 @@
 
             <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    <i class="fa-solid fa-users mr-1"></i>{{ __('Customers') }}
+                    <i class="fa-solid fa-users mr-2 mb-2"></i>{{ __('Customers') }}
                 </label>
-                <input
+                <x-input
                     type="number"
                     min="0"
                     wire:model.defer="customers"
-                    placeholder="e.g. 35000"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
-                >
+                    placeholder="{{ __('Example: 30000') }}"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                />
                 @error('customers')
                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                 @enderror
@@ -66,33 +81,33 @@
 
             <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    <i class="fa-solid fa-microchip mr-1"></i>{{ __('Devices') }}
+                    <i class="fa-solid fa-hard-drive mr-2 mb-2"></i>{{ __('Devices') }}
                 </label>
-                <input
+                <x-input
                     type="number"
                     min="0"
                     wire:model.defer="devices"
-                    placeholder="e.g. 60000"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
-                >
+                    placeholder="{{ __('Example: 60000') }}"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                />
                 @error('devices')
                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="sm:col-span-3 flex items-center gap-2 justify-end">
+            <div class="sm:col-span-3 flex items-center gap-2 justify-end mt-2 mb-1">
                 <button
                     type="button"
                     wire:click="cancelForm"
-                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 flex items-center gap-1"
                 >
                     <i class="fa-solid fa-xmark mr-1"></i>{{ __('Cancel') }}
                 </button>
                 <button
                     type="submit"
-                    class="px-4 py-1.5 text-sm font-medium rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-sm transition-colors"
+                    class="ml-1.5 px-4 py-1.5 text-sm font-medium rounded-lg text-white shadow-sm transition-colors {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-600 hover:bg-secondary-700 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800' : 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }}"
                 >
-                    <i class="fa-solid fa-floppy-disk mr-1"></i>{{ __('Save') }}
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i>{{ __('Save') }}
                 </button>
             </div>
         </form>
@@ -100,15 +115,16 @@
 @endif
 
 @if($records->isEmpty())
-    <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500">
+    <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500 px-4 mb-8">
         <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
         <p class="text-sm">{{ __('No growth records yet. Add the first one!') }}</p>
     </div>
 @else
 
-<div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+<div class="grid grid-cols-1 xl:grid-cols-5 gap-5 p-4 pb-5">
     <div class="xl:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
-        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+            <i class="fa-solid fa-wave-square text-primary-500"></i>
             {{ __('Growth over time') }}
         </p>
         <div class="relative" style="height: 280px;">
@@ -127,9 +143,15 @@
     </div>
 
     <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300 flex items-center gap-2">
+                <i class="fa-solid fa-table text-primary-500"></i>
+                {{ __('Growth records') }}
+            </p>
+        </div>
         <div class="overflow-y-auto max-h-[340px]">
             <table class="min-w-full text-sm text-left divide-y divide-gray-100 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">
                             {{ __('Date') }}
@@ -156,7 +178,7 @@
                             {{ number_format($record->devices) }}
                         </td>
                         <td class="px-2 py-2 text-right">
-                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                 <button
                                     wire:click="openForm({{ $record->id }})"
                                     type="button"
@@ -184,20 +206,26 @@
 
         @if($records->count() >= 2)
         @php
-            $first = $records->first();
-            $last  = $records->last();
-            $custGrowth   = $last->customers - $first->customers;
-            $devGrowth    = $last->devices   - $first->devices;
+        $first = $records->first();
+        $last = $records->last();
+        $custGrowth = $last->customers - $first->customers;
+        $devGrowth = $last->devices - $first->devices;
         @endphp
         <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 grid grid-cols-2 gap-3 mt-auto">
             <div class="text-center">
-                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{{ __('Customer growth') }}</p>
+                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-users text-[10px]"></i>
+                    {{ __('Customer growth') }}
+                </p>
                 <p class="text-sm font-semibold {{ $custGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
                     {{ $custGrowth >= 0 ? '+' : '' }}{{ number_format($custGrowth) }}
                 </p>
             </div>
             <div class="text-center">
-                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{{ __('Device growth') }}</p>
+                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-microchip text-[10px]"></i>
+                    {{ __('Device growth') }}
+                </p>
                 <p class="text-sm font-semibold {{ $devGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
                     {{ $devGrowth >= 0 ? '+' : '' }}{{ number_format($devGrowth) }}
                 </p>
