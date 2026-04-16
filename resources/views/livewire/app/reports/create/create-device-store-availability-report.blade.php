@@ -26,6 +26,7 @@
                     @foreach ($reportData['devices'] as $index => $deviceRow)
                         @php
                             $currentDevice = collect($devices)->firstWhere('id', $deviceRow['device_id']);
+                            $isSamsungStore = (bool) ($currentDevice['is_samsung'] ?? false);
                         @endphp
                         <div class="p-3 md:p-6 bg-gray-50 border dark:bg-gray-700 rounded-xl shadow-2xl">
                             <div class="flex flex-wrap justify-between items-center mb-3 md:mb-4 gap-2 md:gap-4">
@@ -96,9 +97,10 @@
                                 <div x-data="{ isChecked: false }">
                                     <input type="checkbox" wire:model.live="reportData.devices.{{ $index }}.is_available_in_store"
                                         @change="isChecked = $el.checked"
+                                        @disabled($isSamsungStore)
                                         class="hidden peer" id="availability_{{ $index }}">
                                     <label for="availability_{{ $index }}"
-                                        class="group flex items-center gap-2 md:gap-4 rounded-xl border p-3 md:p-4 transition-all duration-200 shadow-sm cursor-pointer border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 peer-checked:border-emerald-400 dark:peer-checked:border-emerald-600 peer-checked:bg-emerald-100 dark:peer-checked:bg-emerald-900/30 peer-checked:hover:border-emerald-500 dark:peer-checked:hover:border-emerald-500">
+                                        class="group flex items-center gap-2 md:gap-4 rounded-xl border p-3 md:p-4 transition-all duration-200 shadow-sm {{ $isSamsungStore ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer' }} border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 peer-checked:border-emerald-400 dark:peer-checked:border-emerald-600 peer-checked:bg-emerald-100 dark:peer-checked:bg-emerald-900/30 peer-checked:hover:border-emerald-500 dark:peer-checked:hover:border-emerald-500">
                                         <div :class="{
                                             'h-5 w-5 md:h-6 md:w-6 rounded border-2 flex items-center justify-center transition-all flex-shrink-0': true,
                                             'border-slate-400 dark:border-slate-500 bg-white dark:bg-slate-700': !isChecked,
@@ -129,8 +131,14 @@
                                         <i class="fa-solid fa-comment-dots mr-1.5"></i> {{ __('Notes') }}
                                     </label>
                                     <textarea wire:model="reportData.devices.{{ $index }}.notes" rows="4"
-                                        class="w-full rounded-lg bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-primary-600 focus:border-primary-600 cursor-pointer text-sm"
-                                        placeholder="{{ __('Optional notes about the app status in the store...') }}"></textarea>
+                                        class="w-full rounded-lg bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-primary-600 focus:border-primary-600 text-sm {{ $isSamsungStore ? 'cursor-not-allowed opacity-80' : 'cursor-pointer' }}"
+                                        placeholder="{{ __('Optional notes about the app status in the store...') }}"
+                                        @disabled($isSamsungStore)></textarea>
+                                    @if($isSamsungStore)
+                                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-300">
+                                            {{ __('This message is fixed for Samsung store web availability reports.') }}
+                                        </p>
+                                    @endif
                                     @error('reportData.devices.' . $index . '.notes')
                                         <span class="text-red-600 text-xs md:text-sm">{{ $message }}</span>
                                     @enderror

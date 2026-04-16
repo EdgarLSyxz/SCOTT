@@ -11,6 +11,8 @@ use Livewire\Component;
 
 class CreateDeviceStoreAvailabilityReport extends Component
 {
+    private const SAMSUNG_STORE_WEB_NOTE = 'No existe un acceso a la aplicación StarTV Stream en la VERSIÓN WEB de la tienda de aplicaciones de Samsung para TVs.';
+
     public $reportData;
 
     public function mount()
@@ -29,11 +31,13 @@ class CreateDeviceStoreAvailabilityReport extends Component
 
     protected function initializeDevice(?Device $device = null): array
     {
+        $isSamsungDevice = $this->isSamsungDevice($device?->name);
+
         return [
             'device_id' => $device?->id ?? '',
             'is_active' => false,
             'is_available_in_store' => false,
-            'notes' => '',
+            'notes' => $isSamsungDevice ? self::SAMSUNG_STORE_WEB_NOTE : '',
         ];
     }
 
@@ -98,13 +102,23 @@ class CreateDeviceStoreAvailabilityReport extends Component
             ]);
 
             foreach ($this->reportData['devices'] as $deviceRow) {
+                $device = Device::find($deviceRow['device_id']);
+                $isSamsung = $this->isSamsungDevice($device?->name);
+                $notes = $deviceRow['notes'] ?? null;
+
+                if ($isSamsung) {
+                    $notes = self::SAMSUNG_STORE_WEB_NOTE;
+                }
+
+                $isAvailable = $isSamsung ? false : (bool) ($deviceRow['is_available_in_store'] ?? false);
+
                 DeviceStoreAvailability::create([
                     'report_id' => $report->id,
                     'device_id' => $deviceRow['device_id'],
                     'user_id' => Auth::id(),
                     'is_active' => (bool) ($deviceRow['is_active'] ?? false),
-                    'is_available_in_store' => (bool) ($deviceRow['is_available_in_store'] ?? false),
-                    'notes' => $deviceRow['notes'] ?? null,
+                    'is_available_in_store' => $isAvailable,
+                    'notes' => $notes,
                 ]);
             }
 
@@ -170,7 +184,17 @@ class CreateDeviceStoreAvailabilityReport extends Component
                     'status' => (bool) $device->status,
                     'protocol' => $device->protocol,
                     'drm' => $device->drm,
+                    'is_samsung' => $this->isSamsungDevice($device->name),
                 ]),
         ]);
+    }
+
+    private function isSamsungDevice(?string $deviceName): bool
+    {
+        if (! $deviceName) {
+            return false;
+        }
+
+        return str_contains(strtolower($deviceName), 'samsung');
     }
 }

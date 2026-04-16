@@ -1039,5 +1039,6 @@
     "Level 1 • Minutes": "Nivel 1 • Minutos",
     "Level 2 • Minutes": "Nivel 2 • Minutos",
     "Level 3 • Minutes": "Nivel 3 • Minutos",
-    "SLA Parameters were updated successfully.": "Parámetros de SLA actualizados con éxito."
+    "SLA Parameters were updated successfully.": "Parámetros de SLA actualizados con éxito.",
+    "This message is fixed for Samsung store web availability reports.": "Este mensaje es fijo para los informes de disponibilidad en la tienda web de Samsung."
 }
