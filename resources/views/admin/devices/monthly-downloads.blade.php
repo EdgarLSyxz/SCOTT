@@ -66,6 +66,11 @@
 
         @livewire('admin.devices.downloads.download-history-table')
 
+        {{-- User & Device Growth ──────────────────────────────────── --}}
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 md:p-6">
+            @livewire('admin.devices.downloads.user-growth-tracker')
+        </div>
+
     </div>
 
     @push('js')
