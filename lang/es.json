@@ -1048,5 +1048,12 @@
     "New record": "Nuevo registro",
     "Edit record": "Editar registro",
     "Date": "Fecha",
-    "Growth over time": "Crecimiento a lo largo del tiempo"
+    "Growth over time": "Crecimiento a lo largo del tiempo",
+    "Records:": "Registros:",
+    "Last update:": "Última actualización:",
+    "Customer growth": "Crecimiento de clientes",
+    "Device growth": "Crecimiento de dispositivos",
+    "Growth records": "Registros de crecimiento",
+    "Example:": "Ejemplo:",
+    "Are you sure you want to delete this record?": "¿Estás seguro de que deseas eliminar este registro?"
 }

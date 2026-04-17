@@ -77,13 +77,24 @@ class UserGrowthTracker extends Component
 
         $this->cancelForm();
 
-        $this->dispatch('user-growth-saved');
+        $this->dispatch('user-growth-saved', ...$this->chartData());
     }
 
     public function delete(int $id): void
     {
         UserGrowth::findOrFail($id)->delete();
-        $this->dispatch('user-growth-saved');
+        $this->dispatch('user-growth-saved', ...$this->chartData());
+    }
+
+    protected function chartData(): array
+    {
+        $records = UserGrowth::orderBy('recorded_at')->get();
+
+        return [
+            'labels' => $records->map(fn ($r) => $r->recorded_at->format('d-M'))->values()->all(),
+            'customers' => $records->pluck('customers')->values()->all(),
+            'devices' => $records->pluck('devices')->values()->all(),
+        ];
     }
 
     public function render()
