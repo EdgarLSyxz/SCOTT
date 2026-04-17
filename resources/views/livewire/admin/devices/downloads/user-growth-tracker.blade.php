@@ -13,19 +13,6 @@
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
             {{ __('Historical growth of subscribers and registered devices.') }}
         </p>
-
-        @if($records->isNotEmpty())
-            <div class="mt-2 flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">
-                    <i class="fa-solid fa-table-list"></i>
-                    {{ __('Records') }}: {{ $records->count() }}
-                </span>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                    <i class="fa-regular fa-clock"></i>
-                    {{ __('Last update') }}: {{ optional($records->last()?->recorded_at)->format('d/m/Y') }}
-                </span>
-            </div>
-        @endif
     </div>
 
     @unless($showForm)
@@ -33,8 +20,8 @@
             wire:click="openForm"
             type="button"
             class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
-            ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-            : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+        ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+        : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
             <i class="fa-solid fa-plus mr-1"></i>
             {{ __('Add record') }}
         </button>
@@ -121,119 +108,134 @@
     </div>
 @else
 
-<div class="grid grid-cols-1 xl:grid-cols-5 gap-5 p-4 pb-5">
-    <div class="xl:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
-        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-            <i class="fa-solid fa-wave-square text-primary-500"></i>
-            {{ __('Growth over time') }}
-        </p>
-        <div class="relative" style="height: 280px;">
-            <canvas id="user-growth-chart"></canvas>
-        </div>
-        <div class="flex items-center justify-center gap-5 mt-3">
-            <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                <span class="inline-block w-5 h-0.5 rounded-full bg-[#1d6fa4]"></span>
-                {{ __('Customers') }}
-            </span>
-            <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                <span class="inline-block w-5 h-0.5 rounded-full bg-[#e07b39]"></span>
-                {{ __('Devices') }}
-            </span>
-        </div>
-    </div>
-
-    <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
-        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
-            <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300 flex items-center gap-2">
-                <i class="fa-solid fa-table text-primary-500"></i>
-                {{ __('Growth records') }}
-            </p>
-        </div>
-        <div class="overflow-y-auto max-h-[340px]">
-            <table class="min-w-full text-sm text-left divide-y divide-gray-100 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 shadow-sm">
-                    <tr>
-                        <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">
-                            {{ __('Date') }}
-                        </th>
-                        <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#1d6fa4] dark:text-sky-300 text-right">
-                            {{ __('Customers') }}
-                        </th>
-                        <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#e07b39] dark:text-orange-300 text-right">
-                            {{ __('Devices') }}
-                        </th>
-                        <th class="px-3 py-2.5 w-10"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                    @foreach($records->sortByDesc('recorded_at') as $record)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors group">
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap font-medium text-xs">
-                            {{ $record->recorded_at->format('d-M-Y') }}
-                        </td>
-                        <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-100 text-xs font-mono">
-                            {{ number_format($record->customers) }}
-                        </td>
-                        <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-100 text-xs font-mono">
-                            {{ number_format($record->devices) }}
-                        </td>
-                        <td class="px-2 py-2 text-right">
-                            <div class="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                <button
-                                    wire:click="openForm({{ $record->id }})"
-                                    type="button"
-                                    title="{{ __('Edit') }}"
-                                    class="p-1 rounded text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                >
-                                    <i class="fa-solid fa-pen text-[11px]"></i>
-                                </button>
-                                <button
-                                    wire:click="delete({{ $record->id }})"
-                                    wire:confirm="{{ __('Are you sure you want to delete this record?') }}"
-                                    type="button"
-                                    title="{{ __('Delete') }}"
-                                    class="p-1 rounded text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                >
-                                    <i class="fa-solid fa-trash text-[11px]"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if($records->count() >= 2)
-        @php
-        $first = $records->first();
-        $last = $records->last();
-        $custGrowth = $last->customers - $first->customers;
-        $devGrowth = $last->devices - $first->devices;
-        @endphp
-        <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 grid grid-cols-2 gap-3 mt-auto">
-            <div class="text-center">
-                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-users text-[10px]"></i>
-                    {{ __('Customer growth') }}
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-5 p-4 pb-5">
+        <div class="xl:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-wave-square"></i>
+                    {{ __('Growth over time') }}
                 </p>
-                <p class="text-sm font-semibold {{ $custGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
-                    {{ $custGrowth >= 0 ? '+' : '' }}{{ number_format($custGrowth) }}
-                </p>
+                @if($records->isNotEmpty())
+                    <div class="flex flex-wrap items-center gap-2 md:justify-end">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">
+                            <i class="fa-solid fa-table-list"></i>
+                            {{ __('Records') }}: {{ $records->count() }}
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                            <i class="fa-regular fa-clock"></i>
+                            <b>{{ __('Last update') }}</b>: {{ optional($records->last()?->recorded_at)->format('d/m/Y') }}
+                        </span>
+                    </div>
+                @endif
             </div>
-            <div class="text-center">
-                <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-microchip text-[10px]"></i>
-                    {{ __('Device growth') }}
-                </p>
-                <p class="text-sm font-semibold {{ $devGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
-                    {{ $devGrowth >= 0 ? '+' : '' }}{{ number_format($devGrowth) }}
-                </p>
+
+            <div class="relative" style="height: 280px;">
+                <canvas id="user-growth-chart"></canvas>
+            </div>
+            <div class="flex items-center justify-center gap-5 my-1.5">
+                <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="inline-block w-5 h-0.5 rounded-full bg-[#1d6fa4]"></span>
+                    {{ __('Customers') }}
+                </span>
+                <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="inline-block w-5 h-0.5 rounded-full bg-[#e07b39]"></span>
+                    {{ __('Devices') }}
+                </span>
             </div>
         </div>
-        @endif
+
+        <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+                <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300 flex items-center gap-2">
+                    <i class="fa-solid fa-table"></i>
+                    {{ __('Growth records') }}
+                </p>
+            </div>
+            <div class="overflow-y-auto max-h-[340px]">
+                <table class="min-w-full text-sm text-left divide-y divide-gray-100 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                                {{ __('Date') }}
+                            </th>
+                            <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#1d6fa4] dark:text-sky-300 text-right">
+                                {{ __('Customers') }}
+                            </th>
+                            <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#e07b39] dark:text-orange-300 text-right">
+                                {{ __('Devices') }}
+                            </th>
+                            <th class="px-3 py-2.5 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                        @foreach($records->sortByDesc('recorded_at') as $record)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors group">
+                            <td class="px-4 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap font-medium text-xs">
+                                {{ $record->recorded_at->format('d-M-Y') }}
+                            </td>
+                            <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-100 text-xs font-mono">
+                                {{ number_format($record->customers) }}
+                            </td>
+                            <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-100 text-xs font-mono">
+                                {{ number_format($record->devices) }}
+                            </td>
+                            <td class="px-2 py-2 text-right">
+                                <div class="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        wire:click="openForm({{ $record->id }})"
+                                        type="button"
+                                        title="{{ __('Edit') }}"
+                                        class="p-1 rounded text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                    >
+                                        <i class="fa-solid fa-pen text-[11px]"></i>
+                                    </button>
+                                    <button
+                                        wire:click="delete({{ $record->id }})"
+                                        wire:confirm="{{ __('Are you sure you want to delete this record?') }}"
+                                        type="button"
+                                        title="{{ __('Delete') }}"
+                                        class="p-1 rounded text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                    >
+                                        <i class="fa-solid fa-trash text-[11px]"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if($records->count() >= 2)
+            @php
+            $first = $records->first();
+            $last = $records->last();
+            $custGrowth = $last->customers - $first->customers;
+            $devGrowth = $last->devices - $first->devices;
+            @endphp
+            <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 grid grid-cols-2 gap-3 mt-auto">
+                <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-users text-[10px]"></i>
+                        {{ __('Customer growth') }}
+                    </p>
+                    <p class="text-sm font-semibold {{ $custGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
+                        {{ $custGrowth >= 0 ? '+' : '' }}{{ number_format($custGrowth) }}
+                    </p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-microchip text-[10px]"></i>
+                        {{ __('Device growth') }}
+                    </p>
+                    <p class="text-sm font-semibold {{ $devGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
+                        {{ $devGrowth >= 0 ? '+' : '' }}{{ number_format($devGrowth) }}
+                    </p>
+                </div>
+            </div>
+            @endif
+        </div>
     </div>
-</div>
 @endif
 
 </div>
