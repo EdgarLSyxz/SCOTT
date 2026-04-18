@@ -61,23 +61,23 @@ class ReportSlaService
         }
 
         $level = 0;
-        $label = __('Normal');
+        $label = __('Normal follow-up');
         $badge = 'text-emerald-800 bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-800';
         $dot = 'bg-emerald-500';
 
         if ($elapsedMinutes >= $settings['level_3_minutes']) {
             $level = 3;
-            $label = __('Urgent review');
+            $label = __('Delayed follow-up');
             $badge = 'text-red-800 bg-red-200 dark:text-red-200 dark:bg-red-800 animate-pulse';
             $dot = 'bg-red-500 animate-pulse';
         } elseif ($elapsedMinutes >= $settings['level_2_minutes']) {
             $level = 2;
-            $label = __('Warning');
+            $label = __('It requires attention');
             $badge = 'text-yellow-800 bg-yellow-200 dark:text-yellow-200 dark:bg-yellow-800';
             $dot = 'bg-yellow-500';
         } elseif ($elapsedMinutes >= $settings['level_1_minutes']) {
             $level = 1;
-            $label = __('Follow up');
+            $label = __('Normal follow-up');
             $badge = 'text-emerald-800 bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-800';
             $dot = 'bg-emerald-500';
         }
