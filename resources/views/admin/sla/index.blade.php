@@ -104,7 +104,7 @@
                             <input type="number" min="1" max="10080" name="settings[{{ $area }}][level_1_minutes]"
                                 value="{{ $values['level_1_minutes'] }}"
                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white {{ $focusRingClass }}">
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Normal follow-up threshold.') }}</p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Normal follow-up.') }}</p>
                             @error("settings.$area.level_1_minutes")
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -118,7 +118,7 @@
                             <input type="number" min="1" max="10080" name="settings[{{ $area }}][level_2_minutes]"
                                 value="{{ $values['level_2_minutes'] }}"
                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white {{ $focusRingClass }}">
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Warning threshold for delayed attention.') }}</p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('It requires attention.') }}</p>
                             @error("settings.$area.level_2_minutes")
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -132,7 +132,7 @@
                             <input type="number" min="1" max="10080" name="settings[{{ $area }}][level_3_minutes]"
                                 value="{{ $values['level_3_minutes'] }}"
                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white {{ $focusRingClass }}">
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('High priority threshold.') }}</p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Delayed follow-up.') }}</p>
                             @error("settings.$area.level_3_minutes")
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
