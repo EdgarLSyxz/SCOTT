@@ -193,8 +193,16 @@
                                         <i class="fa-solid fa-pen text-[11px]"></i>
                                     </button>
                                     <button
-                                        wire:click="delete({{ $record->id }})"
-                                        wire:confirm="{{ __('Are you sure you want to delete this record?') }}"
+                                        x-on:click="Swal.fire({
+                                            title: '{{ addslashes(__('Are you sure?')) }}',
+                                            text: '{{ addslashes(__('Are you sure you want to delete this record?')) }}',
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#ef4444',
+                                            cancelButtonColor: '#6b7280',
+                                            confirmButtonText: '{{ addslashes(__('Yes, delete it!')) }}',
+                                            cancelButtonText: '{{ addslashes(__('Cancel')) }}',
+                                        }).then(result => { if (result.isConfirmed) $wire.delete({{ $record->id }}) })"
                                         type="button"
                                         title="{{ __('Delete') }}"
                                         class="p-1 rounded text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 transition-colors"
