@@ -3,7 +3,7 @@
         <div class="w-full md:w-1/3">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate leading-tight">
                 <i class="fa-solid fa-folder mr-1.5 text-gray-600 dark:text-gray-300"></i>
-                {{ __('History of monthly downloads') }}
+                {{ __('History of Monthly Downloads') }}
             </h2>
         </div>
         <div

@@ -6,15 +6,13 @@ use App\Models\CompetitorApp;
 use App\Models\CompetitorAppSnapshot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CompetitorAppRanking extends Component
 {
     public string $snapshotDate;
     public array $rows = [];
-
-    public string $newAppName = '';
-    public string $newAppStoreUrl = '';
 
     public ?int $traceAppId = null;
 
@@ -37,37 +35,55 @@ class CompetitorAppRanking extends Component
         $this->loadRowsForDate();
     }
 
-    public function addApp(): void
+    public function addRow(): void
     {
-        $this->validate([
-            'newAppName' => 'required|string|max:255|unique:competitor_apps,name',
-            'newAppStoreUrl' => 'nullable|url|max:1000',
-        ]);
+        $this->rows[] = $this->makeEmptyRow();
+    }
 
-        $app = CompetitorApp::create([
-            'name' => trim($this->newAppName),
-            'store_url' => trim($this->newAppStoreUrl) ?: null,
-            'is_primary' => false,
-            'is_active' => true,
-        ]);
-
-        $this->newAppName = '';
-        $this->newAppStoreUrl = '';
-
-        if (! $this->traceAppId) {
-            $this->traceAppId = $app->id;
+    public function removeDraftRow(int $index): void
+    {
+        if (!isset($this->rows[$index])) {
+            return;
         }
 
-        $this->loadRowsForDate();
+        if (!empty($this->rows[$index]['competitor_app_id'])) {
+            return;
+        }
+
+        unset($this->rows[$index]);
+        $this->rows = array_values($this->rows);
+    }
+
+    public function deleteApp(int $index): void
+    {
+        if (!isset($this->rows[$index])) {
+            return;
+        }
+
+        $appId = (int) ($this->rows[$index]['competitor_app_id'] ?? 0);
+
+        if ($appId) {
+            DB::transaction(function () use ($appId) {
+                CompetitorAppSnapshot::where('competitor_app_id', $appId)->delete();
+                CompetitorApp::where('id', $appId)->delete();
+            });
+
+            if ($this->traceAppId === $appId) {
+                $this->traceAppId = CompetitorApp::where('is_active', true)->orderBy('name')->value('id');
+            }
+        }
+
+        unset($this->rows[$index]);
+        $this->rows = array_values($this->rows);
 
         $this->dispatch('swal', [
             'icon' => 'success',
-            'title' => 'Aplicación agregada',
-            'text' => 'La app competidora se dio de alta correctamente.',
+            'title' => __('App deleted'),
+            'text' => __('The competitor app and its history were deleted.'),
         ]);
     }
 
-    public function saveSnapshot(): void
+    public function saveRows(): void
     {
         $this->validate([
             'snapshotDate' => 'required|date',
@@ -77,41 +93,105 @@ class CompetitorAppRanking extends Component
         DB::transaction(function () {
             foreach ($this->rows as $index => $row) {
                 $this->validate([
-                    "rows.$index.competitor_app_id" => 'required|exists:competitor_apps,id',
-                    "rows.$index.rating" => 'required|numeric|min:0|max:5',
+                    "rows.$index.name" => [
+                        'required',
+                        'string',
+                        'max:255',
+                        Rule::unique('competitor_apps', 'name')->ignore((int) ($row['competitor_app_id'] ?? 0)),
+                    ],
+                    "rows.$index.rating" => 'nullable|numeric|min:0|max:5',
                     "rows.$index.downloads_label" => 'nullable|string|max:100',
                     "rows.$index.reviews_label" => 'nullable|string|max:100',
                     "rows.$index.release_date" => 'nullable|date',
                     "rows.$index.store_url" => 'nullable|url|max:1000',
                 ]);
 
-                CompetitorApp::whereKey((int) $row['competitor_app_id'])->update([
-                    'store_url' => ! empty($row['store_url']) ? trim((string) $row['store_url']) : null,
-                ]);
+                $app = null;
+                if (!empty($row['competitor_app_id'])) {
+                    $app = CompetitorApp::find((int) $row['competitor_app_id']);
+                }
 
-                CompetitorAppSnapshot::updateOrCreate(
-                    [
-                        'competitor_app_id' => (int) $row['competitor_app_id'],
-                        'snapshot_date' => $this->snapshotDate,
-                    ],
-                    [
-                        'rating' => (float) $row['rating'],
-                        'downloads_label' => $row['downloads_label'] ?? null,
-                        'reviews_label' => $row['reviews_label'] ?? null,
-                        'release_date' => $row['release_date'] ?: null,
-                    ]
-                );
+                if ($app) {
+                    $app->update([
+                        'name' => trim((string) $row['name']),
+                        'store_url' => !empty($row['store_url']) ? trim((string) $row['store_url']) : null,
+                    ]);
+                } else {
+                    $app = CompetitorApp::create([
+                        'name' => trim((string) $row['name']),
+                        'store_url' => !empty($row['store_url']) ? trim((string) $row['store_url']) : null,
+                        'is_primary' => false,
+                        'is_active' => true,
+                    ]);
+                }
+
+                if (! $this->traceAppId) {
+                    $this->traceAppId = $app->id;
+                }
+
+                $hasSnapshotData = $row['rating'] !== null
+                    && $row['rating'] !== '';
+
+                $hasSnapshotData = $hasSnapshotData
+                    || !empty($row['downloads_label'])
+                    || !empty($row['reviews_label'])
+                    || !empty($row['release_date']);
+
+                if ($hasSnapshotData) {
+                    CompetitorAppSnapshot::updateOrCreate(
+                        [
+                            'competitor_app_id' => $app->id,
+                            'snapshot_date' => $this->snapshotDate,
+                        ],
+                        [
+                            'rating' => $row['rating'] !== null && $row['rating'] !== '' ? (float) $row['rating'] : 0,
+                            'downloads_label' => !empty($row['downloads_label']) ? trim((string) $row['downloads_label']) : null,
+                            'reviews_label' => !empty($row['reviews_label']) ? trim((string) $row['reviews_label']) : null,
+                            'release_date' => $row['release_date'] ?: null,
+                        ]
+                    );
+                } else {
+                    CompetitorAppSnapshot::where('competitor_app_id', $app->id)
+                        ->whereDate('snapshot_date', $this->snapshotDate)
+                        ->delete();
+                }
             }
-
-            $this->recalculateRankingForDate($this->snapshotDate);
         });
 
         $this->loadRowsForDate();
 
         $this->dispatch('swal', [
             'icon' => 'success',
-            'title' => 'Actualizacion guardada',
-            'text' => 'Se guardo el snapshot y se recalculo el ranking.',
+            'title' => __('Data saved'),
+            'text' => __('Competitor app data was saved successfully.'),
+        ]);
+    }
+
+    public function recalculateRanking(): void
+    {
+        $this->validate([
+            'snapshotDate' => 'required|date',
+        ]);
+
+        $hasSnapshots = CompetitorAppSnapshot::whereDate('snapshot_date', $this->snapshotDate)->exists();
+
+        if (! $hasSnapshots) {
+            $this->dispatch('swal', [
+                'icon' => 'warning',
+                'title' => __('No data to rank'),
+                'text' => __('Save at least one app with rating data before recalculating the ranking.'),
+            ]);
+
+            return;
+        }
+
+        $this->recalculateRankingForDate($this->snapshotDate);
+        $this->loadRowsForDate();
+
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => __('Ranking recalculated'),
+            'text' => __('The competitor ranking was recalculated successfully.'),
         ]);
     }
 
@@ -174,8 +254,28 @@ class CompetitorAppRanking extends Component
                 'downloads_label' => $snapshot?->downloads_label ?? '',
                 'reviews_label' => $snapshot?->reviews_label ?? '',
                 'release_date' => $snapshot?->release_date?->toDateString() ?? '',
+                'rank_position' => $snapshot?->rank_position,
+                'rank_delta' => $snapshot?->rank_delta,
+                'movement' => $snapshot?->movement,
             ];
         })->toArray();
+    }
+
+    private function makeEmptyRow(): array
+    {
+        return [
+            'competitor_app_id' => null,
+            'name' => '',
+            'is_primary' => false,
+            'store_url' => '',
+            'rating' => null,
+            'downloads_label' => '',
+            'reviews_label' => '',
+            'release_date' => '',
+            'rank_position' => null,
+            'rank_delta' => null,
+            'movement' => null,
+        ];
     }
 
     public function render()
@@ -220,7 +320,7 @@ class CompetitorAppRanking extends Component
                 ->map(function (CompetitorAppSnapshot $snapshot) {
                     return [
                         'rank' => $snapshot->rank_position ?? '—',
-                        'app' => $snapshot->app?->name ?? 'Desconocido',
+                        'app' => $snapshot->app?->name ?? 'Unknown',
                         'rating' => number_format((float) $snapshot->rating, 1),
                         'downloads' => $snapshot->downloads_label ?? '—',
                         'reviews' => $snapshot->reviews_label ?? '—',
