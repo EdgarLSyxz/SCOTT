@@ -66,6 +66,8 @@
 
         @livewire('admin.devices.downloads.user-growth-tracker')
 
+        @livewire('admin.devices.downloads.competitor-app-ranking')
+
         @livewire('admin.devices.downloads.download-history-table')
 
     </div>

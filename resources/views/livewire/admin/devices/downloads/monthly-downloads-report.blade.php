@@ -118,4 +118,14 @@
             </tbody>
         </table>
     </div>
+
+    @if(!empty($competitorRanking))
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <x-competitor-ranking-report
+                :ranking="collect($competitorRanking)"
+                :date="$reportDate"
+                title="Ranking Competidor - Datos Ejecutivos"
+            />
+        </div>
+    @endif
 </div>

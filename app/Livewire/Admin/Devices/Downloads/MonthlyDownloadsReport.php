@@ -215,6 +215,12 @@ class MonthlyDownloadsReport extends Component
 
     public function render()
     {
-        return view('livewire.admin.devices.downloads.monthly-downloads-report');
+        $reportDate = \Carbon\Carbon::createFromDate($this->year, $this->month, $this->day)->toDateString();
+        $competitorRanking = CompetitorAppRanking::getCompetitorRankingForDate($reportDate);
+
+        return view('livewire.admin.devices.downloads.monthly-downloads-report', [
+            'competitorRanking' => $competitorRanking,
+            'reportDate' => $reportDate,
+        ]);
     }
 }
