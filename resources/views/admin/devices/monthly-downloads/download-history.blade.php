@@ -59,6 +59,15 @@
         }
         .downloads-device-title { page-break-after: avoid; }
         .downloads-device-card { page-break-inside: auto; }
+        .ranking-highlight { background: #f3e8f9; border: 1px solid #e9d5f3; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+        .ranking-highlight-title { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
+        .ranking-highlight-value { font-size: 14px; font-weight: 700; color: #6b1d8a; margin-top: 4px; }
+        .ranking-row-primary { background: #f8eefc; }
+        .trend-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+        .trend-up { background: #d1fae5; color: #065f46; }
+        .trend-down { background: #fee2e2; color: #991b1b; }
+        .trend-same { background: #e5e7eb; color: #374151; }
+        .trend-new { background: #dbeafe; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -306,7 +315,6 @@
                     </tfoot>
                 </table>
             </div>
-            <div style="page-break-after: always;"></div>
             @endif
         @endif
 
@@ -518,15 +526,24 @@
         @php
             $competitorRankingRows = $competitor_ranking['rows'] ?? [];
             $competitorSnapshotDate = $competitor_ranking['snapshot_date'] ?? null;
+            $competitorPrimaryRow = $competitor_ranking['primary_row'] ?? null;
         @endphp
 
         @if(!empty($competitorRankingRows))
             <div class="section" style="page-break-before: always;">
-                <h3>{{ __('Competitor apps rating') }}</h3>
+                <h3>{{ __('Rating of StarTV Stream competing apps on Google Play') }}</h3>
                 <div class="note" style="margin-bottom: 8px;">
                     {{ __('Snapshot date') }}:
                     <strong>{{ $competitorSnapshotDate ? \Carbon\Carbon::parse($competitorSnapshotDate)->format('d/m/Y') : '—' }}</strong>
                 </div>
+                @if(!empty($competitorPrimaryRow))
+                    <div class="ranking-highlight">
+                        <div class="ranking-highlight-title">{{ __('StarTV Stream position') }}</div>
+                        <div class="ranking-highlight-value">
+                            #{{ $competitorPrimaryRow['rank_position'] ?? '—' }} · {{ $competitorPrimaryRow['app_name'] ?? 'StarTV Stream' }} · {{ $competitorPrimaryRow['rating'] ?? '—' }} ☆
+                        </div>
+                    </div>
+                @endif
                 <table class="compact-table">
                     <thead>
                         <tr>
@@ -543,28 +560,33 @@
                             @php
                                 $trend = strtolower((string)($rankRow['movement'] ?? 'new'));
                                 $delta = (int)($rankRow['rank_delta'] ?? 0);
+                                $isPrimary = !empty($rankRow['is_primary']);
                                 if ($trend === 'up') {
-                                    $trendLabel = '+' . abs($delta);
+                                    $trendLabel = '▲ +' . abs($delta);
+                                    $trendClass = 'trend-up';
                                 } elseif ($trend === 'down') {
-                                    $trendLabel = (string)$delta;
+                                    $trendLabel = '▼ ' . $delta;
+                                    $trendClass = 'trend-down';
                                 } elseif ($trend === 'same') {
-                                    $trendLabel = '0';
+                                    $trendLabel = '• 0';
+                                    $trendClass = 'trend-same';
                                 } else {
-                                    $trendLabel = __('New');
+                                    $trendLabel = __('Stayed the same');
+                                    $trendClass = 'trend-new';
                                 }
                             @endphp
-                            <tr>
+                            <tr class="{{ $isPrimary ? 'ranking-row-primary' : '' }}">
                                 <td>{{ $rankRow['rank_position'] ?? '—' }}</td>
                                 <td>{{ $rankRow['app_name'] ?? 'N/A' }}</td>
-                                <td>{{ $rankRow['rating'] ?? '—' }}</td>
+                                <td>{{ isset($rankRow['rating']) && $rankRow['rating'] !== '—' ? $rankRow['rating'] . ' ★' : '—' }}</td>
                                 <td>{{ $rankRow['downloads_label'] ?? '—' }}</td>
                                 <td>{{ $rankRow['reviews_label'] ?? '—' }}</td>
-                                <td>{{ $trendLabel }}</td>
+                                <td><span class="trend-badge {{ $trendClass }}">{{ $trendLabel }}</span></td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-                <div class="note">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 3 }}. {{ __('Top competitor apps by rating for the selected range.') }}</div>
+                <div class="note">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 3 }}. {{ __('Competing apps of StarTV Stream on Google Play, sorted by rating for the selected range.') }}</div>
             </div>
         @endif
 

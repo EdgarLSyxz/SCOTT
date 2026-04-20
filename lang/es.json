@@ -1106,6 +1106,10 @@
     "Customers cannot be negative.": "Los clientes no pueden ser negativos.",
     "Devices count is required.": "El recuento de dispositivos es obligatorio.",
     "Devices must be a whole number.": "Los dispositivos deben ser un número entero.",
-    "Devices cannot be negative.": "Los dispositivos no pueden ser negativos."
+    "Devices cannot be negative.": "Los dispositivos no pueden ser negativos.",
+    "Rating of StarTV Stream competing apps on Google Play": "Rating de apps competidoras de StarTV Stream en Google Play",
+    "StarTV Stream position": "Posición de StarTV Stream",
+    "Stayed the same": "Permaneció igual",
+    "Competing apps of StarTV Stream on Google Play, sorted by rating for the selected range.": "Apps competidoras de StarTV Stream en Google Play por rating para el rango seleccionado."
 
 }
