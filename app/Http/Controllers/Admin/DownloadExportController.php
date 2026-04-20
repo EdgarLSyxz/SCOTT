@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\DownloadsExcelMail;
+use App\Models\CompetitorAppSnapshot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,55 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DownloadExportController extends Controller
 {
+    private function getCompetitorRankingForPdf(array $years = [], ?int $month = null): array
+    {
+        $query = CompetitorAppSnapshot::query();
+
+        if (!empty($years)) {
+            $query->where(function ($q) use ($years) {
+                foreach ($years as $year) {
+                    $q->orWhereYear('snapshot_date', (int) $year);
+                }
+            });
+        }
+
+        if ($month !== null && $month >= 1 && $month <= 12) {
+            $query->whereMonth('snapshot_date', $month);
+        }
+
+        $latestSnapshotDate = (clone $query)->max('snapshot_date');
+
+        if (!$latestSnapshotDate) {
+            return [
+                'snapshot_date' => null,
+                'rows' => [],
+            ];
+        }
+
+        $rows = CompetitorAppSnapshot::with('app')
+            ->whereDate('snapshot_date', $latestSnapshotDate)
+            ->orderBy('rank_position')
+            ->take(10)
+            ->get()
+            ->map(function (CompetitorAppSnapshot $snapshot) {
+                return [
+                    'rank_position' => $snapshot->rank_position,
+                    'app_name' => $snapshot->app?->name ?? 'N/A',
+                    'rating' => number_format((float) $snapshot->rating, 1),
+                    'downloads_label' => $snapshot->downloads_label ?? '—',
+                    'reviews_label' => $snapshot->reviews_label ?? '—',
+                    'movement' => $snapshot->movement ?? 'new',
+                    'rank_delta' => (int) ($snapshot->rank_delta ?? 0),
+                ];
+            })
+            ->toArray();
+
+        return [
+            'snapshot_date' => $latestSnapshotDate,
+            'rows' => $rows,
+        ];
+    }
+
     private function isAllYearsRequest(Request $request): bool
     {
         $yearInput = strtolower((string) ($request->input('year', $request->query('year', ''))));
@@ -723,6 +773,7 @@ class DownloadExportController extends Controller
             'years' => [],
             'is_multi_year' => $allYearsMode,
             'year_range_label' => null,
+            'month' => $request->input('month'),
             'device_id' => $deviceId,
             'devices' => [],
             'period_labels' => [],
@@ -732,6 +783,10 @@ class DownloadExportController extends Controller
                 'average' => 0,
                 'top_month_label' => null,
                 'top_month_value' => 0,
+            ],
+            'competitor_ranking' => [
+                'snapshot_date' => null,
+                'rows' => [],
             ],
         ];
 
@@ -755,6 +810,7 @@ class DownloadExportController extends Controller
                     $data['is_multi_year'] = !empty($pd['is_multi_year']) || $allYearsMode;
                     $data['years'] = $pd['years'] ?? $this->parseYearsFromRows($data['download_rows'] ?? []);
                     $data['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($data['years']);
+                    $data['month'] = $pd['month'] ?? $data['month'];
 
                     if ($data['is_multi_year']) {
                         $data['year'] = 'all';
@@ -1077,6 +1133,15 @@ class DownloadExportController extends Controller
             'has_download_rows' => !empty($data['download_rows']),
         ]);
 
+        $rankingMonth = !empty($data['month']) ? (int) $data['month'] : null;
+        $rankingYears = !empty($data['years'])
+            ? array_map('intval', (array) $data['years'])
+            : [
+                (int) (!empty($data['year']) && $data['year'] !== 'all' ? $data['year'] : date('Y')),
+            ];
+
+        $data['competitor_ranking'] = $this->getCompetitorRankingForPdf($rankingYears, $rankingMonth);
+
         $html = view('admin.devices.monthly-downloads.download-history', $data)->render();
 
         $dompdf = new \Dompdf\Dompdf();
@@ -1188,6 +1253,10 @@ class DownloadExportController extends Controller
                 'top_month_value' => 0,
             ],
             'protocol_device_summary_global' => null,
+            'competitor_ranking' => [
+                'snapshot_date' => null,
+                'rows' => [],
+            ],
         ];
 
         if (!empty($pdfData['month'])) {
@@ -1278,6 +1347,12 @@ class DownloadExportController extends Controller
             $pdfData['years'] ?? []
         );
         $pdfData['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($pdfData['download_rows'] ?? []);
+        $rankingYearsEmail = !empty($pdfData['years'])
+            ? array_map('intval', (array) $pdfData['years'])
+            : [
+                (int) (!empty($pdfData['year']) && $pdfData['year'] !== 'all' ? $pdfData['year'] : date('Y')),
+            ];
+        $pdfData['competitor_ranking'] = $this->getCompetitorRankingForPdf($rankingYearsEmail, !empty($pdfData['month']) ? (int) $pdfData['month'] : null);
 
         \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),

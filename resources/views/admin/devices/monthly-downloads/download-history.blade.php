@@ -515,6 +515,59 @@
             @endif
         @endif
 
+        @php
+            $competitorRankingRows = $competitor_ranking['rows'] ?? [];
+            $competitorSnapshotDate = $competitor_ranking['snapshot_date'] ?? null;
+        @endphp
+
+        @if(!empty($competitorRankingRows))
+            <div class="section" style="page-break-before: always;">
+                <h3>{{ __('Competitor apps rating') }}</h3>
+                <div class="note" style="margin-bottom: 8px;">
+                    {{ __('Snapshot date') }}:
+                    <strong>{{ $competitorSnapshotDate ? \Carbon\Carbon::parse($competitorSnapshotDate)->format('d/m/Y') : '—' }}</strong>
+                </div>
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ __('Application') }}</th>
+                            <th>{{ __('Rating') }}</th>
+                            <th>{{ __('Downloads') }}</th>
+                            <th>{{ __('Reviews') }}</th>
+                            <th>{{ __('Trend') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($competitorRankingRows as $rankRow)
+                            @php
+                                $trend = strtolower((string)($rankRow['movement'] ?? 'new'));
+                                $delta = (int)($rankRow['rank_delta'] ?? 0);
+                                if ($trend === 'up') {
+                                    $trendLabel = '+' . abs($delta);
+                                } elseif ($trend === 'down') {
+                                    $trendLabel = (string)$delta;
+                                } elseif ($trend === 'same') {
+                                    $trendLabel = '0';
+                                } else {
+                                    $trendLabel = __('New');
+                                }
+                            @endphp
+                            <tr>
+                                <td>{{ $rankRow['rank_position'] ?? '—' }}</td>
+                                <td>{{ $rankRow['app_name'] ?? 'N/A' }}</td>
+                                <td>{{ $rankRow['rating'] ?? '—' }}</td>
+                                <td>{{ $rankRow['downloads_label'] ?? '—' }}</td>
+                                <td>{{ $rankRow['reviews_label'] ?? '—' }}</td>
+                                <td>{{ $trendLabel }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div class="note">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 3 }}. {{ __('Top competitor apps by rating for the selected range.') }}</div>
+            </div>
+        @endif
+
         <br>
 
         <div class="section" style="page-break-before: always;">
