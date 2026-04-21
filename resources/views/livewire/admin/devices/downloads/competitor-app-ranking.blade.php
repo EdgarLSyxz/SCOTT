@@ -1,5 +1,5 @@
 <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden mb-6">
-    <div class="flex flex-col gap-4 p-4 bg-white dark:bg-gray-800 md:flex-row md:items-center md:justify-between">
+    <div class="flex flex-col gap-4 p-3 sm:p-4 bg-white dark:bg-gray-800 md:flex-row md:items-center md:justify-between">
         <div class="min-w-0 flex-1">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate leading-tight">
                 <i class="fa-solid fa-ranking-star mr-1.5 text-gray-600 dark:text-gray-300"></i>
@@ -17,20 +17,20 @@
                         <i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Snapshot date') }}
                     </label>
                     <x-input type="date" wire:model.live="snapshotDate" :disabled="!$isEditing"
-                        class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                        class="w-full sm:w-auto rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:cursor-not-allowed" />
                 </div>
             </div>
         @endif
     </div>
 
-    <div class="px-4 pb-4 mt-2">
+    <div class="px-3 sm:px-4 pb-4 mt-2">
         @if(count($rows) === 0)
             <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500 px-4">
                 <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
                 <p class="text-sm">{{ __('No competitor apps yet. Add the first one to get started.') }}</p>
                 <button type="button" wire:click="addRow"
                     @disabled(!$isEditing)
-                    class="mt-4 justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
+                    class="mt-4 w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                     : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-plus mr-1"></i>
@@ -38,7 +38,7 @@
                 </button>
             </div>
         @else
-            <div class="flex justify-end gap-3 mb-4">
+            <div class="flex flex-col sm:flex-row sm:justify-end gap-3 mb-4">
                 <button type="button" wire:click="addRow"
                     @disabled(!$isEditing)
                     class="w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
@@ -48,7 +48,7 @@
                     {{ __('Add app') }}
                 </button>
                 <button type="button" wire:click="toggleEditMode"
-                    class="justify-center items-center text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl whitespace-nowrap">
+                    class="w-full sm:w-auto justify-center items-center text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl whitespace-nowrap">
                     @if($isEditing)
                         <i class="fa-solid fa-lock mr-1"></i>{{ __('Lock editing') }}
                     @else
@@ -58,17 +58,17 @@
             </div>
 
             <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <table class="w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                <table class="min-w-[980px] w-full text-xs sm:text-sm text-left text-gray-600 dark:text-gray-300">
                     <thead class="text-xs uppercase text-gray-600 dark:text-white bg-gray-50 dark:bg-gray-600">
                         <tr>
-                            <th class="px-4 py-3"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
-                            <th class="px-4 py-3 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
-                            <th class="px-4 py-3 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
-                            <th class="px-4 py-3 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
-                            <th class="px-4 py-3 text-center"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Release date') }}</th>
-                            <th class="px-4 py-3"><i class="fa-solid fa-link mr-1.5"></i>{{ __('Store link') }}</th>
-                            <th class="px-4 py-3 text-center"><i class="fa-solid fa-arrow-up-right-dots mr-1.5"></i>{{ __('Movement') }}</th>
-                            <th class="px-4 py-3 text-center"></th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Release date') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-link mr-1.5"></i>{{ __('Store link') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-arrow-up-right-dots mr-1.5"></i>{{ __('Movement') }}</th>
+                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -111,11 +111,11 @@
                                 $row = $orderedRow['row'];
                             @endphp
                             <tr class="bg-white dark:bg-gray-800 dark:hover:bg-gray-600">
-                                <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                                     @if(empty($row['competitor_app_id']))
                                         <div>
                                             <x-input type="text" wire:model.defer="rows.{{ $index }}.name" :disabled="!$isEditing" placeholder="{{ __('Example: StarTV Stream') }}"
-                                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
+                                                class="min-w-[180px] w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:cursor-not-allowed" />
                                             @error("rows.$index.name")
                                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                                             @enderror
@@ -129,30 +129,30 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                         <x-input type="number" step="0.1" min="0" max="5" inputmode="decimal" :disabled="!$isEditing"
                                         x-on:input="const m = $event.target.value.match(/^\d*(?:\.\d{0,1})?/); $event.target.value = m ? m[0] : ''"
                                         wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
-                                        class="w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
+                                    class="w-16 sm:w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                             <x-input type="text" wire:model.defer="rows.{{ $index }}.downloads_label" :disabled="!$isEditing" placeholder="{{ __('50 K +') }}"
-                                        class="w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
+                                    class="w-24 sm:w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                     <x-input type="text" wire:model.defer="rows.{{ $index }}.reviews_label" :disabled="!$isEditing" placeholder="{{ __('248') }}"
-                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
+                                    class="w-20 sm:w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                     <x-input type="date" wire:model.defer="rows.{{ $index }}.release_date" :disabled="!$isEditing"
-                                        class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:cursor-not-allowed" />
+                                    class="w-[132px] sm:w-auto rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:cursor-not-allowed" />
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3">
                                     <x-input type="url" wire:model.defer="rows.{{ $index }}.store_url" :disabled="!$isEditing" placeholder="{{ __('Enter the store link') }}"
-                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm disabled:cursor-not-allowed" />
+                                    class="w-28 sm:w-40 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm disabled:cursor-not-allowed" />
                                     <x-input type="hidden" wire:model.defer="rows.{{ $index }}.competitor_app_id" />
                                 </td>
-                                <td class="px-4 py-3 text-center uppercase">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center uppercase">
                                     @php
                                         $movement = $row['movement'] ?? null;
                                         $delta = (int) ($row['rank_delta'] ?? 0);
@@ -181,12 +181,11 @@
                                         <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                     @if(empty($row['competitor_app_id']))
                                         <button type="button" wire:click="removeDraftRow({{ $index }})"
                                             @disabled(!$isEditing)
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:hover:bg-transparent disabled:hover:text-red-500 disabled:hover:shadow-none disabled:cursor-not-allowed"
-                                            @disabled(!$isEditing)
                                             >
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
@@ -217,13 +216,13 @@
             <div class="mt-5 flex flex-col sm:flex-row justify-end gap-3">
                 <button type="button" wire:click="saveRows"
                     @disabled(!$isEditing)
-                    class="justify-center items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                    class="w-full sm:w-auto justify-center items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-floppy-disk mr-1"></i>
                     {{ __('Save') }}
                 </button>
                 <button type="button" wire:click="recalculateRanking"
                     @disabled(!$isEditing)
-                    class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
+                    class="w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                     : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-arrows-rotate mr-1"></i>
@@ -241,7 +240,7 @@
                         <i class="fa-solid fa-chart-pie mr-1.5"></i>
                         {{ __('Overview') }}</div>
                     @if($primaryAppRow)
-                        <div class="p-3 space-y-3 text-sm">
+                        <div class="p-3 space-y-3 text-xs sm:text-sm">
                             <div class="flex items-start justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 px-3 py-2">
                                 <div class="min-w-0">
                                     <p class="text-[11px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Application') }}</p>
@@ -257,7 +256,7 @@
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                 <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-2">
                                     <p class="text-[10px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Rating') }}</p>
                                     <p class="font-bold text-gray-900 dark:text-white">{{ number_format((float) $primaryAppRow->rating, 1) }} ☆</p>
@@ -297,15 +296,15 @@
                     <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-xs font-bold uppercase text-gray-700 dark:text-gray-200">
                         <i class="fa-solid fa-trophy mr-1.5"></i>
                         {{ __('Top 10') }}</div>
-                    <table class="min-w-full text-sm text-left">
+                    <table class="min-w-[720px] w-full text-xs sm:text-sm text-left">
                         <thead class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-xs font-bold uppercase text-gray-700 dark:text-gray-200">
                             <tr>
-                                <th class="px-3 py-2"><i class="fa-solid fa-hashtag mr-1.5"></i>{{ __('No.') }}</th>
-                                <th class="px-3 py-2"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-chart-line mr-1.5"></i>{{ __('Trend') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2"><i class="fa-solid fa-hashtag mr-1.5"></i>{{ __('No.') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-chart-line mr-1.5"></i>{{ __('Trend') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -316,12 +315,12 @@
                                     $delta = (int) ($item->rank_delta ?? 0);
                                 @endphp
                                 <tr class="{{ $isPrimary ? 'bg-primary-100 dark:bg-primary-900/40' : 'bg-white dark:bg-gray-800' }}">
-                                    <td class="px-3 py-2 font-semibold text-gray-900 dark:text-white">{{ $item->rank_position ?: '-' }}</td>
-                                    <td class="px-3 py-2 font-semibold text-gray-900 dark:text-white">{{ $item->app->name }}</td>
-                                    <td class="px-3 py-2 font-semibold text-center text-gray-700 dark:text-gray-300">{{ number_format((float) $item->rating, 1) }} ☆</td>
-                                    <td class="px-3 py-2 text-center text-gray-700 dark:text-gray-300">{{ $item->downloads_label ?: '-' }}</td>
-                                    <td class="px-3 py-2 text-center text-gray-700 dark:text-gray-300">{{ $item->reviews_label ?: '-' }}</td>
-                                    <td class="px-3 py-2 text-center">
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-gray-900 dark:text-white">{{ $item->rank_position ?: '-' }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-gray-900 dark:text-white">{{ $item->app->name }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-center text-gray-700 dark:text-gray-300">{{ number_format((float) $item->rating, 1) }} ☆</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center text-gray-700 dark:text-gray-300">{{ $item->downloads_label ?: '-' }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center text-gray-700 dark:text-gray-300">{{ $item->reviews_label ?: '-' }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center">
                                         @if($movement === 'up')
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold">
                                                 <i class="fa-solid fa-arrow-up mr-1"></i>+{{ abs($delta) }}
@@ -355,7 +354,7 @@
                     </div>
                     <select wire:model.live="traceAppId"
                         @disabled(!$isEditing)
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-md inline-block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-xs px-2 py-1 h-7 leading-tight cursor-pointer
+                        class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 rounded-md inline-block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-xs px-2 py-1 h-7 leading-tight cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-600
                             {{ Auth::user()?->area === 'DTH'
                                 ? 'focus:ring-2 focus:ring-secondary-500 focus:border-secondary-400 dark:focus:ring-secondary-500 dark:focus:border-secondary-400'
                                 : 'focus:ring-2 focus:ring-primary-500 focus:border-primary-400 dark:focus:ring-primary-500 dark:focus:border-primary-400' }}">
@@ -365,24 +364,24 @@
                     </select>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-left">
+                    <table class="min-w-[680px] w-full text-xs sm:text-sm text-left">
                         <thead class="text-xs uppercase text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-600">
                             <tr>
-                                <th class="px-3 py-2"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Date') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-ranking-star mr-1.5"></i>{{ __('Position') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
-                                <th class="px-3 py-2 text-center"><i class="fa-solid fa-arrow-right-arrow-left mr-1.5"></i>{{ __('Change') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Date') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-ranking-star mr-1.5"></i>{{ __('Position') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
+                                <th class="px-2 py-2 sm:px-3 sm:py-2 text-center"><i class="fa-solid fa-arrow-right-arrow-left mr-1.5"></i>{{ __('Change') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @forelse($traceHistory as $trace)
                                 <tr class="bg-white dark:bg-gray-800">
-                                    <td class="px-3 py-2 text-gray-900 dark:text-white">{{ optional($trace->snapshot_date)->format('d/m/Y') }}</td>
-                                    <td class="px-3 py-2 text-center font-semibold text-gray-900 dark:text-white">{{ $trace->rank_position ?: '-' }}</td>
-                                    <td class="px-3 py-2 text-center text-gray-700 dark:text-gray-300">{{ number_format((float) $trace->rating, 1) }} ☆</td>
-                                    <td class="px-3 py-2 text-center text-gray-700 dark:text-gray-300">{{ $trace->downloads_label ?: '-' }}</td>
-                                    <td class="px-3 py-2 text-center uppercase">
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-gray-900 dark:text-white">{{ optional($trace->snapshot_date)->format('d/m/Y') }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center font-semibold text-gray-900 dark:text-white">{{ $trace->rank_position ?: '-' }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center text-gray-700 dark:text-gray-300">{{ number_format((float) $trace->rating, 1) }} ☆</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center text-gray-700 dark:text-gray-300">{{ $trace->downloads_label ?: '-' }}</td>
+                                    <td class="px-2 py-2 sm:px-3 sm:py-2 text-center uppercase">
                                         @if($trace->movement === 'up')
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold">
                                                 <i class="fa-solid fa-arrow-up mr-1"></i>{{ __('Moved up') }} (+{{ abs((int) $trace->rank_delta) }})
