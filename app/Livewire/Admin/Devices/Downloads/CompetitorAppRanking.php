@@ -13,6 +13,7 @@ class CompetitorAppRanking extends Component
 {
     public string $snapshotDate;
     public array $rows = [];
+    public bool $isEditing = false;
 
     public ?int $traceAppId = null;
 
@@ -23,7 +24,8 @@ class CompetitorAppRanking extends Component
             abort(403);
         }
 
-        $this->snapshotDate = now()->toDateString();
+        $latest = CompetitorAppSnapshot::max('snapshot_date');
+        $this->snapshotDate = $latest ? \Carbon\Carbon::parse($latest)->toDateString() : now()->toDateString();
         $this->loadRowsForDate();
 
         $primaryId = CompetitorApp::where('is_primary', true)->value('id');
@@ -35,13 +37,30 @@ class CompetitorAppRanking extends Component
         $this->loadRowsForDate();
     }
 
+    public function toggleEditMode(): void
+    {
+        $this->isEditing = ! $this->isEditing;
+
+        if (! $this->isEditing) {
+            $this->loadRowsForDate();
+        }
+    }
+
     public function addRow(): void
     {
+        if (! $this->isEditing) {
+            return;
+        }
+
         $this->rows[] = $this->makeEmptyRow();
     }
 
     public function removeDraftRow(int $index): void
     {
+        if (! $this->isEditing) {
+            return;
+        }
+
         if (!isset($this->rows[$index])) {
             return;
         }
@@ -56,6 +75,10 @@ class CompetitorAppRanking extends Component
 
     public function deleteApp(int $index): void
     {
+        if (! $this->isEditing) {
+            return;
+        }
+
         if (!isset($this->rows[$index])) {
             return;
         }
@@ -85,6 +108,10 @@ class CompetitorAppRanking extends Component
 
     public function saveRows(): void
     {
+        if (! $this->isEditing) {
+            return;
+        }
+
         $this->validate([
             'snapshotDate' => 'required|date',
             'rows' => 'required|array|min:1',
@@ -169,6 +196,10 @@ class CompetitorAppRanking extends Component
 
     public function recalculateRanking(): void
     {
+        if (! $this->isEditing) {
+            return;
+        }
+
         $this->validate([
             'snapshotDate' => 'required|date',
         ]);
@@ -250,7 +281,9 @@ class CompetitorAppRanking extends Component
                 'name' => $app->name,
                 'is_primary' => (bool) $app->is_primary,
                 'store_url' => $app->store_url ?? '',
-                'rating' => $snapshot?->rating ?? null,
+                'rating' => $snapshot && $snapshot->rating !== null
+                    ? number_format((float) $snapshot->rating, 1, '.', '')
+                    : null,
                 'downloads_label' => $snapshot?->downloads_label ?? '',
                 'reviews_label' => $snapshot?->reviews_label ?? '',
                 'release_date' => $snapshot?->release_date?->toDateString() ?? '',

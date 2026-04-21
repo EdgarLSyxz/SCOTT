@@ -16,7 +16,7 @@
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                         <i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Snapshot date') }}
                     </label>
-                    <x-input type="date" wire:model.live="snapshotDate"
+                    <x-input type="date" wire:model.live="snapshotDate" :disabled="!$isEditing"
                         class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
                 </div>
             </div>
@@ -29,9 +29,10 @@
                 <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
                 <p class="text-sm">{{ __('No competitor apps yet. Add the first one to get started.') }}</p>
                 <button type="button" wire:click="addRow"
+                    @disabled(!$isEditing)
                     class="mt-4 justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
+                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-plus mr-1"></i>
                     {{ __('Add app') }}
                 </button>
@@ -39,11 +40,20 @@
         @else
             <div class="flex justify-end gap-3 mb-4">
                 <button type="button" wire:click="addRow"
+                    @disabled(!$isEditing)
                     class="w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
+                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-plus mr-1"></i>
                     {{ __('Add app') }}
+                </button>
+                <button type="button" wire:click="toggleEditMode"
+                    class="justify-center items-center text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl whitespace-nowrap">
+                    @if($isEditing)
+                        <i class="fa-solid fa-lock mr-1"></i>{{ __('Lock editing') }}
+                    @else
+                        <i class="fa-solid fa-pen-to-square mr-1"></i>{{ __('Enable editing') }}
+                    @endif
                 </button>
             </div>
 
@@ -62,12 +72,49 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @foreach($rows as $index => $row)
+                        @php
+                            $orderedRows = collect($rows)
+                                ->map(function ($row, $index) {
+                                    $name = trim((string) ($row['name'] ?? ''));
+                                    $normalizedName = \Illuminate\Support\Str::lower($name);
+
+                                    return [
+                                        'index' => $index,
+                                        'row' => $row,
+                                        'normalized_name' => $normalizedName,
+                                        'is_primary_name' => $normalizedName === 'startv stream',
+                                        'is_empty_name' => $normalizedName === '',
+                                    ];
+                                })
+                                ->sort(function ($a, $b) {
+                                    if ($a['is_primary_name'] !== $b['is_primary_name']) {
+                                        return $a['is_primary_name'] ? -1 : 1;
+                                    }
+
+                                    if ($a['is_empty_name'] !== $b['is_empty_name']) {
+                                        return $a['is_empty_name'] ? 1 : -1;
+                                    }
+
+                                    $nameCompare = strcmp($a['normalized_name'], $b['normalized_name']);
+                                    if ($nameCompare !== 0) {
+                                        return $nameCompare;
+                                    }
+
+                                    return $a['index'] <=> $b['index'];
+                                })
+                                ->values();
+                        @endphp
+
+                        @foreach($orderedRows as $orderedRow)
+                            @php
+                                $index = $orderedRow['index'];
+                                $row = $orderedRow['row'];
+                            @endphp
                             <tr class="bg-white dark:bg-gray-800 dark:hover:bg-gray-600">
                                 <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                                     @if(empty($row['competitor_app_id']))
                                         <div>
-                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.name" placeholder="{{ __('Example: StarTV Stream') }}"
+                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.name" :disabled="!$isEditing" placeholder="{{ __('Example: StarTV Stream') }}"
                                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
                                             @error("rows.$index.name")
                                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
@@ -83,24 +130,26 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <x-input type="number" step="0.1" min="0" max="5" wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
-                                        class="w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                        <x-input type="number" step="0.1" min="0" max="5" inputmode="decimal" :disabled="!$isEditing"
+                                        x-on:input="const m = $event.target.value.match(/^\d*(?:\.\d{0,1})?/); $event.target.value = m ? m[0] : ''"
+                                        wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
+                                        class="w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.downloads_label" placeholder="{{ __('50 K +') }}"
-                                        class="w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.downloads_label" :disabled="!$isEditing" placeholder="{{ __('50 K +') }}"
+                                        class="w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.reviews_label" placeholder="{{ __('248') }}"
-                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.reviews_label" :disabled="!$isEditing" placeholder="{{ __('248') }}"
+                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <x-input type="date" wire:model.defer="rows.{{ $index }}.release_date"
-                                        class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
+                                    <x-input type="date" wire:model.defer="rows.{{ $index }}.release_date" :disabled="!$isEditing"
+                                        class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:cursor-not-allowed" />
                                 </td>
                                 <td class="px-4 py-3">
-                                    <x-input type="url" wire:model.defer="rows.{{ $index }}.store_url" placeholder="{{ __('Enter the store link') }}"
-                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm" />
+                                    <x-input type="url" wire:model.defer="rows.{{ $index }}.store_url" :disabled="!$isEditing" placeholder="{{ __('Enter the store link') }}"
+                                        class="w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm disabled:cursor-not-allowed" />
                                     <x-input type="hidden" wire:model.defer="rows.{{ $index }}.competitor_app_id" />
                                 </td>
                                 <td class="px-4 py-3 text-center uppercase">
@@ -135,11 +184,15 @@
                                 <td class="px-4 py-3 text-center">
                                     @if(empty($row['competitor_app_id']))
                                         <button type="button" wire:click="removeDraftRow({{ $index }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                            @disabled(!$isEditing)
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:hover:bg-transparent disabled:hover:text-red-500 disabled:hover:shadow-none disabled:cursor-not-allowed"
+                                            @disabled(!$isEditing)
+                                            >
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     @else
                                         <button type="button"
+                                            @disabled(!$isEditing)
                                             x-on:click="Swal.fire({
                                                 title: '{{ addslashes(__('Delete app')) }}',
                                                 text: '{{ addslashes(__('Are you sure you want to delete this app and all its history? This action cannot be undone.')) }}',
@@ -150,7 +203,7 @@
                                                 confirmButtonText: '{{ addslashes(__('Yes, delete')) }}',
                                                 cancelButtonText: '{{ addslashes(__('Cancel')) }}',
                                             }).then(result => { if (result.isConfirmed) $wire.deleteApp({{ $index }}) })"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-500 dark:hover:text-red-400">
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-red-400 disabled:hover:shadow-none">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     @endif
@@ -163,14 +216,16 @@
 
             <div class="mt-5 flex flex-col sm:flex-row justify-end gap-3">
                 <button type="button" wire:click="saveRows"
-                    class="justify-center items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                    @disabled(!$isEditing)
+                    class="justify-center items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-floppy-disk mr-1"></i>
                     {{ __('Save') }}
                 </button>
                 <button type="button" wire:click="recalculateRanking"
+                    @disabled(!$isEditing)
                     class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:shadow-none font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                     <i class="fa-solid fa-arrows-rotate mr-1"></i>
                     {{ __('Recalculate ranking') }}
                 </button>
@@ -186,20 +241,55 @@
                         <i class="fa-solid fa-chart-pie mr-1.5"></i>
                         {{ __('Overview') }}</div>
                     @if($primaryAppRow)
-                        <div class="p-3 space-y-2 text-sm">
-                            <div class="font-semibold text-gray-900 dark:text-white">{{ $primaryAppRow->app->name }}</div>
-                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300">
-                                <div>{{ __('Rating') }}: <b>{{ number_format((float) $primaryAppRow->rating, 1) }} ☆</b></div>
-                                <div>{{ __('Downloads') }}: <b>{{ $primaryAppRow->downloads_label ?: '-' }}</b></div>
-                                <div>{{ __('Reviews') }}: <b>{{ $primaryAppRow->reviews_label ?: '-' }}</b></div>
-                                <div>{{ __('Release date') }}: <b>{{ optional($primaryAppRow->release_date)->format('d M Y') ?: '-' }}</b></div>
+                        <div class="p-3 space-y-3 text-sm">
+                            <div class="flex items-start justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 px-3 py-2">
+                                <div class="min-w-0">
+                                    <p class="text-[11px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Application') }}</p>
+                                    <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $primaryAppRow->app->name }}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 whitespace-nowrap">
+                                    <i class="fa-solid fa-crown mr-1"></i>
+                                    @if(isset($primaryAppRow->rank_position) && $primaryAppRow->rank_position)
+                                        {{ __('Top') }} {{ $primaryAppRow->rank_position }}
+                                    @else
+                                        {{ __('Top 10') }}
+                                    @endif
+                                </span>
                             </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-2">
+                                    <p class="text-[10px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Rating') }}</p>
+                                    <p class="font-bold text-gray-900 dark:text-white">{{ number_format((float) $primaryAppRow->rating, 1) }} ☆</p>
+                                </div>
+                                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-2">
+                                    <p class="text-[10px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Downloads') }}</p>
+                                    <p class="font-bold text-gray-900 dark:text-white truncate">{{ $primaryAppRow->downloads_label ?: '-' }}</p>
+                                </div>
+                                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-2">
+                                    <p class="text-[10px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Reviews') }}</p>
+                                    <p class="font-bold text-gray-900 dark:text-white truncate">{{ $primaryAppRow->reviews_label ?: '-' }}</p>
+                                </div>
+                                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-2">
+                                    <p class="text-[10px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Release date') }}</p>
+                                    <p class="font-bold text-gray-900 dark:text-white">{{ optional($primaryAppRow->release_date)->format('d M Y') ?: '-' }}</p>
+                                </div>
+                            </div>
+
                             @if($primaryAppRow->app->store_url)
-                                <a href="{{ $primaryAppRow->app->store_url }}" target="_blank" class="text-primary-600 dark:text-primary-400 underline text-xs">{{ __('View in store') }}</a>
+                                <a href="{{ $primaryAppRow->app->store_url }}" target="_blank"
+                                    class="inline-flex items-center justify-center text-xs font-semibold rounded-lg px-3 py-1.5 text-white {{ Auth::user()?->area === 'DTH'
+                                    ? 'bg-secondary-700 hover:bg-secondary-800 dark:bg-secondary-600 dark:hover:bg-secondary-700'
+                                    : 'bg-primary-700 hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-700' }}">
+                                    <i class="fa-solid fa-up-right-from-square mr-1.5"></i>{{ __('View in store') }}
+                                </a>
                             @endif
                         </div>
                     @else
-                        <div class="p-3 text-sm text-gray-500 dark:text-gray-400">{{ __('There is no primary app record for this date.') }}</div>
+                        <div class="p-3 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <i class="fa-regular fa-circle-info"></i>
+                            {{ __('There is no primary app record for this date.') }}
+                        </div>
                     @endif
                 </div>
 
@@ -264,6 +354,7 @@
                         {{ __('App traceability') }}
                     </div>
                     <select wire:model.live="traceAppId"
+                        @disabled(!$isEditing)
                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-md inline-block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-xs px-2 py-1 h-7 leading-tight cursor-pointer
                             {{ Auth::user()?->area === 'DTH'
                                 ? 'focus:ring-2 focus:ring-secondary-500 focus:border-secondary-400 dark:focus:ring-secondary-500 dark:focus:border-secondary-400'
