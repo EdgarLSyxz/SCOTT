@@ -170,7 +170,7 @@
                                     @elseif($movement === 'same')
                                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold">
                                             <i class="fa-solid fa-minus mr-1"></i>
-                                            0
+                                            {{ __('Stayed the same') }}
                                         </span>
                                     @elseif($movement === 'new')
                                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-400 text-xs font-semibold">
@@ -332,7 +332,7 @@
                                             </span>
                                         @elseif($movement === 'same')
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">
-                                                <i class="fa-solid fa-minus mr-1"></i>0
+                                                <i class="fa-solid fa-minus mr-1"></i>{{ __('Stayed the same') }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-400 font-semibold">
@@ -393,7 +393,7 @@
                                             </span>
                                         @elseif($trace->movement === 'same')
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">
-                                                <i class="fa-solid fa-minus mr-1"></i>{{ __('No change') }}
+                                                <i class="fa-solid fa-minus mr-1"></i>{{ __('Stayed the same') }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-400 font-semibold">
