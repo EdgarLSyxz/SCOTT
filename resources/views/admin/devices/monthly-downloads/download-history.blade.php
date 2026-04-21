@@ -567,12 +567,15 @@
                                 } elseif ($trend === 'down') {
                                     $trendLabel = '▼ ' . $delta;
                                     $trendClass = 'trend-down';
+                                } elseif ($trend === 'new') {
+                                    $trendLabel = __('New');
+                                    $trendClass = 'trend-new';
                                 } elseif ($trend === 'same') {
-                                    $trendLabel = '• 0';
+                                    $trendLabel = __('Stayed the same');
                                     $trendClass = 'trend-same';
                                 } else {
                                     $trendLabel = __('Stayed the same');
-                                    $trendClass = 'trend-new';
+                                    $trendClass = 'trend-same';
                                 }
                             @endphp
                             <tr class="{{ $isPrimary ? 'ranking-row-primary' : '' }}">
