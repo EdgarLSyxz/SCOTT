@@ -8,7 +8,7 @@
 
 <div wire:poll.10s class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
     <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-wide">
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-wide truncate leading-tight">
             <i class="fa-solid fa-bolt mr-2 text-secondary-600 dark:text-secondary-400"></i>{{ __('Emergency power and fuel monitor') }}
         </h3>
         <span class="text-xs text-gray-400 dark:text-gray-500 md:block hidden">{{ __('Current status') }}</span>

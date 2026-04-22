@@ -89,7 +89,7 @@
           <i class="fa-solid fa-inbox text-3xl {{ $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-200 dark:text-primary-800' }} opacity-60"></i>
           <div class="text-center">
             <p class="text-gray-400 dark:text-gray-500 text-xs font-medium">{{ __('No logs available') }}</p>
-            <p class="text-gray-350 dark:text-gray-600 text-[10px] mt-1">{{ __('Logs will appear here as events occur') }}</p>
+            <p class="text-gray-400 dark:text-gray-500 text-xs font-medium mt-1">{{ __('Logs will appear here as events occur') }}</p>
           </div>
         </div>
       @else
