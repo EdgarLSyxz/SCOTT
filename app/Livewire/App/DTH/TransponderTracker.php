@@ -9,7 +9,7 @@ use Livewire\Component;
 class TransponderTracker extends Component
 {
     public string $upLinkSite = 'Zacatecas';
-    public string $transponders = 'KU01,KU03, KU05,KU07, KU09 Y KU11';
+    public string $transponders = 'KU01, KU03, KU05, KU07, KU09, KU11';
 
     protected array $allowedSites = ['Zacatecas', 'Iztapalapa', 'Distribuido'];
 
@@ -37,8 +37,8 @@ class TransponderTracker extends Component
 
         $this->dispatch('swal', [
             'icon' => 'success',
-            'title' => 'Registro guardado',
-            'text' => 'Se guardo el estado actual de transponders.',
+            'title' => __('Record saved'),
+            'text' => __('The current transponder status was saved successfully.'),
         ]);
     }
 
@@ -64,7 +64,11 @@ class TransponderTracker extends Component
 
     private function buildDescription(): string
     {
-        return sprintf('%s desde %s', trim($this->transponders), $this->upLinkSite);
+        if ($this->upLinkSite === 'Distribuido') {
+            return sprintf('%s %s', trim($this->transponders), __('Distributed between Zacatecas and Iztapalapa'));
+        }
+
+        return sprintf('%s %s %s', trim($this->transponders), __('from'), $this->upLinkSite);
     }
 
     private function authorizeArea(): void

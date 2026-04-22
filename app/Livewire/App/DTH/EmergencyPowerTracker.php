@@ -10,6 +10,7 @@ class EmergencyPowerTracker extends Component
 {
     public string $powerSource = 'CFE';
     public ?string $notes = null;
+    private const FUEL_ALERT_HOURS = 8;
 
     public function mount(): void
     {
@@ -17,7 +18,9 @@ class EmergencyPowerTracker extends Component
 
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
         if ($latest) {
-            $this->powerSource = $latest->power_source;
+            $this->powerSource = $latest->power_source === 'Planta Electrica'
+                ? 'Power Plant'
+                : $latest->power_source;
         }
     }
 
@@ -26,7 +29,7 @@ class EmergencyPowerTracker extends Component
         $this->authorizeArea();
 
         $this->validate([
-            'powerSource' => 'required|in:CFE,Planta Electrica',
+            'powerSource' => 'required|in:CFE,Power Plant',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -34,8 +37,8 @@ class EmergencyPowerTracker extends Component
         if ($latest && $latest->power_source === $this->powerSource) {
             $this->dispatch('swal', [
                 'icon' => 'info',
-                'title' => 'Sin cambios',
-                'text' => 'La fuente de energia ya estaba en el estado seleccionado.',
+                'title' => __('No changes detected'),
+                'text' => __('The power source is already set to the selected value.'),
             ]);
 
             return;
@@ -52,8 +55,8 @@ class EmergencyPowerTracker extends Component
 
         $this->dispatch('swal', [
             'icon' => 'success',
-            'title' => 'Estado actualizado',
-            'text' => 'Se registro el cambio de energia correctamente.',
+            'title' => __('Power source updated'),
+            'text' => __('The power source change was recorded successfully.'),
         ]);
     }
 
@@ -61,7 +64,7 @@ class EmergencyPowerTracker extends Component
     {
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
         if (! $latest) {
-            return 'Sin registros';
+            return __('No records yet');
         }
 
         $seconds = $latest->changed_at->diffInSeconds(now());
@@ -80,7 +83,7 @@ class EmergencyPowerTracker extends Component
             return false;
         }
 
-        return $latest->changed_at->diffInSeconds(now()) >= (8 * 3600);
+        return $latest->changed_at->diffInSeconds(now()) >= (self::FUEL_ALERT_HOURS * 3600);
     }
 
     public function render()
