@@ -8,6 +8,7 @@
     $previewTooltipBg = $isDth ? 'bg-secondary-50 dark:bg-secondary-900/80' : 'bg-primary-50 dark:bg-primary-900/80';
     $previewTooltipTitle = $isDth ? 'text-secondary-600 dark:text-secondary-300' : 'text-primary-600 dark:text-primary-300';
     $previewTooltipText = $isDth ? 'text-secondary-900 dark:text-secondary-100' : 'text-primary-900 dark:text-primary-100';
+    $descriptionText = $isDth ? 'text-secondary-800 dark:text-secondary-200' : 'text-primary-800 dark:text-primary-200';
 @endphp
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
@@ -83,7 +84,7 @@
         @if($latestRecord)
             <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40">
                 <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Current status') }}</p>
-                <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ $latestRecord->description }}</p>
+                <p class="text-sm font-semibold {{ $descriptionText }} mt-1">{{ $latestRecord->description }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">
                     {{ optional($latestRecord->recorded_at)->format('d/m/Y H:i:s') }}
                     @if($latestRecord->user)
@@ -106,8 +107,8 @@
                             {{ __('Site') }}
                         </th>
                         <th class="px-3 py-2">
-                            <i class="fa-solid fa-comment-dots mr-1.5"></i>
-                            {{ __('Description') }}
+                            <i class="fa-solid fa-satellite-dish mr-1.5"></i>
+                            {{ __('Transponders') }}
                         </th>
                         <th class="px-3 py-2">
                             <i class="fa-solid fa-user mr-1.5"></i>
@@ -119,7 +120,7 @@
                     @forelse($history as $item)
                         <tr>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ optional($item->recorded_at)->format('d/m/Y H:i:s') }}</td>
-                            <td class="px-3 py-2 text-gray-900 dark:text-white font-semibold">{{ $item->up_link_site }}</td>
+                            <td class="px-3 py-2 {{ $descriptionText }} font-semibold">{{ $item->up_link_site }}</td>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $item->description }}</td>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $item->user?->name ?: '—' }}</td>
                         </tr>

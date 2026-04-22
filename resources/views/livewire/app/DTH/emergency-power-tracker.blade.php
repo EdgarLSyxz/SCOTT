@@ -1,8 +1,9 @@
 @php
-$area = Auth::user()?->area ?? 'OTT';
-$isDth = $area === 'DTH';
-$iconColor = $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-600 dark:text-primary-400';
-$focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500';
+    $area = Auth::user()?->area ?? 'OTT';
+    $isDth = $area === 'DTH';
+    $iconColor = $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-600 dark:text-primary-400';
+    $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500';
+    $descriptionText = $isDth ? 'text-secondary-800 dark:text-secondary-200' : 'text-primary-800 dark:text-primary-200';
 @endphp
 
 <div wire:poll.10s class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
@@ -29,10 +30,13 @@ $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:
             <div>
                 <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
                     <i class="fa-solid fa-note-sticky mr-1.5 mb-2"></i>
-                    {{ __('Notes (optional)') }}
+                    {{ __('Notes') }}
                 </label>
                 <x-input type="text" wire:model.defer="notes" placeholder="{{ __('Example: Correct switch to CFE/Power Plant') }}"
-                    class="rounded-md" />
+                    class="rounded-md" required />
+                @error('notes')
+                    <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
         </div>
 
@@ -44,19 +48,19 @@ $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:
 
         @if($latestEvent)
             @php
-    $latestIsPowerPlant = in_array($latestEvent->power_source, ['Power Plant', 'Planta Electrica'], true);
+                $latestIsPowerPlant = in_array($latestEvent->power_source, ['Power Plant', 'Planta Electrica'], true);
             @endphp
-            <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40 space-y-2">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ __('Current status') }}:
-                        <span class="{{ $latestIsPowerPlant ? 'text-amber-600' : 'text-emerald-600' }}">{{ $latestIsPowerPlant ? __('Power Plant') : 'CFE' }}</span>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40">
+                <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Current status') }}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-1">
+                    <p class="text-sm font-semibold {{ $descriptionText }}">
+                        {{ $latestIsPowerPlant ? __('Power Plant') : 'CFE' }}
                     </p>
                     <span class="text-xs text-gray-500 dark:text-gray-300">{{ __('Elapsed time') }}: {{ $this->elapsedHuman }}</span>
                 </div>
 
                 @if($this->showFuelAlert)
-                    <div class="rounded-lg px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-semibold">
+                    <div class="rounded-lg px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-semibold mt-2">
                         <i class="fa-solid fa-triangle-exclamation mr-1"></i>
                         @if($latestIsPowerPlant)
                             {{ __('More than 8 hours have passed on Power Plant. Fuel level check is required.') }}
@@ -66,7 +70,7 @@ $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:
                     </div>
                 @endif
 
-                <p class="text-xs text-gray-500 dark:text-gray-300">
+                <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">
                     {{ __('Last change') }}: {{ optional($latestEvent->changed_at)->format('d/m/Y H:i:s') }}
                     @if($latestEvent->user)
                         · {{ $latestEvent->user->name }}
@@ -104,7 +108,7 @@ $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:
                         @endphp
                         <tr>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ optional($event->changed_at)->format('d/m/Y H:i:s') }}</td>
-                            <td class="px-3 py-2 font-semibold {{ $eventIsPowerPlant ? 'text-amber-600' : 'text-emerald-600' }}">{{ $eventIsPowerPlant ? __('Power Plant') : 'CFE' }}</td>
+                            <td class="px-3 py-2 font-semibold {{ $descriptionText }}">{{ $eventIsPowerPlant ? __('Power Plant') : 'CFE' }}</td>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->notes ?: '—' }}</td>
                             <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->user?->name ?: '—' }}</td>
                         </tr>

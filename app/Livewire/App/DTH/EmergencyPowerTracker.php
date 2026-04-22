@@ -9,7 +9,7 @@ use Livewire\Component;
 class EmergencyPowerTracker extends Component
 {
     public string $powerSource = 'CFE';
-    public ?string $notes = null;
+    public string $notes = '';
     private const FUEL_ALERT_HOURS = 8;
 
     public function mount(): void
@@ -30,7 +30,7 @@ class EmergencyPowerTracker extends Component
 
         $this->validate([
             'powerSource' => 'required|in:CFE,Power Plant',
-            'notes' => 'nullable|string|max:500',
+            'notes' => 'required|string|max:500',
         ]);
 
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
@@ -46,7 +46,7 @@ class EmergencyPowerTracker extends Component
 
         DthPowerSourceEvent::create([
             'power_source' => $this->powerSource,
-            'notes' => $this->notes ? trim($this->notes) : null,
+            'notes' => trim($this->notes),
             'changed_at' => now(),
             'user_id' => Auth::id(),
         ]);
