@@ -210,6 +210,15 @@
     </div>
     @endrole
 
+    @if(Auth::user()?->area === 'DTH')
+        <div class="w-full mt-9 px-4 mb-2">
+            <div class="grid grid-cols-1 2xl:grid-cols-2 gap-6">
+                @livewire('app.dth.transponder-tracker')
+                @livewire('app.dth.emergency-power-tracker')
+            </div>
+        </div>
+    @endif
+
     <div id="create-momently-report-modal" tabindex="-1"
         class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative w-full max-w-7xl max-h-full">
