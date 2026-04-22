@@ -211,7 +211,7 @@
     @endrole
 
     @if(Auth::user()?->area === 'DTH')
-        <div class="w-full mt-9 px-4 mb-2">
+        <div class="w-full mt-9 px-4 mb-8">
             <div class="grid grid-cols-1 2xl:grid-cols-2 gap-6">
                 @livewire('app.dth.transponder-tracker')
                 @livewire('app.dth.emergency-power-tracker')

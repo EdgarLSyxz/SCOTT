@@ -3,7 +3,7 @@
     $isDth = $area === 'DTH';
     $iconColor = $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-600 dark:text-primary-400';
     $iconHover = $isDth ? 'hover:text-secondary-500 dark:hover:text-secondary-400' : 'hover:text-primary-500 dark:hover:text-primary-700';
-    $focusRing = $isDth ? 'focus:ring-secondary-500 focus:border-secondary-500 dark:focus:ring-secondary-800' : 'focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-800';
+    $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500';
     $gradientClasses = $isDth ? 'text-white bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 dark:focus:ring-secondary-800' : 'text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 dark:focus:ring-primary-800';
 @endphp
 

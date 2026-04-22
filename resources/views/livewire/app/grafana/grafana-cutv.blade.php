@@ -2,7 +2,7 @@
     $area = Auth::user()?->area ?? 'OTT';
     $isDth = $area === 'DTH';
     $iconColor = $isDth ? 'text-secondary-600 dark:text-secondary-400' : 'text-primary-600 dark:text-primary-400';
-    $focusRing = $isDth ? 'focus:ring-secondary-500 focus:border-secondary-500 dark:focus:ring-secondary-800' : 'focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-800';
+    $focusRing = $isDth ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500';
 @endphp
 
 <div class="w-full mx-auto">
