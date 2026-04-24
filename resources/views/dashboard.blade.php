@@ -178,43 +178,43 @@
     </div>
 
     @role('user|master|admin')
-    <div class="w-full mt-6 px-4 mb-4 flex flex-col lg:flex-row gap-6">
-        <div class="lg:w-3/4 w-full flex flex-col gap-6">
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-1 min-h-[300px]">
-                    @livewire('app.grafana.grafana-dynamic')
+        <div class="w-full mt-6 px-4 mb-4 flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-3/4 w-full flex flex-col gap-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-1 min-h-[300px]">
+                        @livewire('app.grafana.grafana-dynamic')
+                    </div>
+                    @if (auth()->user()->area == "OTT")
+                        <div class="flex-1 min-h-[300px]">
+                            @livewire('app.grafana.grafana-cutv')
+                        </div>
+                    @else
+                        <div class="flex-1 min-h-[300px]">
+                            @livewire('app.grafana.grafana-radios')
+                        </div>
+                    @endif
                 </div>
-                @if (auth()->user()->area == "OTT")
-                    <div class="flex-1 min-h-[300px]">
-                        @livewire('app.grafana.grafana-cutv')
-                    </div>
-                @else
-                    <div class="flex-1 min-h-[300px]">
-                        @livewire('app.grafana.grafana-radios')
-                    </div>
-                @endif
+            </div>
+            <div class="lg:w-1/4 w-full">
+                @livewire('app.logs.latest-logs')
             </div>
         </div>
-        <div class="lg:w-1/4 w-full">
-            @livewire('app.logs.latest-logs')
+        @else
+        <div class="w-full mt-6 px-4 mb-4 flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-3/4 w-full flex flex-col gap-6">
+                @livewire('app.grafana.grafana-dynamic')
+            </div>
+            <div class="lg:w-1/4 w-full">
+                @livewire('app.logs.latest-logs')
+            </div>
         </div>
-    </div>
-    @else
-    <div class="w-full mt-6 px-4 mb-4 flex flex-col lg:flex-row gap-6">
-        <div class="lg:w-3/4 w-full flex flex-col gap-6">
-            @livewire('app.grafana.grafana-dynamic')
-        </div>
-        <div class="lg:w-1/4 w-full">
-            @livewire('app.logs.latest-logs')
-        </div>
-    </div>
     @endrole
 
     @if(Auth::user()?->area === 'DTH')
         <div class="w-full mt-9 px-4 mb-8">
             <div class="grid grid-cols-1 2xl:grid-cols-2 gap-6">
-                @livewire('app.dth.transponder-tracker')
-                @livewire('app.dth.emergency-power-tracker')
+                @livewire(\App\Livewire\App\DTH\TransponderTracker::class)
+                @livewire(\App\Livewire\App\DTH\EmergencyPowerTracker::class)
             </div>
         </div>
     @endif
