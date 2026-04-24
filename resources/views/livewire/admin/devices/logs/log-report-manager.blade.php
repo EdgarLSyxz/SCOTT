@@ -116,16 +116,6 @@
                 </div>
                 <div class="mt-3 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row items-center w-full sm:w-auto gap-2">
                     <button
-                        wire:click="generatePdfForSelectedUpload"
-                        wire:loading.attr="disabled"
-                        wire:target="generatePdfForSelectedUpload"
-                        class="w-full sm:w-auto inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"
-                        aria-label="{{ __('Generate PDF') }}">
-                        <i class="fa-solid fa-file-pdf mr-2"></i>
-                        <span wire:loading.remove wire:target="generatePdfForSelectedUpload">{{ __('Generate PDF') }}</span>
-                        <span wire:loading wire:target="generatePdfForSelectedUpload">{{ __('Generating...') }}</span>
-                    </button>
-                    <button
                         @click="confirmDelete()"
                         class="w-full sm:w-auto inline-flex items-center justify-center bg-red-600 hover:bg-red-800 text-white px-4 py-2.5 rounded-lg cursor-pointer transition"
                         x-data

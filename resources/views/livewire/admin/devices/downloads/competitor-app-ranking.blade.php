@@ -50,9 +50,9 @@
                 <button type="button" wire:click="toggleEditMode"
                     class="w-full sm:w-auto justify-center items-center text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl whitespace-nowrap">
                     @if($isEditing)
-                        <i class="fa-solid fa-lock mr-1"></i>{{ __('Lock editing') }}
+                        <i class="fa-solid fa-lock mr-1.5"></i>{{ __('Lock editing') }}
                     @else
-                        <i class="fa-solid fa-pen-to-square mr-1"></i>{{ __('Enable editing') }}
+                        <i class="fa-solid fa-pen-to-square mr-1.5"></i>{{ __('Enable editing') }}
                     @endif
                 </button>
             </div>
