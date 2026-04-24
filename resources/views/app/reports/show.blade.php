@@ -546,9 +546,9 @@
                             <p class="text-sm text-gray-700 dark:text-gray-300 break-words mt-4">{{ $bodySent }}</p>
                         </div>
                     @empty
-                        <div class="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
+                        <div class="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400 mb-4">
                             <i class="fa-solid fa-comments text-3xl mb-2"></i>
-                            <p class="text-sm">{{ __('No comments yet') }}</p>
+                            <p class="text-sm mt-2">{{ __('No comments yet.') }}</p>
                         </div>
                     @endforelse
                 </div>
