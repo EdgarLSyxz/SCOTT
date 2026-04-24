@@ -4,6 +4,7 @@ namespace App\Livewire\App\DTH;
 
 use App\Models\DthPowerSourceEvent;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
 class EmergencyPowerTracker extends Component
@@ -16,6 +17,10 @@ class EmergencyPowerTracker extends Component
     {
         $this->authorizeArea();
 
+        if (! Schema::hasTable('dth_power_source_events')) {
+            return;
+        }
+
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
         if ($latest) {
             $this->powerSource = $latest->power_source === 'Planta Electrica'
@@ -27,6 +32,10 @@ class EmergencyPowerTracker extends Component
     public function updatePowerSource(): void
     {
         $this->authorizeArea();
+
+        if (! Schema::hasTable('dth_power_source_events')) {
+            return;
+        }
 
         $this->validate([
             'powerSource' => 'required|in:CFE,Power Plant',
@@ -62,6 +71,10 @@ class EmergencyPowerTracker extends Component
 
     public function getElapsedHumanProperty(): string
     {
+        if (! Schema::hasTable('dth_power_source_events')) {
+            return __('No records yet');
+        }
+
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
         if (! $latest) {
             return __('No records yet');
@@ -78,6 +91,10 @@ class EmergencyPowerTracker extends Component
 
     public function getShowFuelAlertProperty(): bool
     {
+        if (! Schema::hasTable('dth_power_source_events')) {
+            return false;
+        }
+
         $latest = DthPowerSourceEvent::latest('changed_at')->first();
         if (! $latest) {
             return false;
@@ -89,6 +106,13 @@ class EmergencyPowerTracker extends Component
     public function render()
     {
         $this->authorizeArea();
+
+        if (! Schema::hasTable('dth_power_source_events')) {
+            return view('livewire.app.DTH.emergency-power-tracker', [
+                'latestEvent' => null,
+                'history' => collect(),
+            ]);
+        }
 
         $latest = DthPowerSourceEvent::latest('changed_at')->with('user:id,name')->first();
 

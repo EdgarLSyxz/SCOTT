@@ -4,6 +4,7 @@ namespace App\Livewire\App\DTH;
 
 use App\Models\DthTransponderRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
 class TransponderTracker extends Component
@@ -50,6 +51,14 @@ class TransponderTracker extends Component
     public function render()
     {
         $this->authorizeArea();
+
+        if (! Schema::hasTable('dth_transponder_records')) {
+            return view('livewire.app.DTH.transponder-tracker', [
+                'sites' => $this->allowedSites,
+                'latestRecord' => null,
+                'history' => collect(),
+            ]);
+        }
 
         return view('livewire.app.DTH.transponder-tracker', [
             'sites' => $this->allowedSites,
