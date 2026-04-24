@@ -51,7 +51,7 @@ class EmergencyPowerTracker extends Component
             'user_id' => Auth::id(),
         ]);
 
-        $this->notes = null;
+        $this->notes = '';
 
         $this->dispatch('swal', [
             'icon' => 'success',

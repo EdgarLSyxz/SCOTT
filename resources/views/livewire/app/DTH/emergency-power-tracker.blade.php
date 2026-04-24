@@ -14,8 +14,8 @@
         <span class="text-xs text-gray-400 dark:text-gray-500 md:block hidden">{{ __('Current status') }}</span>
     </div>
 
-    <div class="p-4 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div class="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
             <div>
                 <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
                     <i class="fa-solid fa-bolt mr-1.5 mb-2"></i>
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex justify-end mt-4">
             <x-button type="button" wire:click="updatePowerSource">
                 <i class="fa-solid fa-floppy-disk mr-2"></i>{{ __('Save') }}
             </x-button>
@@ -50,36 +50,41 @@
             @php
                 $latestIsPowerPlant = in_array($latestEvent->power_source, ['Power Plant', 'Planta Electrica'], true);
             @endphp
-            <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40">
+            <div class="rounded-lg mt-4 border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40">
                 <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Current status') }}</p>
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-1">
-                    <p class="text-sm font-semibold {{ $descriptionText }}">
-                        {{ $latestIsPowerPlant ? __('Power Plant') : 'CFE' }}
-                    </p>
-                    <span class="text-xs text-gray-500 dark:text-gray-300">{{ __('Elapsed time') }}: {{ $this->elapsedHuman }}</span>
-                </div>
+                <div class="mt-1 space-y-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <p class="text-sm font-semibold {{ $descriptionText }}">
+                            {{ $latestIsPowerPlant ? __('Power Plant') : 'CFE' }}
+                        </p>
 
-                @if($this->showFuelAlert)
-                    <div class="rounded-lg px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-semibold mt-2">
-                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
                         @if($latestIsPowerPlant)
-                            {{ __('More than 8 hours have passed on Power Plant. Fuel level check is required.') }}
-                        @else
-                            {{ __('More than 8 hours have passed since the last change to CFE. It is recommended to check emergency Power Plant fuel level.') }}
+                            <p class="text-xs text-gray-500 dark:text-gray-300 sm:text-right whitespace-nowrap">
+                                {{ __('Elapsed time') }}: {{ $this->elapsedHuman }}
+                            </p>
                         @endif
                     </div>
-                @endif
 
-                <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                    {{ __('Last change') }}: {{ optional($latestEvent->changed_at)->format('d/m/Y H:i:s') }}
-                    @if($latestEvent->user)
-                        · {{ $latestEvent->user->name }}
-                    @endif
-                </p>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <p class="text-xs text-gray-500 dark:text-gray-300">
+                            {{ __('Last change') }}: {{ optional($latestEvent->changed_at)->format('d/m/Y H:i:s') }}
+                            @if($latestEvent->user)
+                                · {{ $latestEvent->user->name }}
+                            @endif
+                        </p>
+
+                        @if($latestIsPowerPlant && $this->showFuelAlert)
+                            <div class="inline-flex items-center gap-1 rounded-lg px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-semibold whitespace-nowrap sm:self-center">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span>{{ __('Fuel check required after 8h on Power Plant.') }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
         @endif
 
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-600 rounded-lg mt-4">
             <table class="min-w-[680px] w-full text-xs sm:text-sm text-left">
                 <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 uppercase text-xs">
                     <tr>
