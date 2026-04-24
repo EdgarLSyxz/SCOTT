@@ -49,16 +49,17 @@
         @if($latestEvent)
             @php
                 $latestIsPowerPlant = in_array($latestEvent->power_source, ['Power Plant', 'Planta Electrica'], true);
+                $showElapsedAlert = $latestIsPowerPlant && $this->showFuelAlert;
             @endphp
             <div class="rounded-lg mt-4 border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700/40">
                 <p class="text-xs text-gray-500 dark:text-gray-300">{{ __('Current status') }}</p>
-                <div>
+                <div class="{{ $showElapsedAlert ? '' : 'mt-1' }}">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <p class="text-sm font-semibold {{ $descriptionText }}">
                             {{ $latestIsPowerPlant ? __('Power Plant') : 'CFE' }}
                         </p>
 
-                        @if($latestIsPowerPlant && $this->showFuelAlert)
+                        @if($showElapsedAlert)
                             <div class="inline-flex items-center gap-2 rounded-full border border-red-200/80 dark:border-red-800/70 px-2 py-1 bg-red-50/95 dark:bg-red-950/35 text-red-700 dark:text-red-200 text-[11px] font-semibold whitespace-nowrap shadow-sm sm:self-center">
                                 <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-200/80 dark:bg-red-800/70 text-red-700 dark:text-red-100 ring-1 ring-inset ring-red-300/60 dark:ring-red-700/60">
                                     <i class="fa-solid fa-triangle-exclamation text-[8px]"></i>
@@ -70,7 +71,7 @@
                         @endif
                     </div>
 
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between {{ $showElapsedAlert ? '' : 'mt-1' }}">
                         <p class="text-xs text-gray-500 dark:text-gray-300">
                             {{ __('Last change') }}: {{ optional($latestEvent->changed_at)->format('d/m/Y H:i:s') }}
                             @if($latestEvent->user)
