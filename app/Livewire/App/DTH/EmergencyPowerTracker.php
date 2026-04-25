@@ -2,7 +2,7 @@
 
 namespace App\Livewire\App\DTH;
 
-use App\Models\DthPowerSourceEvent;
+use App\Models\DTHPowerSourceEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
@@ -21,7 +21,7 @@ class EmergencyPowerTracker extends Component
             return;
         }
 
-        $latest = DthPowerSourceEvent::latest('changed_at')->first();
+        $latest = DTHPowerSourceEvent::latest('changed_at')->first();
         if ($latest) {
             $this->powerSource = $latest->power_source === 'Planta Electrica'
                 ? 'Power Plant'
@@ -42,7 +42,7 @@ class EmergencyPowerTracker extends Component
             'notes' => 'required|string|max:500',
         ]);
 
-        $latest = DthPowerSourceEvent::latest('changed_at')->first();
+        $latest = DTHPowerSourceEvent::latest('changed_at')->first();
         if ($latest && $latest->power_source === $this->powerSource) {
             $this->dispatch('swal', [
                 'icon' => 'info',
@@ -53,7 +53,7 @@ class EmergencyPowerTracker extends Component
             return;
         }
 
-        DthPowerSourceEvent::create([
+        DTHPowerSourceEvent::create([
             'power_source' => $this->powerSource,
             'notes' => trim($this->notes),
             'changed_at' => now(),
@@ -75,7 +75,7 @@ class EmergencyPowerTracker extends Component
             return __('No records yet');
         }
 
-        $latest = DthPowerSourceEvent::latest('changed_at')->first();
+        $latest = DTHPowerSourceEvent::latest('changed_at')->first();
         if (! $latest) {
             return __('No records yet');
         }
@@ -95,7 +95,7 @@ class EmergencyPowerTracker extends Component
             return false;
         }
 
-        $latest = DthPowerSourceEvent::latest('changed_at')->first();
+        $latest = DTHPowerSourceEvent::latest('changed_at')->first();
         if (! $latest) {
             return false;
         }
@@ -114,11 +114,11 @@ class EmergencyPowerTracker extends Component
             ]);
         }
 
-        $latest = DthPowerSourceEvent::latest('changed_at')->with('user:id,name')->first();
+        $latest = DTHPowerSourceEvent::latest('changed_at')->with('user:id,name')->first();
 
         return view('livewire.app.DTH.emergency-power-tracker', [
             'latestEvent' => $latest,
-            'history' => DthPowerSourceEvent::query()
+            'history' => DTHPowerSourceEvent::query()
                 ->latest('changed_at')
                 ->with('user:id,name')
                 ->limit(30)

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\App\DTH;
 
-use App\Models\DthTransponderRecord;
+use App\Models\DTHTransponderRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
@@ -28,7 +28,7 @@ class TransponderTracker extends Component
             'transponders' => 'required|string|max:255',
         ]);
 
-        DthTransponderRecord::create([
+        DTHTransponderRecord::create([
             'up_link_site' => $this->upLinkSite,
             'transponders' => trim($this->transponders),
             'description' => $this->buildDescription(),
@@ -62,8 +62,8 @@ class TransponderTracker extends Component
 
         return view('livewire.app.DTH.transponder-tracker', [
             'sites' => $this->allowedSites,
-            'latestRecord' => DthTransponderRecord::latest('recorded_at')->first(),
-            'history' => DthTransponderRecord::query()
+            'latestRecord' => DTHTransponderRecord::latest('recorded_at')->first(),
+            'history' => DTHTransponderRecord::query()
                 ->latest('recorded_at')
                 ->with('user:id,name')
                 ->limit(30)

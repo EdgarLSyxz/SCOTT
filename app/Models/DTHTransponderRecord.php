@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DthTransponderRecord extends Model
+class DTHTransponderRecord extends Model
 {
     use HasFactory;
+
+    protected $table = 'dth_transponder_records';
 
     protected $fillable = [
         'up_link_site',

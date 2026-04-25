@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DthPowerSourceEvent extends Model
+class DTHPowerSourceEvent extends Model
 {
     use HasFactory;
+
+    protected $table = 'dth_power_source_events';
 
     protected $fillable = [
         'power_source',
