@@ -10,6 +10,25 @@ use Livewire\Attributes\On;
 
 class PackageManager extends Component
 {
+    private const FILTER_ALL = 'all';
+    private const FILTER_SERVICE = 'service';
+    private const FILTER_CONCURRENCY = 'concurrency';
+    private const FILTER_OTHER = 'other';
+
+    private const CONCURRENCY_PACKAGE_NAMES = [
+        'CONCURRENT_STREAM_LIMIT_3',
+        'CONCURRENT_STREAM_LIMIT_2',
+        'CONCURRENT_STREAM_LIMIT_1',
+        'CONCURRENCY TEST SERVICE'
+    ];
+
+    private const OTHER_SERVICE_NAMES = [
+        'OTT CHROMECAST',
+        'PREROLL ADVERTISEMENT',
+        'PRE-ROLL VISIBILITY TEST',
+        'STARTV STREAM ANONYMOUS BROWSE'
+    ];
+
     public $uploads = [];
     public $selectedUploadId = null;
     public $packages = [];
@@ -26,6 +45,7 @@ class PackageManager extends Component
     public $customerPageSize = 200;
     public $modalHasMore = false;
     public $modalSearchTerm = '';
+    public $globalFilter = self::FILTER_ALL;
     protected $allowedIds = [1, 2, 3, 5, 7, 8];
 
     public function mount()
@@ -320,7 +340,7 @@ class PackageManager extends Component
     public function getFilteredPackages()
     {
         $term = strtolower($this->searchTerm);
-        return collect($this->packages)
+        return collect($this->getGloballyFilteredPackages())
             ->filter(function ($pkg) use ($term) {
                 $nameMatch = strpos(strtolower($pkg['name'] ?? ''), $term) !== false;
                 $idMatch = strpos(strtolower((string)($pkg['id'] ?? '')), $term) !== false;
@@ -342,6 +362,81 @@ class PackageManager extends Component
             })
             ->values()
             ->toArray();
+    }
+
+    public function getGloballyFilteredPackages(): array
+    {
+        return collect($this->packages)
+            ->filter(function ($pkg) {
+                return match ($this->globalFilter) {
+                    self::FILTER_SERVICE => $this->isServicePackage($pkg),
+                    self::FILTER_CONCURRENCY => $this->isConcurrencyPackage($pkg),
+                    self::FILTER_OTHER => $this->isOtherServicePackage($pkg),
+                    default => true,
+                };
+            })
+            ->sortBy(function ($p) {
+                return is_numeric($p['id']) ? (int) $p['id'] : $p['id'];
+            })
+            ->values()
+            ->toArray();
+    }
+
+    public function getGlobalFilterCounts(): array
+    {
+        return [
+            self::FILTER_ALL => count($this->packages),
+            self::FILTER_SERVICE => count(array_filter($this->packages, fn ($pkg) => $this->isServicePackage($pkg))),
+            self::FILTER_CONCURRENCY => count(array_filter($this->packages, fn ($pkg) => $this->isConcurrencyPackage($pkg))),
+            self::FILTER_OTHER => count(array_filter($this->packages, fn ($pkg) => $this->isOtherServicePackage($pkg))),
+        ];
+    }
+
+    public function getVisibleTotals(): array
+    {
+        $visiblePackages = $this->getGloballyFilteredPackages();
+
+        return [
+            'packages' => count($visiblePackages),
+            'customers' => array_reduce($visiblePackages, function ($carry, $pkg) {
+                return $carry + $this->packageCustomerCount($pkg);
+            }, 0),
+        ];
+    }
+
+    private function isServicePackage(array $pkg): bool
+    {
+        return ! $this->isConcurrencyPackage($pkg) && ! $this->isOtherServicePackage($pkg);
+    }
+
+    private function isConcurrencyPackage(array $pkg): bool
+    {
+        $normalized = $this->normalizePackageName($pkg['name'] ?? '');
+
+        return in_array($normalized, self::CONCURRENCY_PACKAGE_NAMES, true);
+    }
+
+    private function isOtherServicePackage(array $pkg): bool
+    {
+        $normalized = $this->normalizePackageName($pkg['name'] ?? '');
+
+        return in_array($normalized, self::OTHER_SERVICE_NAMES, true);
+    }
+
+    private function normalizePackageName(string $name): string
+    {
+        return strtoupper(trim(preg_replace('/\s+/', ' ', $name)));
+    }
+
+    private function packageCustomerCount(array $pkg): int
+    {
+        if (isset($pkg['customers']) && is_numeric($pkg['customers'])) {
+            return (int) $pkg['customers'];
+        }
+
+        $customers = $pkg['customers_list'] ?? $pkg['customers_preview'] ?? [];
+
+        return is_array($customers) ? count($customers) : 0;
     }
 
     public function render()

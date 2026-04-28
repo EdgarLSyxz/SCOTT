@@ -42,12 +42,21 @@
     @endif
 
     @if ($totalPackages || $totalCustomers)
+        @php
+            $visibleTotals = $this->getVisibleTotals();
+            $isGlobalFiltered = ($globalFilter ?? 'all') !== 'all';
+        @endphp
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-simple text-{{ $color }}-400"></i>
                     <span>{{ __('Summary') }}</span>
                 </h3>
+                @if ($isGlobalFiltered)
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900 dark:text-{{ $color }}-200">
+                        {{ __('Filtered view') }}
+                    </span>
+                @endif
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="stats-grid">
                 <div class="p-4 rounded-lg md:col-span-1 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20">
@@ -57,7 +66,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Total packages') }}</p>
-                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $totalPackages }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $visibleTotals['packages'] }}</p>
                         </div>
                     </div>
                 </div>
@@ -68,7 +77,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Total customers') }}</p>
-                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $totalCustomers }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $visibleTotals['customers'] }}</p>
                         </div>
                     </div>
                 </div>
@@ -77,7 +86,7 @@
     @endif
 
     @if (!empty($packages))
-        <div wire:ignore x-data="packagesChart(@entangle('packages'))" x-init="init()"
+        <div wire:ignore x-data="packagesChart(@entangle('packages'), @entangle('globalFilter'))" x-init="init()"
             class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-{{ $color }}-400"></i>
@@ -88,29 +97,64 @@
     @endif
 
     @if (!empty($packages))
+        @php
+            $globalFilterCounts = $this->getGlobalFilterCounts();
+        @endphp
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
-            <div class="flex items-center justify-between p-8">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-packing text-{{ $color }}-400"></i>
-                    <span>{{ __('Packages') }}</span>
-                </h3>
-                <div class="ml-4 w-full md:w-80 lg:w-96">
-                    <div class="relative w-full">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
+            <div class="p-8 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-packing text-{{ $color }}-400"></i>
+                        <span>{{ __('Packages') }}</span>
+                    </h3>
+                    <div class="w-full lg:w-96">
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="text" wire:model.live="searchTerm"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500"
+                                placeholder="{{ __('Search by package name or customer ID...') }}">
+                            @if ($searchTerm)
+                                <button wire:click="$set('searchTerm', '')"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            @endif
                         </div>
-                        <input type="text" wire:model.live="searchTerm"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-{{ $color }}-500 focus:border-{{ $color }}-500"
-                            placeholder="{{ __('Search by package name or customer ID...') }}">
-                        @if ($searchTerm)
-                            <button wire:click="$set('searchTerm', '')"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
-                                <i class="fa-solid fa-times"></i>
-                            </button>
-                        @endif
                     </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" wire:click="$set('globalFilter', 'all')"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition border {{ $globalFilter === 'all' ? 'bg-' . $color . '-600 text-white border-' . $color . '-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-' . $color . '-400' }}">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>{{ __('All packages') }}</span>
+                        <span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1 rounded-full bg-black/10 dark:bg-white/15">{{ $globalFilterCounts['all'] ?? 0 }}</span>
+                    </button>
+
+                    <button type="button" wire:click="$set('globalFilter', 'service')"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition border {{ $globalFilter === 'service' ? 'bg-' . $color . '-600 text-white border-' . $color . '-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-' . $color . '-400' }}">
+                        <i class="fa-solid fa-box-open"></i>
+                        <span>{{ __('Service packages') }}</span>
+                        <span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1 rounded-full bg-black/10 dark:bg-white/15">{{ $globalFilterCounts['service'] ?? 0 }}</span>
+                    </button>
+
+                    <button type="button" wire:click="$set('globalFilter', 'concurrency')"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition border {{ $globalFilter === 'concurrency' ? 'bg-' . $color . '-600 text-white border-' . $color . '-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-' . $color . '-400' }}">
+                        <i class="fa-solid fa-people-arrows"></i>
+                        <span>{{ __('Concurrency') }}</span>
+                        <span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1 rounded-full bg-black/10 dark:bg-white/15">{{ $globalFilterCounts['concurrency'] ?? 0 }}</span>
+                    </button>
+
+                    <button type="button" wire:click="$set('globalFilter', 'other')"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition border {{ $globalFilter === 'other' ? 'bg-' . $color . '-600 text-white border-' . $color . '-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-' . $color . '-400' }}">
+                        <i class="fa-solid fa-puzzle-piece"></i>
+                        <span>{{ __('Other services') }}</span>
+                        <span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1 rounded-full bg-black/10 dark:bg-white/15">{{ $globalFilterCounts['other'] ?? 0 }}</span>
+                    </button>
                 </div>
             </div>
 
@@ -247,12 +291,44 @@
 <script>
     let __packagesChartInstance = null;
 
-    function renderChart(packages) {
+    function applyGlobalFilter(packages, globalFilter) {
+        const list = Array.isArray(packages) ? packages : [];
+        const mode = (globalFilter || 'all').toLowerCase();
+
+        const concurrencyNames = new Set([
+            'CONCURRENT_STREAM_LIMIT_3',
+            'CONCURRENT_STREAM_LIMIT_2',
+            'CONCURRENT_STREAM_LIMIT_1',
+            'CONCURRENCY TEST SERVICE'
+        ]);
+        const otherNames = new Set([
+            'OTT CHROMECAST',
+            'PREROLL ADVERTISEMENT',
+            'PRE-ROLL VISIBILITY TEST',
+            'STARTV STREAM ANONYMOUS BROWSE'
+        ]);
+
+        const normalizeName = (name) => String(name || '').replace(/\s+/g, ' ').trim().toUpperCase();
+
+        return list.filter((pkg) => {
+            const normalized = normalizeName(pkg.name || '');
+            const isConcurrency = concurrencyNames.has(normalized);
+            const isOther = otherNames.has(normalized);
+
+            if (mode === 'concurrency') return isConcurrency;
+            if (mode === 'other') return isOther;
+            if (mode === 'service') return !isConcurrency && !isOther;
+
+            return true;
+        });
+    }
+
+    function renderChart(packages, globalFilter) {
         const canvas = document.getElementById('packages-chart');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        const data = Array.isArray(packages) ? packages : [];
+        const data = applyGlobalFilter(packages, globalFilter);
         const items = data.map(pkg => {
             const ids = (pkg.customers_list && Array.isArray(pkg.customers_list)) ? pkg.customers_list : ((pkg.customer_ids && Array.isArray(pkg.customer_ids)) ? pkg.customer_ids : []);
             let count = Array.isArray(ids) ? ids.length : 0;
@@ -327,13 +403,15 @@
         });
     }
 
-    function packagesChart(packages) {
+    function packagesChart(packages, globalFilter) {
         return {
             packages,
+            globalFilter,
             init() {
-                renderChart(this.packages);
-                this.$watch('packages', (v) => renderChart(v));
-                this.$watch('$wire.modalOpen', () => renderChart(this.packages));
+                renderChart(this.packages, this.globalFilter);
+                this.$watch('packages', (v) => renderChart(v, this.globalFilter));
+                this.$watch('globalFilter', (v) => renderChart(this.packages, v));
+                this.$watch('$wire.modalOpen', () => renderChart(this.packages, this.globalFilter));
             }
         };
     }
