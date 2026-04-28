@@ -69,7 +69,8 @@
                         <label for="select-year" class="sr-only">{{ __('Year') }}</label>
                         <div class="inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 px-1 py-0.5 shadow-sm {{ $selectRingClass }} w-full sm:w-auto mt-2 md:mt-0">
                             <i class="fa-solid fa-calendar text-gray-400 text-[10px] mx-2" aria-hidden="true"></i>
-                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-1 pr-3 text-[10px] font-medium text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[70px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select year') }}">
+                            <select id="select-year" wire:model="selectedYear" wire:change="$set('selectedYear', $event.target.value)" class="appearance-none bg-transparent border-0 pl-1 pr-3 text-[10px] font-medium text-gray-700 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none cursor-pointer w-full sm:w-[115px] focus:ring-0 focus:border-0 truncate leading-tight" aria-label="{{ __('Select year') }}">
+                                <option value="all">{{ __('All years') }}</option>
                                 @for($y = date('Y'); $y >= date('Y') - 3; $y--)
                                     <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
@@ -96,7 +97,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 md:p-4 flex-1 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie"></i>{{ __(key: 'Year:') }}<span style="font-weight:600;">{{ $selectedYear ?? date('Y') }}</span>
+                        <i class="fa-solid fa-chart-pie"></i>{{ __(key: 'Year:') }}<span style="font-weight:600;">{{ (string) $selectedYear === 'all' ? __('All years') : ($selectedYear ?? date('Y')) }}</span>
                     </h3>
 
                     <div class="ml-0 sm:ml-2 mt-0 sm:mt-0 flex items-center gap-2">
@@ -283,6 +284,7 @@
                     const yearSelect = document.querySelector('#select-year');
                     const monthSelect = document.querySelector('#select-month');
                     if (!yearSelect || !monthSelect) return;
+                    const selectedYear = String(yearSelect.value || '').toLowerCase();
 
                     if (monthsLoadAbort) {
                         monthsLoadAbort.abort();
@@ -294,6 +296,18 @@
 
                     monthsLoadTimeout = setTimeout(async () => {
                         try {
+                            monthSelect.innerHTML = '<option value="">{{ __('All months') }}</option>';
+
+                            if (selectedYear === 'all') {
+                                for (let m = 1; m <= 12; m++) {
+                                    const option = document.createElement('option');
+                                    option.value = String(m);
+                                    option.textContent = (monthLabelsTranslated[m] ?? String(m));
+                                    monthSelect.appendChild(option);
+                                }
+                                return;
+                            }
+
                                 const params = new URLSearchParams();
                                 params.append('year', yearSelect.value);
                                 const deviceSelect = document.querySelector('#select-device');
@@ -313,8 +327,6 @@
 
                             if (resp.ok) {
                                 const data = await resp.json();
-                                monthSelect.innerHTML = '<option value="">{{ __('All months') }}</option>';
-
                                 if (data.months && Array.isArray(data.months)) {
                                     data.months.forEach(month => {
                                         const option = document.createElement('option');
@@ -589,10 +601,12 @@
 
                     const yearSelect = document.querySelector('#select-year');
                     const monthSelect = document.querySelector('#select-month');
+                    const selectedAllYears = !!yearSelect && String(yearSelect.value || '').toLowerCase() === 'all';
+                    const useAllYears = allYears || selectedAllYears;
 
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
-                    if (allYears) {
+                    if (useAllYears) {
                         params.append('all_years', '1');
                         params.append('year', 'all');
                     } else {
@@ -608,7 +622,7 @@
 
                     let preData = null;
                     try {
-                        if (!allYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                        if (!useAllYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
                             preData = window.__downloadsLatest;
                             console.log('Using cached Livewire payload for PDF export', preData);
                         }
@@ -643,7 +657,7 @@
                     let monthlyData = null;
                     let pieData = null;
                     let chartsByYear = null;
-                    if (!allYears) {
+                    if (!useAllYears) {
                         const monthlyCanvas = document.getElementById('monthlyDownloadsChart');
                         const pieCanvas = document.getElementById('pieDownloadsChart');
                         if (!monthlyCanvas || !pieCanvas) {
@@ -658,7 +672,7 @@
                     }
 
                     let globalBarChart = null;
-                    if (allYears) {
+                    if (useAllYears) {
                         globalBarChart = await buildGlobalYearBarChart(preData);
                     }
 
@@ -676,7 +690,7 @@
                         });
                     }
                     if (globalBarChart) fd.append('chart_global_bar', globalBarChart);
-                    if (allYears) {
+                    if (useAllYears) {
                         fd.append('all_years', '1');
                         fd.append('year', 'all');
                     } else {
@@ -690,7 +704,7 @@
                         has_year: !!yearSelect?.value,
                         has_month: !!monthSelect?.value,
                         has_device_id: !!deviceSelect?.value,
-                        all_years: allYears,
+                        all_years: useAllYears,
                         data_size: JSON.stringify(preData).length,
                         download_rows_count: preData.download_rows?.length || 0,
                     });
@@ -726,9 +740,11 @@
 
                     const yearSelect = document.querySelector('#select-year');
                     const monthSelect = document.querySelector('#select-month');
+                    const selectedAllYears = !!yearSelect && String(yearSelect.value || '').toLowerCase() === 'all';
+                    const useAllYears = allYears || selectedAllYears;
                     const deviceSelect = document.querySelector('#select-device');
                     const params = new URLSearchParams();
-                    if (allYears) {
+                    if (useAllYears) {
                         params.append('all_years', '1');
                         params.append('year', 'all');
                     } else {
@@ -742,7 +758,7 @@
 
                     let preData = null;
                     try {
-                        if (!allYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
+                        if (!useAllYears && window.__downloadsLatest && window.__downloadsLatest.year == (yearSelect?.value || '') && ( (!deviceSelect || !deviceSelect.value) || window.__downloadsLatest.device_id == (deviceSelect?.value || null) )) {
                             preData = window.__downloadsLatest;
                         }
                     } catch (e) { }
@@ -765,22 +781,22 @@
                     let monthlyData = null;
                     let pieData = null;
                     let chartsByYear = null;
-                    if (!allYears && monthlyCanvas) {
+                    if (!useAllYears && monthlyCanvas) {
                         try {
                             monthlyData = monthlyCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture monthly chart'); }
                     }
-                    if (!allYears && pieCanvas) {
+                    if (!useAllYears && pieCanvas) {
                         try {
                             pieData = pieCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture pie chart'); }
                     }
-                    if (allYears) {
+                    if (useAllYears) {
                         chartsByYear = await buildAllYearsCharts(preData);
                     }
 
                     let globalBarChartEmail = null;
-                    if (allYears) {
+                    if (useAllYears) {
                         globalBarChartEmail = await buildGlobalYearBarChart(preData);
                     }
 
@@ -799,7 +815,7 @@
                         });
                     }
                     if (globalBarChartEmail) fd.append('chart_global_bar', globalBarChartEmail);
-                    if (allYears) {
+                    if (useAllYears) {
                         fd.append('all_years', '1');
                         fd.append('year', 'all');
                     } else {

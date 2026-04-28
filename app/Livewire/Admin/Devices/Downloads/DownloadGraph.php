@@ -22,7 +22,9 @@ class DownloadGraph extends Component
 
     public function mount($year = null)
     {
-        $this->selectedYear = $year ? (int) $year : (int) date('Y');
+        $this->selectedYear = $year === null
+            ? 'all'
+            : (strtolower((string) $year) === 'all' ? 'all' : (int) $year);
         try {
             $this->devices = DB::table('devices')
                 ->select('id','name')
@@ -39,9 +41,13 @@ class DownloadGraph extends Component
 
     public function loadData()
     {
+        $isAllYears = $this->isAllYearsSelected();
+
         try {
             $rows = DB::table('downloads')
-                ->where('year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('year', (int) $this->selectedYear);
+                })
                 ->when($this->selectedDevice && $this->selectedDevice !== '', function ($q) {
                     $q->where('device_id', $this->selectedDevice);
                 })
@@ -109,7 +115,9 @@ class DownloadGraph extends Component
         $pieLabels = ['HLS', 'DASH'];
         try {
             $pieRows = DB::table('downloads')
-                ->where('year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('year', (int) $this->selectedYear);
+                })
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
                 ->whereIn('devices.protocol', ['HLS', 'DASH'])
                 ->select('devices.protocol', DB::raw('SUM(downloads.`count`) as total_downloads'))
@@ -137,7 +145,9 @@ class DownloadGraph extends Component
             }
 
             $totalDevicesWithDownloads = DB::table('downloads')
-                ->where('year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('year', (int) $this->selectedYear);
+                })
                 ->select('downloads.device_id', DB::raw('SUM(downloads.count) as total'))
                 ->groupBy('downloads.device_id')
                 ->havingRaw('SUM(downloads.count) > 0')
@@ -159,7 +169,7 @@ class DownloadGraph extends Component
 
         $payload = [
             'data' => $this->monthlyData,
-            'year' => $this->selectedYear,
+            'year' => $isAllYears ? 'all' : (int) $this->selectedYear,
             'kpis' => $this->kpis,
             'pie' => $pie,
             'pieLabels' => $pieLabels,
@@ -185,15 +195,19 @@ class DownloadGraph extends Component
         }
 
         try {
-            $months = [];
+            $monthLabels = [];
             for ($m = 1; $m <= 12; $m++) {
-                $months[] = sprintf('%04d-%02d', $this->selectedYear, $m);
+                $monthLabels[] = $isAllYears
+                    ? date('M', mktime(0, 0, 0, $m, 1))
+                    : date('M Y', mktime(0, 0, 0, $m, 1, (int) $this->selectedYear));
             }
 
             $rows = DB::table('downloads')
                 ->selectRaw('downloads.device_id, downloads.month as month, SUM(downloads.count) as total, devices.name')
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                ->where('downloads.year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('downloads.year', (int) $this->selectedYear);
+                })
                 ->when($this->selectedDevice && $this->selectedDevice !== '', function ($q) {
                     $q->where('downloads.device_id', $this->selectedDevice);
                 })
@@ -222,7 +236,11 @@ class DownloadGraph extends Component
                 $total = array_sum($counts);
                 $avg = count($counts) ? round($total / count($counts), 2) : 0;
                 $topIndex = array_search(max($counts), $counts);
-                $topLabel = $topIndex !== false ? date('M Y', mktime(0,0,0, $topIndex+1, 1, $this->selectedYear)) : null;
+                $topLabel = $topIndex !== false
+                    ? ($isAllYears
+                        ? date('M', mktime(0, 0, 0, $topIndex + 1, 1))
+                        : date('M Y', mktime(0, 0, 0, $topIndex + 1, 1, (int) $this->selectedYear)))
+                    : null;
                 $topValue = $counts[$topIndex] ?? 0;
 
                 $max = max($counts) ?: 1;
@@ -263,7 +281,9 @@ class DownloadGraph extends Component
                     'downloads.created_at',
                 ])
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                ->where('downloads.year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('downloads.year', (int) $this->selectedYear);
+                })
                 ->when($this->selectedDevice && $this->selectedDevice !== '', function ($q) {
                     $q->where('downloads.device_id', $this->selectedDevice);
                 })
@@ -285,7 +305,18 @@ class DownloadGraph extends Component
 
             $payload['download_rows'] = $downloadRows;
             $payload['devices'] = $devicesList;
-            $payload['period_labels'] = array_map(function ($m) { return date('M Y', strtotime($m . '-01')); }, $months);
+            $payload['period_labels'] = $monthLabels;
+
+            if ($isAllYears) {
+                $payload['years'] = collect($downloadRows)
+                    ->pluck('year')
+                    ->filter(fn ($year) => is_numeric($year) && (int) $year > 0)
+                    ->map(fn ($year) => (int) $year)
+                    ->unique()
+                    ->sortDesc()
+                    ->values()
+                    ->toArray();
+            }
 
             $groupedByDevice = [];
             foreach ($devicesList as $dev) {
@@ -333,9 +364,13 @@ class DownloadGraph extends Component
 
     public function loadDeviceData()
     {
+        $isAllYears = $this->isAllYearsSelected();
+
         try {
             $this->monthlyDeviceData = DB::table('downloads')
-                ->where('year', $this->selectedYear)
+                ->when(! $isAllYears, function ($q) {
+                    $q->where('year', (int) $this->selectedYear);
+                })
                 ->join('devices', 'downloads.device_id', '=', 'devices.id')
                 ->select('devices.id as device_id', 'devices.name', DB::raw('SUM(`count`) as total'))
                 ->groupBy('devices.id', 'devices.name')
@@ -354,8 +389,13 @@ class DownloadGraph extends Component
 
     public function updatedSelectedYear($value)
     {
-        $this->selectedYear = (int) $value;
+        $this->selectedYear = strtolower((string) $value) === 'all' ? 'all' : (int) $value;
         $this->loadData();
         $this->loadDeviceData();
+    }
+
+    private function isAllYearsSelected(): bool
+    {
+        return strtolower((string) $this->selectedYear) === 'all';
     }
 }
