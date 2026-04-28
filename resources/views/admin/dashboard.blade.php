@@ -10,7 +10,7 @@
         $fromColor = $area === 'OTT' ? 'from-primary-500' : ($area === 'DTH' ? 'from-secondary-500' : 'from-primary-500');
         $toColor = $area === 'OTT' ? 'to-primary-600' : ($area === 'DTH' ? 'to-secondary-600' : 'to-primary-600');
         $ringColor = $area === 'OTT' ? 'ring-primary-500/20' : ($area === 'DTH' ? 'ring-secondary-500/20' : 'ring-primary-500/20');
-        $bgBadge = $area === 'OTT' ? 'bg-primary-100 dark:bg-primary-900/40' : ($area === 'DTH' ? 'bg-secondary-100 dark:bg-secondary-900/40' : 'bg-primary-100 dark:bg-primary-900/40');
+        $bgBadge = $area === 'OTT' ? 'bg-primary-300 dark:bg-primary-900' : ($area === 'DTH' ? 'bg-secondary-300 dark:bg-secondary-900' : 'bg-primary-300 dark:bg-primary-900');
         $textBadge = $area === 'OTT' ? 'text-primary-700 dark:text-primary-300' : ($area === 'DTH' ? 'text-secondary-700 dark:text-secondary-300' : 'text-primary-700 dark:text-primary-300');
         $iconBg = $area === 'OTT' ? 'bg-primary-50 dark:bg-primary-900/40' : ($area === 'DTH' ? 'bg-secondary-50 dark:bg-secondary-900/40' : 'bg-primary-50 dark:bg-primary-900/40');
         $iconColor = $area === 'OTT' ? 'text-primary-500 dark:text-primary-400' : ($area === 'DTH' ? 'text-secondary-500 dark:text-secondary-400' : 'text-primary-500 dark:text-primary-400');
@@ -32,7 +32,7 @@
                     {{ config('app.name', 'Laravel') }}
                 </h1>
                 <p class="text-gray-600 dark:text-gray-300 text-sm tracking-wide">
-                    {{ __('OTT • DTH Communications System') }}
+                    {{ __('OTT Communications System') }}
                 </p>
             </div>
 
@@ -45,25 +45,47 @@
 
             <div class="my-5 border-t border-gray-200 dark:border-gray-800"></div>
 
-            <div class="relative text-left space-y-4 w-[270px] mx-auto">
-                <div class="flex items-center gap-3">
-                    <span class="flex items-center justify-center w-9 h-9 rounded-lg {{ $iconBg }} shadow-sm">
-                        <i class="fa-solid fa-user {{ $iconColor }}"></i>
+            <div class="relative text-left space-y-4 w-full max-w-sm mx-auto">
+                <div class="flex items-start gap-3">
+                    <span class="flex items-center justify-center w-10 h-9 rounded-lg {{ $iconBg }} shadow-sm">
+                        <i class="fa-solid fa-code {{ $iconColor }}"></i>
                     </span>
-                    <div>
+                    <div class="w-full rounded-lg border border-gray-200/70 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/50 p-3 shadow-sm">
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ __('Developer') }}</p>
-                        <p class="text-gray-900 dark:text-gray-100 font-medium">Edgar Leonel Acevedo Cuevas</p>
+                        <p class="text-gray-900 dark:text-gray-100 font-semibold leading-tight mt-0.5">Departamento de Ingeniería y Tecnología</p>
+                        <ul class="mt-2.5 space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
+                            <li class="flex items-center gap-2">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
+                                <span class="leading-tight">Ing. Edgar Leonel Acevedo Cuevas</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
+                                <span class="leading-tight">Ing. Erasmo Rodriguez Cardiel</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
+                                <span class="leading-tight">Ing. Pamela Marlen Escobedo Ramirez</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
+                                <span class="leading-tight">Ing. Saul Rodriguez de la Rosa</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
+                                <span class="leading-tight">Ing. Juan Pablo Ortega Marquez</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center justify-center w-9 h-9 rounded-lg {{ $iconBg }} shadow-sm">
                         <i class="fa-solid fa-envelope {{ $iconColor }}"></i>
                     </span>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ __('Contact') }}</p>
-                        <a href="mailto:ecuevas@stargroup.com.mx"
-                            class="text-gray-900 dark:text-gray-100 font-medium {{ $hoverColor }}">
-                            ecuevas@stargroup.com.mx
+                        <a href="mailto:atencionott@stargroup.com.mx"
+                            class="text-gray-900 dark:text-gray-100 font-medium {{ $hoverColor }} break-all">
+                            atencionott@stargroup.com.mx
                         </a>
                     </div>
                 </div>

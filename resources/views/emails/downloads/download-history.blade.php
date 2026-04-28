@@ -76,7 +76,7 @@
       <div class="footer">
         <p style="margin:0 0 8px 0; color:#374151; font-size:13px;">
             Cordialmente,<br>
-            Sistema de Comunicaciones OTT • DTH (SCOTT)
+            Sistema de Comunicaciones OTT (SCOTT)
         </p>
       </div>
     </div>
