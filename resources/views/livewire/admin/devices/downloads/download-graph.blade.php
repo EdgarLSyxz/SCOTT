@@ -859,11 +859,11 @@
                         alert('Could not start CSV export.');
                     }
                 }
-                // Dynamic tooltip positioning: keep tooltips within viewport
+
                 function positionTooltipWithinViewport(parent, tooltip) {
                     if (!parent || !tooltip) return;
                     const pad = 8;
-                    // Temporarily make visible to measure
+
                     const prevVisibility = tooltip.style.visibility;
                     const prevDisplay = tooltip.style.display;
                     tooltip.style.visibility = 'hidden';
@@ -873,7 +873,6 @@
                     const tooltipRect = tooltip.getBoundingClientRect();
                     const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
 
-                    // center tooltip above parent by default
                     let desiredLeft = parentRect.left + (parentRect.width / 2) - (tooltipRect.width / 2);
                     const minLeft = pad;
                     const maxLeft = viewportWidth - pad - tooltipRect.width;
@@ -885,7 +884,6 @@
                     tooltip.style.right = 'auto';
                     tooltip.style.transform = 'none';
 
-                    // restore visibility/display
                     tooltip.style.display = prevDisplay || '';
                     tooltip.style.visibility = prevVisibility || '';
                 }
@@ -896,7 +894,6 @@
                         const tooltip = wrap.querySelector('[role="tooltip"]');
                         if (!tooltip) return;
                         function onShow() {
-                            // allow Alpine to toggle visibility first
                             setTimeout(() => positionTooltipWithinViewport(wrap, tooltip), 10);
                         }
                         wrap.addEventListener('mouseenter', onShow);
