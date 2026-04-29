@@ -130,8 +130,8 @@
                                     @endif
                                 </td>
                                 <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                        <x-input type="number" step="0.1" min="0" max="5" inputmode="decimal" :disabled="!$isEditing"
-                                        x-on:input="const m = $event.target.value.match(/^\d*(?:\.\d{0,1})?/); $event.target.value = m ? m[0] : ''"
+                                        <x-input type="text" inputmode="decimal" :disabled="!$isEditing"
+                                        x-on:input="let v = $event.target.value.replace(',', '.').replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); if (i !== -1) { v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); } const m = v.match(/^\d*(?:\.\d{0,1})?/); v = m ? m[0] : ''; if (v !== '' && parseFloat(v) > 5) v = '5'; $event.target.value = v"
                                         wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
                                     class="w-16 sm:w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm disabled:cursor-not-allowed" />
                                 </td>
