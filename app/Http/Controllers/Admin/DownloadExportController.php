@@ -1363,13 +1363,23 @@ class DownloadExportController extends Controller
             $pdfData['logo'] = null;
         }
 
-        $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
-        $dompdf = new \Dompdf\Dompdf();
-        $dompdf->loadHtml($pdfHtml);
-        $dompdf->setPaper('a4', 'portrait');
-        $dompdf->render();
-        $pdfBytes = $dompdf->output();
-        $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+            try {
+                $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
+                $dompdf = new \Dompdf\Dompdf();
+                $dompdf->loadHtml($pdfHtml);
+                $dompdf->setPaper('a4', 'portrait');
+                $dompdf->render();
+                $pdfBytes = $dompdf->output();
+                $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+            } catch (\Throwable $pdfException) {
+                \Log::error('historyEmail: PDF generation failed', [
+                    'error' => $pdfException->getMessage(),
+                    'exception' => get_class($pdfException),
+                    'trace' => $pdfException->getTraceAsString(),
+                ]);
+                $pdfBytes = null;
+                $pdfFilename = null;
+            }
 
         try {
             $spreadsheet = new Spreadsheet();
@@ -1660,7 +1670,15 @@ class DownloadExportController extends Controller
 
             return response()->json(['message' => __('Email sent successfully.')]);
         } catch (\Throwable $e) {
-            \Log::error('historyEmail error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                \Log::error('historyEmail error', [
+                    'error' => $e->getMessage(),
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                    'user_id' => Auth::id(),
+                    'pdf_bytes_null' => $pdfBytes === null,
+                ]);
             try {
                 $csv = fopen('php://temp', 'r+');
                 fputcsv($csv, ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at']);
@@ -1702,8 +1720,17 @@ class DownloadExportController extends Controller
 
                 return response()->json(['message' => __('Email sent with CSV fallback')]);
             } catch (\Throwable $_e) {
-                \Log::error('historyEmail fallback error', ['error' => $_e->getMessage()]);
-                return response()->json(['message' => 'Failed to send email'], 500);
+                    \Log::error('historyEmail fallback error', [
+                        'error' => $_e->getMessage(),
+                        'exception' => get_class($_e),
+                        'file' => $_e->getFile(),
+                        'line' => $_e->getLine(),
+                        'trace' => $_e->getTraceAsString(),
+                    ]);
+                    return response()->json([
+                        'error' => __('Error sending email export'),
+                        'message' => config('app.debug') ? $_e->getMessage() : __('Email export failed. Please try again later.'),
+                    ], 500);
             }
         }
     }
