@@ -1677,12 +1677,14 @@ class DownloadExportController extends Controller
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                     'user_id' => Auth::id(),
-                    'pdf_bytes_null' => $pdfBytes === null,
+                    'pdf_bytes_null' => isset($pdfBytes) ? ($pdfBytes === null) : 'never_initialized',
                 ]);
             try {
                 $csv = fopen('php://temp', 'r+');
                 fputcsv($csv, ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at']);
-                foreach ($pd['download_rows'] ?? [] as $r) {
+                // Use isset to safely handle potentially undefined $pd variable
+                $downloadRows = (isset($pd) && is_array($pd)) ? ($pd['download_rows'] ?? []) : [];
+                foreach ($downloadRows as $r) {
                     fputcsv($csv, [
                         $r['id'] ?? '',
                         $r['device_id'] ?? '',
@@ -1701,15 +1703,19 @@ class DownloadExportController extends Controller
 
                 $filename = 'Download History' . ' - ' . now()->format('Ymd His') . '.csv';
                 $metaFallback = $meta ?? [];
-                Mail::to($auth->email ?? config('mail.from.address'))
+                // Safely pass variables with defaults if undefined
+                $fallbackSubject = isset($subject) ? $subject : __('Download History Export');
+                $fallbackBody = isset($body) ? $body : '';
+                $fallbackMeta = is_array($meta ?? null) ? $meta : [];
+                Mail::to($auth?->email ?? config('mail.from.address'))
                     ->send(new DownloadsExcelMail(
-                        $subject,
-                        $body,
+                        $fallbackSubject,
+                        $fallbackBody,
                         $csvData,
                         $filename,
-                        $metaFallback,
-                        $pdfBytes,
-                        $pdfFilename
+                        $fallbackMeta,
+                        $pdfBytes ?? null,
+                        $pdfFilename ?? null
                     ));
 
                 session()->flash('swal', [
