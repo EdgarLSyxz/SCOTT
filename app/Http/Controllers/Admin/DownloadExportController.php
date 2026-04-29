@@ -1155,6 +1155,7 @@ class DownloadExportController extends Controller
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
+        try {
         $prefetched = $request->input('data');
         if ($prefetched) {
             $pd = is_string($prefetched) ? json_decode($prefetched, true) : $prefetched;
@@ -1331,7 +1332,6 @@ class DownloadExportController extends Controller
             }
         }
 
-        try {
             $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
         $pdfData['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
             $pdfData['download_rows'] ?? [],
