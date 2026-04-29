@@ -52,7 +52,7 @@
                     </span>
                     <div class="w-full rounded-lg border border-gray-200/70 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/50 p-3 shadow-sm">
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ __('Developer') }}</p>
-                        <p class="text-gray-900 dark:text-gray-100 font-semibold leading-tight mt-0.5">Departamento de Ingeniería y Tecnología</p>
+                        <p class="text-gray-900 dark:text-gray-100 font-semibold leading-tight mt-0.5">{{ __('Engineering and Technology Department') }}</p>
                         <ul class="mt-2.5 space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <span class="inline-block w-1.5 h-1.5 rounded-full {{ $bgBadge }}"></span>
