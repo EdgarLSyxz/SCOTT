@@ -1331,7 +1331,8 @@ class DownloadExportController extends Controller
             }
         }
 
-        $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
+        try {
+            $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
         $pdfData['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
             $pdfData['download_rows'] ?? [],
             $pdfData['years'] ?? []
@@ -1348,8 +1349,8 @@ class DownloadExportController extends Controller
             'has_pie_image' => !empty($pdfData['pieImage']),
         ]);
 
-        try {
-            $logoPath = public_path('img/startv-stream-logo.png');
+            try {
+                $logoPath = public_path('img/startv-stream-logo.png');
             if ($logoPath && file_exists($logoPath)) {
                 $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
                 $contents = @file_get_contents($logoPath);
@@ -1359,9 +1360,9 @@ class DownloadExportController extends Controller
             } else {
                 $pdfData['logo'] = null;
             }
-        } catch (\Throwable $_e) {
-            $pdfData['logo'] = null;
-        }
+            } catch (\Throwable $_e) {
+                $pdfData['logo'] = null;
+            }
 
             try {
                 $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
@@ -1381,7 +1382,6 @@ class DownloadExportController extends Controller
                 $pdfFilename = null;
             }
 
-        try {
             $spreadsheet = new Spreadsheet();
             $year = $pd['year'] ?? $request->input('year') ?? date('Y');
 
