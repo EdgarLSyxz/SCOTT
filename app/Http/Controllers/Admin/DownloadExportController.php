@@ -1155,6 +1155,13 @@ class DownloadExportController extends Controller
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
+        $pd = [];
+        $pdfBytes = null;
+        $pdfFilename = null;
+        $subject = __('Download History Export');
+        $body = '';
+        $meta = [];
+
         try {
         $prefetched = $request->input('data');
         if ($prefetched) {
@@ -1364,22 +1371,28 @@ class DownloadExportController extends Controller
                 $pdfData['logo'] = null;
             }
 
-            try {
-                $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
-                $dompdf = new \Dompdf\Dompdf();
-                $dompdf->loadHtml($pdfHtml);
-                $dompdf->setPaper('a4', 'portrait');
-                $dompdf->render();
-                $pdfBytes = $dompdf->output();
-                $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
-            } catch (\Throwable $pdfException) {
-                \Log::error('historyEmail: PDF generation failed', [
-                    'error' => $pdfException->getMessage(),
-                    'exception' => get_class($pdfException),
-                    'trace' => $pdfException->getTraceAsString(),
+            if (! $allYearsMode) {
+                try {
+                    $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
+                    $dompdf = new \Dompdf\Dompdf();
+                    $dompdf->loadHtml($pdfHtml);
+                    $dompdf->setPaper('a4', 'portrait');
+                    $dompdf->render();
+                    $pdfBytes = $dompdf->output();
+                    $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+                } catch (\Throwable $pdfException) {
+                    \Log::error('historyEmail: PDF generation failed', [
+                        'error' => $pdfException->getMessage(),
+                        'exception' => get_class($pdfException),
+                        'trace' => $pdfException->getTraceAsString(),
+                    ]);
+                    $pdfBytes = null;
+                    $pdfFilename = null;
+                }
+            } else {
+                \Log::info('historyEmail: Skipping PDF generation for all-years mode to reduce production load', [
+                    'user_id' => $auth->id,
                 ]);
-                $pdfBytes = null;
-                $pdfFilename = null;
             }
 
             $spreadsheet = new Spreadsheet();
@@ -1682,7 +1695,6 @@ class DownloadExportController extends Controller
             try {
                 $csv = fopen('php://temp', 'r+');
                 fputcsv($csv, ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at']);
-                // Use isset to safely handle potentially undefined $pd variable
                 $downloadRows = (isset($pd) && is_array($pd)) ? ($pd['download_rows'] ?? []) : [];
                 foreach ($downloadRows as $r) {
                     fputcsv($csv, [
@@ -1703,7 +1715,6 @@ class DownloadExportController extends Controller
 
                 $filename = 'Download History' . ' - ' . now()->format('Ymd His') . '.csv';
                 $metaFallback = $meta ?? [];
-                // Safely pass variables with defaults if undefined
                 $fallbackSubject = isset($subject) ? $subject : __('Download History Export');
                 $fallbackBody = isset($body) ? $body : '';
                 $fallbackMeta = is_array($meta ?? null) ? $meta : [];

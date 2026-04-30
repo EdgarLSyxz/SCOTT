@@ -763,7 +763,7 @@
                         }
                     } catch (e) { }
 
-                    if (!preData) {
+                    if (!useAllYears && !preData) {
                         try {
                             const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
                             if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
@@ -791,17 +791,20 @@
                             pieData = pieCanvas.toDataURL('image/png');
                         } catch (e) { console.warn('Could not capture pie chart'); }
                     }
+
                     if (useAllYears) {
-                        chartsByYear = await buildAllYearsCharts(preData);
+                        chartsByYear = null;
                     }
 
                     let globalBarChartEmail = null;
                     if (useAllYears) {
-                        globalBarChartEmail = await buildGlobalYearBarChart(preData);
+                        globalBarChartEmail = null;
                     }
 
                     const fd = new FormData();
-                    fd.append('data', JSON.stringify(preData));
+                    if (!useAllYears && preData) {
+                        fd.append('data', JSON.stringify(preData));
+                    }
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
                     if (pieData) fd.append('charts[pie]', pieData);
                     if (chartsByYear && typeof chartsByYear === 'object') {
@@ -816,6 +819,7 @@
                     }
                     if (globalBarChartEmail) fd.append('chart_global_bar', globalBarChartEmail);
                     if (useAllYears) {
+                        fd.append('lite_mode', '1');
                         fd.append('all_years', '1');
                         fd.append('year', 'all');
                     } else {
