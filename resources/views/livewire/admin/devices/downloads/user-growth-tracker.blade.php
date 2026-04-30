@@ -101,13 +101,6 @@
     </div>
 @endif
 
-@if($records->isEmpty())
-    <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500 px-4 mb-8">
-        <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
-        <p class="text-sm">{{ __('No growth records yet. Add the first one!') }}</p>
-    </div>
-@else
-
     <div class="grid grid-cols-1 xl:grid-cols-5 gap-5 p-4 pb-5">
         <div class="xl:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
@@ -129,9 +122,14 @@
                 @endif
             </div>
 
-            <div class="relative" style="height: 280px;">
+            <div class="relative" style="height: 380px;" wire:ignore>
                 <canvas id="user-growth-chart"></canvas>
             </div>
+            @if($records->isEmpty())
+                <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+                    {{ __('No growth records yet. Add the first one!') }}
+                </p>
+            @endif
             <div class="flex items-center justify-center gap-5 my-1.5">
                 <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                     <span class="inline-block w-5 h-0.5 rounded-full bg-[#1d6fa4]"></span>
@@ -153,7 +151,7 @@
             </div>
             <div class="overflow-y-auto max-h-[340px]">
                 <table class="min-w-full text-sm text-left">
-                    <thead class="dark:bg-gray-600 sticky top-0 z-10">
+                    <thead class="dark:bg-gray-600 bg-white sticky top-0 z-10">
                         <tr>
                             <th class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">
                                 <i class="fa-solid fa-calendar mr-1"></i>
@@ -171,7 +169,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach($records->sortByDesc('recorded_at') as $record)
+                        @forelse($records->sortByDesc('recorded_at') as $record)
                         <tr class="dark:hover:bg-gray-600 transition-colors group">
                             <td class="px-4 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap font-medium text-xs">
                                 {{ $record->recorded_at->format('d-M-Y') }}
@@ -212,17 +210,23 @@
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                                {{ __('No records available yet.') }}
+                            </td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            @if($records->count() >= 2)
             @php
-                $first = $records->first();
-                $last = $records->last();
-                $custGrowth = $last->customers - $first->customers;
-                $devGrowth = $last->devices - $first->devices;
+                $latestTwo = $records->sortByDesc('recorded_at')->take(2)->values();
+                $latest = $latestTwo->get(0);
+                $previous = $latestTwo->get(1);
+                $custGrowth = ($latest && $previous) ? ($latest->customers - $previous->customers) : 0;
+                $devGrowth = ($latest && $previous) ? ($latest->devices - $previous->devices) : 0;
             @endphp
             <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 bg-gray-100 dark:bg-gray-600 grid grid-cols-2 gap-3 mt-auto">
                 <div class="text-center">
@@ -244,10 +248,8 @@
                     </p>
                 </div>
             </div>
-            @endif
         </div>
     </div>
-@endif
 
 </div>
 
