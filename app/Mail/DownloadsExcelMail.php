@@ -17,6 +17,7 @@ class DownloadsExcelMail extends Mailable
     public $meta;
     protected $pdfAttachment;
     protected $pdfFilename;
+    protected $attachmentIsPath;
 
     public function __construct(
         string $subjectText,
@@ -25,7 +26,8 @@ class DownloadsExcelMail extends Mailable
         string $filename,
         array $meta = [],
         ?string $pdfAttachment = null,
-        ?string $pdfFilename = null
+        ?string $pdfFilename = null,
+        bool $attachmentIsPath = false
     )
     {
         $this->subjectText = $subjectText;
@@ -35,6 +37,7 @@ class DownloadsExcelMail extends Mailable
         $this->meta = $meta ?: [];
         $this->pdfAttachment = $pdfAttachment;
         $this->pdfFilename = $pdfFilename;
+        $this->attachmentIsPath = $attachmentIsPath;
     }
 
     public function build()
@@ -51,9 +54,16 @@ class DownloadsExcelMail extends Mailable
                 'device_id' => $this->meta['device_id'] ?? null,
             ]);
 
-        $mail->attachData($this->attachment, $this->filename, [
-            'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+        if ($this->attachmentIsPath) {
+            $mail->attach($this->attachment, [
+                'as' => $this->filename,
+                'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        } else {
+            $mail->attachData($this->attachment, $this->filename, [
+                'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
 
         if ($this->pdfAttachment && $this->pdfFilename) {
             $mail->attachData($this->pdfAttachment, $this->pdfFilename, [

@@ -1161,6 +1161,7 @@ class DownloadExportController extends Controller
         $subject = __('Download History Export');
         $body = '';
         $meta = [];
+        $xlsxTempPath = null;
 
         try {
         $prefetched = $request->input('data');
@@ -1629,9 +1630,11 @@ class DownloadExportController extends Controller
             }
 
             $writer = new Xlsx($spreadsheet);
-            ob_start();
-            $writer->save('php://output');
-            $xlsData = ob_get_clean();
+            $writer->setPreCalculateFormulas(false);
+            $xlsxTempPath = tempnam(sys_get_temp_dir(), 'downloads_xlsx_');
+            $writer->save($xlsxTempPath);
+            $spreadsheet->disconnectWorksheets();
+            unset($writer, $spreadsheet);
 
             $filename = 'Download History - ' . now()->format('Ymd His') . '.xlsx';
 
@@ -1663,12 +1666,18 @@ class DownloadExportController extends Controller
             Mail::to($to)->send(new DownloadsExcelMail(
                 $subject,
                 $body,
-                $xlsData,
+                $xlsxTempPath,
                 $filename,
                 $meta,
                 $pdfBytes,
-                $pdfFilename
+                $pdfFilename,
+                true
             ));
+
+            if ($xlsxTempPath && is_file($xlsxTempPath)) {
+                @unlink($xlsxTempPath);
+                $xlsxTempPath = null;
+            }
 
             session()->flash('swal', [
                 'icon' => 'success',
@@ -1678,6 +1687,10 @@ class DownloadExportController extends Controller
 
             return response()->json(['message' => __('Email sent successfully.')]);
         } catch (\Throwable $e) {
+                if ($xlsxTempPath && is_file($xlsxTempPath)) {
+                    @unlink($xlsxTempPath);
+                    $xlsxTempPath = null;
+                }
                 \Log::error('historyEmail error', [
                     'error' => $e->getMessage(),
                     'exception' => get_class($e),
