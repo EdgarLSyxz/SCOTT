@@ -1371,28 +1371,23 @@ class DownloadExportController extends Controller
                 $pdfData['logo'] = null;
             }
 
-            if (! $allYearsMode) {
-                try {
-                    $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
-                    $dompdf = new \Dompdf\Dompdf();
-                    $dompdf->loadHtml($pdfHtml);
-                    $dompdf->setPaper('a4', 'portrait');
-                    $dompdf->render();
-                    $pdfBytes = $dompdf->output();
-                    $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
-                } catch (\Throwable $pdfException) {
-                    \Log::error('historyEmail: PDF generation failed', [
-                        'error' => $pdfException->getMessage(),
-                        'exception' => get_class($pdfException),
-                        'trace' => $pdfException->getTraceAsString(),
-                    ]);
-                    $pdfBytes = null;
-                    $pdfFilename = null;
-                }
-            } else {
-                \Log::info('historyEmail: Skipping PDF generation for all-years mode to reduce production load', [
-                    'user_id' => $auth->id,
+            try {
+                $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
+                $dompdf = new \Dompdf\Dompdf();
+                $dompdf->loadHtml($pdfHtml);
+                $dompdf->setPaper('a4', 'portrait');
+                $dompdf->render();
+                $pdfBytes = $dompdf->output();
+                $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+            } catch (\Throwable $pdfException) {
+                \Log::error('historyEmail: PDF generation failed', [
+                    'error' => $pdfException->getMessage(),
+                    'exception' => get_class($pdfException),
+                    'trace' => $pdfException->getTraceAsString(),
+                    'all_years_mode' => $allYearsMode,
                 ]);
+                $pdfBytes = null;
+                $pdfFilename = null;
             }
 
             $spreadsheet = new Spreadsheet();
