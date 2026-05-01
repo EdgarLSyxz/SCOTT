@@ -13,7 +13,6 @@ class CompetitorAppRanking extends Component
 {
     public string $snapshotDate;
     public array $rows = [];
-    public bool $isEditing = false;
 
     public ?int $traceAppId = null;
 
@@ -37,30 +36,13 @@ class CompetitorAppRanking extends Component
         $this->loadRowsForDate();
     }
 
-    public function toggleEditMode(): void
-    {
-        $this->isEditing = ! $this->isEditing;
-
-        if (! $this->isEditing) {
-            $this->loadRowsForDate();
-        }
-    }
-
     public function addRow(): void
     {
-        if (! $this->isEditing) {
-            return;
-        }
-
         $this->rows[] = $this->makeEmptyRow();
     }
 
     public function removeDraftRow(int $index): void
     {
-        if (! $this->isEditing) {
-            return;
-        }
-
         if (!isset($this->rows[$index])) {
             return;
         }
@@ -75,10 +57,6 @@ class CompetitorAppRanking extends Component
 
     public function deleteApp(int $index): void
     {
-        if (! $this->isEditing) {
-            return;
-        }
-
         if (!isset($this->rows[$index])) {
             return;
         }
@@ -108,10 +86,6 @@ class CompetitorAppRanking extends Component
 
     public function saveRows(): void
     {
-        if (! $this->isEditing) {
-            return;
-        }
-
         $this->validate([
             'snapshotDate' => 'required|date',
             'rows' => 'required|array|min:1',
@@ -196,10 +170,6 @@ class CompetitorAppRanking extends Component
 
     public function recalculateRanking(): void
     {
-        if (! $this->isEditing) {
-            return;
-        }
-
         $this->validate([
             'snapshotDate' => 'required|date',
         ]);
