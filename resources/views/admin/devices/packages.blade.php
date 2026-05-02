@@ -32,7 +32,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
                         <i class="fa-solid fa-file text-{{ $color }}-400"></i>
-                        <span>{{ __('Upload TXT') }}</span>
+                        <span>{{ __('Upload file') }}</span>
                     </h2>
                 </div>
 
@@ -48,7 +48,7 @@
                             </div>
                             <div>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ __('Drop your TXT here') }}
+                                    {{ __('Drop your file here') }}
                                 </p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                     {{ __('or click to browse') }}
@@ -86,7 +86,7 @@
                     class="w-full mt-6 bg-{{ $color }}-600 hover:bg-{{ $color }}-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     id="submit-btn" disabled>
                     <i class="fa-solid fa-gears text-lg"></i>
-                    <span>{{ __('Process TXT') }}</span>
+                    <span>{{ __('Process file') }}</span>
                 </button>
 
                 <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-4">

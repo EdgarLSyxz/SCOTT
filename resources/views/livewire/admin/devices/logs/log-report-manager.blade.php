@@ -10,7 +10,7 @@
             @csrf
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
-                    <i class="fa-solid fa-file-pdf text-{{ $color }}-400"></i>
+                    <i class="fa-solid fa-file text-{{ $color }}-400"></i>
                     <span>{{ __('Upload file') }}</span>
                 </h2>
             </div>
