@@ -13,6 +13,12 @@
         @if(count($rows) > 0)
             <div class="w-full md:w-auto flex items-end gap-3">
                 <div>
+                    <button type="button" wire:click="openFormModal"
+                        class="w-full sm:w-auto justify-center items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2.5 mr-1 focus:outline-none shadow-xl whitespace-nowrap">
+                        <i class="fa-solid fa-sliders mr-2"></i>{{ __('Manage apps') }}
+                    </button>
+                </div>
+                <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                         <i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Snapshot date') }}
                     </label>
@@ -23,12 +29,11 @@
         @endif
     </div>
 
-    <div class="px-3 sm:px-4 pb-4 mb-1">
+    <div>
         @if(count($rows) === 0)
-            <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500 px-4">
-                <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
+            <div class="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-500 px-4">                <i class="fa-solid fa-chart-line text-4xl mb-3 opacity-30"></i>
                 <p class="text-sm">{{ __('No competitor apps yet. Add the first one to get started.') }}</p>
-                <button type="button" wire:click="addRow"
+                <button type="button" wire:click="openFormModal"
                     class="mt-4 w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                     : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-4 py-2 focus:outline-none shadow-xl">
@@ -36,8 +41,11 @@
                     {{ __('Add app') }}
                 </button>
             </div>
-        @else
-            <div class="w-full rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
+        @endif
+
+        @if($showFormModal)
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-6">
+                <div class="w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700">
                         <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
                             <i class="fa-solid fa-pen-to-square mr-1.5"></i>{{ __('Edit competitor apps') }}
@@ -48,6 +56,10 @@
                                 ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                                 : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-xs px-3 py-1.5 focus:outline-none shadow">
                                 <i class="fa-solid fa-plus mr-1"></i>{{ __('Add app') }}
+                            </button>
+                            <button type="button" wire:click="closeFormModal"
+                                class="justify-center items-center text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 font-medium rounded-lg text-xs px-3 py-1.5 shadow">
+                                <i class="fa-solid fa-xmark mr-1"></i>{{ __('Close') }}
                             </button>
                         </div>
                     </div>
@@ -220,6 +232,7 @@
                     {{ __('Recalculate ranking') }}
                 </button>
             </div>
+                </div>
             </div>
         @endif
     </div>

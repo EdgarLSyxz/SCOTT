@@ -13,7 +13,7 @@ class CompetitorAppRanking extends Component
 {
     public string $snapshotDate;
     public array $rows = [];
-
+    public bool $showFormModal = false;
     public ?int $traceAppId = null;
 
     public function mount(): void
@@ -38,7 +38,28 @@ class CompetitorAppRanking extends Component
 
     public function addRow(): void
     {
+        if (! $this->showFormModal) {
+            $this->showFormModal = true;
+        }
+
         $this->rows[] = $this->makeEmptyRow();
+    }
+
+    public function openFormModal(): void
+    {
+        $this->loadRowsForDate();
+
+        if (count($this->rows) === 0) {
+            $this->rows[] = $this->makeEmptyRow();
+        }
+
+        $this->showFormModal = true;
+    }
+
+    public function closeFormModal(): void
+    {
+        $this->showFormModal = false;
+        $this->loadRowsForDate();
     }
 
     public function removeDraftRow(int $index): void
