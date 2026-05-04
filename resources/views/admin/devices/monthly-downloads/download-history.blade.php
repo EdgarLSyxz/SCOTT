@@ -247,6 +247,7 @@
 
         @if((!empty($is_multi_year) || !empty($month)) && !empty($download_rows))
             @php
+                $isMonthlySingleYearReport = !empty($month) && empty($is_multi_year);
                 $plataformas = [];
                 foreach ($download_rows as $_r) {
                     $_proto = strtoupper(trim((string)($_r['protocol'] ?? '')));
@@ -271,7 +272,7 @@
                 }
             @endphp
             @if(!empty($plataformas))
-            <div class="section" style="page-break-before: always; page-break-inside: avoid;">
+            <div class="section" style="page-break-before: always; page-break-inside: avoid; {{ $isMonthlySingleYearReport ? 'page-break-after: always;' : '' }}">
                 <h3>{{ __('Platforms') }}</h3>
                 <div class="note" style="margin-bottom: 8px;">
                     @if(!empty($platformsMonthLabel))
