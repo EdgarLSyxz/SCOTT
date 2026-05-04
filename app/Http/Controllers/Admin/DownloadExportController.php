@@ -18,9 +18,9 @@ class DownloadExportController extends Controller
 {
     private function getCompetitorRankingForPdf(): array
     {
-        $latestSnapshotDate = CompetitorAppSnapshot::max('snapshot_date');
+        $latestBatchAt = CompetitorAppSnapshot::max('snapshot_batch_at');
 
-        if (!$latestSnapshotDate) {
+        if (!$latestBatchAt) {
             return [
                 'snapshot_date' => null,
                 'rows' => [],
@@ -28,19 +28,10 @@ class DownloadExportController extends Controller
             ];
         }
 
-        $latestBatchAt = CompetitorAppSnapshot::whereDate('snapshot_date', $latestSnapshotDate)
-            ->max('snapshot_batch_at');
-
-        if (!$latestBatchAt) {
-            return [
-                'snapshot_date' => $latestSnapshotDate,
-                'rows' => [],
-                'primary_row' => null,
-            ];
-        }
+        $latestSnapshotDate = CompetitorAppSnapshot::where('snapshot_batch_at', $latestBatchAt)
+            ->value('snapshot_date');
 
         $rows = CompetitorAppSnapshot::with('app')
-            ->whereDate('snapshot_date', $latestSnapshotDate)
             ->where('snapshot_batch_at', $latestBatchAt)
             ->orderByRaw('CASE WHEN rank_position IS NULL THEN 1 ELSE 0 END')
             ->orderBy('rank_position')

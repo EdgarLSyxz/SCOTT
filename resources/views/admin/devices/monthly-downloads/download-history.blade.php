@@ -62,7 +62,8 @@
         .ranking-highlight { background: #f3e8f9; border: 1px solid #e9d5f3; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
         .ranking-highlight-title { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
         .ranking-highlight-value { font-size: 14px; font-weight: 700; color: #6b1d8a; margin-top: 4px; }
-        .ranking-row-primary { background: #f8eefc; }
+        .ranking-row-primary td { background: #f3e5ff; font-weight: 700; }
+        .ranking-row-primary td:first-child { border-left: 4px solid #9F24A5; }
         .trend-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
         .trend-up { background: #d1fae5; color: #065f46; }
         .trend-down { background: #fee2e2; color: #991b1b; }
