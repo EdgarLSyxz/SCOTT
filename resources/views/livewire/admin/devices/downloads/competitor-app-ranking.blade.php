@@ -374,7 +374,7 @@
                 </div>
             </div>
 
-            {{-- <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div class="text-xs font-bold uppercase text-gray-700 dark:text-gray-200">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>
@@ -436,7 +436,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div> --}}
+            </div>
         </div>
     @endif
 </div>
