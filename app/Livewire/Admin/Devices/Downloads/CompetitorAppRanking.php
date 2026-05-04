@@ -112,7 +112,9 @@ class CompetitorAppRanking extends Component
             'rows' => 'required|array|min:1',
         ]);
 
-        DB::transaction(function () {
+        $snapshotBatchAt = now()->format('Y-m-d H:i:s');
+
+        DB::transaction(function () use ($snapshotBatchAt) {
             foreach ($this->rows as $index => $row) {
                 $this->validate([
                     "rows.$index.name" => [
@@ -160,26 +162,20 @@ class CompetitorAppRanking extends Component
                     || !empty($row['release_date']);
 
                 if ($hasSnapshotData) {
-                    CompetitorAppSnapshot::updateOrCreate(
-                        [
-                            'competitor_app_id' => $app->id,
-                            'snapshot_date' => $this->snapshotDate,
-                        ],
-                        [
-                            'rating' => $row['rating'] !== null && $row['rating'] !== '' ? (float) $row['rating'] : 0,
-                            'downloads_label' => !empty($row['downloads_label']) ? trim((string) $row['downloads_label']) : null,
-                            'reviews_label' => !empty($row['reviews_label']) ? trim((string) $row['reviews_label']) : null,
-                            'release_date' => $row['release_date'] ?: null,
-                        ]
-                    );
-                } else {
-                    CompetitorAppSnapshot::where('competitor_app_id', $app->id)
-                        ->whereDate('snapshot_date', $this->snapshotDate)
-                        ->delete();
+                    CompetitorAppSnapshot::create([
+                        'competitor_app_id' => $app->id,
+                        'snapshot_date' => $this->snapshotDate,
+                        'snapshot_batch_at' => $snapshotBatchAt,
+                        'rating' => $row['rating'] !== null && $row['rating'] !== '' ? (float) $row['rating'] : 0,
+                        'downloads_label' => !empty($row['downloads_label']) ? trim((string) $row['downloads_label']) : null,
+                        'reviews_label' => !empty($row['reviews_label']) ? trim((string) $row['reviews_label']) : null,
+                        'release_date' => $row['release_date'] ?: null,
+                    ]);
                 }
             }
         });
 
+        $this->recalculateRanking();
         $this->loadRowsForDate();
 
         $this->dispatch('swal', [
@@ -195,7 +191,8 @@ class CompetitorAppRanking extends Component
             'snapshotDate' => 'required|date',
         ]);
 
-        $hasSnapshots = CompetitorAppSnapshot::whereDate('snapshot_date', $this->snapshotDate)->exists();
+        $latestBatchAt = $this->getLatestBatchTimestampForDate($this->snapshotDate);
+        $hasSnapshots = !empty($latestBatchAt);
 
         if (! $hasSnapshots) {
             $this->dispatch('swal', [
@@ -207,7 +204,7 @@ class CompetitorAppRanking extends Component
             return;
         }
 
-        $this->recalculateRankingForDate($this->snapshotDate);
+        $this->recalculateRankingForBatch($this->snapshotDate, $latestBatchAt);
         $this->loadRowsForDate();
 
         $this->dispatch('swal', [
@@ -217,10 +214,11 @@ class CompetitorAppRanking extends Component
         ]);
     }
 
-    private function recalculateRankingForDate(string $date): void
+    private function recalculateRankingForBatch(string $date, string $snapshotBatchAt): void
     {
         $snapshots = CompetitorAppSnapshot::with('app')
             ->whereDate('snapshot_date', $date)
+            ->where('snapshot_batch_at', $snapshotBatchAt)
             ->orderByRaw('rating DESC, (SELECT name FROM competitor_apps WHERE id = competitor_app_snapshots.competitor_app_id) ASC')
             ->get();
 
@@ -229,8 +227,8 @@ class CompetitorAppRanking extends Component
         foreach ($snapshots as $snapshot) {
             /** @var CompetitorAppSnapshot $snapshot */
             $previous = CompetitorAppSnapshot::where('competitor_app_id', $snapshot->competitor_app_id)
-                ->whereDate('snapshot_date', '<', $date)
-                ->orderByDesc('snapshot_date')
+                ->where('snapshot_batch_at', '<', $snapshotBatchAt)
+                ->orderByDesc('snapshot_batch_at')
                 ->first();
 
             $previousRank = $previous?->rank_position;
@@ -259,13 +257,20 @@ class CompetitorAppRanking extends Component
 
     private function loadRowsForDate(): void
     {
+        $latestBatchAt = $this->getLatestBatchTimestampForDate($this->snapshotDate);
+
         $apps = CompetitorApp::where('is_active', true)
             ->orderByDesc('is_primary')
             ->orderBy('name')
             ->get();
 
-        $this->rows = $apps->map(function (CompetitorApp $app) {
-            $snapshot = $app->snapshots()->whereDate('snapshot_date', $this->snapshotDate)->first();
+        $this->rows = $apps->map(function (CompetitorApp $app) use ($latestBatchAt) {
+            $snapshot = $app->snapshots()
+                ->whereDate('snapshot_date', $this->snapshotDate)
+                ->when($latestBatchAt, function ($query) use ($latestBatchAt) {
+                    $query->where('snapshot_batch_at', $latestBatchAt);
+                })
+                ->first();
 
             return [
                 'competitor_app_id' => $app->id,
@@ -283,6 +288,11 @@ class CompetitorAppRanking extends Component
                 'movement' => $snapshot?->movement,
             ];
         })->toArray();
+    }
+
+    private function getLatestBatchTimestampForDate(string $date): ?string
+    {
+        return CompetitorAppSnapshot::whereDate('snapshot_date', $date)->max('snapshot_batch_at');
     }
 
     private function makeEmptyRow(): array
@@ -304,8 +314,15 @@ class CompetitorAppRanking extends Component
 
     public function render()
     {
+        $latestBatchAt = $this->getLatestBatchTimestampForDate($this->snapshotDate);
+
         $currentSnapshot = CompetitorAppSnapshot::with('app')
             ->whereDate('snapshot_date', $this->snapshotDate)
+            ->when($latestBatchAt, function ($query) use ($latestBatchAt) {
+                $query->where('snapshot_batch_at', $latestBatchAt);
+            }, function ($query) {
+                $query->whereRaw('1 = 0');
+            })
             ->orderBy('rank_position')
             ->get();
 
@@ -336,8 +353,14 @@ class CompetitorAppRanking extends Component
     public static function getCompetitorRankingForDate(string $date): array
     {
         try {
+            $latestBatchAt = CompetitorAppSnapshot::whereDate('snapshot_date', $date)->max('snapshot_batch_at');
+            if (!$latestBatchAt) {
+                return [];
+            }
+
             $snapshots = CompetitorAppSnapshot::with('app')
                 ->whereDate('snapshot_date', $date)
+                ->where('snapshot_batch_at', $latestBatchAt)
                 ->orderBy('rank_position')
                 ->take(10)
                 ->get()

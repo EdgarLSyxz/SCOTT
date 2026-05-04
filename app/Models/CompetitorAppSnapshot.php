@@ -13,6 +13,7 @@ class CompetitorAppSnapshot extends Model
     protected $fillable = [
         'competitor_app_id',
         'snapshot_date',
+        'snapshot_batch_at',
         'rating',
         'downloads_label',
         'reviews_label',
@@ -24,6 +25,7 @@ class CompetitorAppSnapshot extends Model
 
     protected $casts = [
         'snapshot_date' => 'date',
+        'snapshot_batch_at' => 'datetime',
         'release_date' => 'date',
         'rating' => 'decimal:2',
         'rank_position' => 'integer',

@@ -44,194 +44,204 @@
         @endif
 
         @if($showFormModal)
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-6">
-                <div class="w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700">
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                            <i class="fa-solid fa-pen-to-square mr-1.5"></i>{{ __('Edit competitor apps') }}
-                        </p>
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6">
+                <div class="w-full max-w-7xl max-h-[92vh] flex flex-col rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
+
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                <i class="fa-solid fa-pen-to-square mr-1.5"></i>{{ __('Edit competitor apps') }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                <i class="fa-regular fa-calendar mr-1"></i>{{ __('Snapshot date') }}:
+                                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ \Carbon\Carbon::parse($snapshotDate)->format('d M Y') }}</span>
+                            </p>
+                        </div>
                         <div class="flex items-center gap-2">
                             <button type="button" wire:click="addRow"
-                                class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
+                                class="inline-flex items-center text-white {{ Auth::user()?->area === 'DTH'
                                 ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                                 : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-xs px-3 py-1.5 focus:outline-none shadow">
-                                <i class="fa-solid fa-plus mr-1"></i>{{ __('Add app') }}
+                                <i class="fa-solid fa-plus mr-1.5"></i>{{ __('Add app') }}
                             </button>
                             <button type="button" wire:click="closeFormModal"
-                                class="justify-center items-center text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 font-medium rounded-lg text-xs px-3 py-1.5 shadow">
-                                <i class="fa-solid fa-xmark mr-1"></i>{{ __('Close') }}
+                                class="inline-flex items-center text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 font-medium rounded-lg text-xs px-3 py-1.5 shadow">
+                                <i class="fa-solid fa-xmark mr-1.5"></i>{{ __('Close') }}
                             </button>
                         </div>
                     </div>
 
-            <div class="overflow-x-auto bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-600">
-                <table class="min-w-[980px] w-full text-xs sm:text-sm text-left text-gray-600 dark:text-gray-300">
-                    <thead class="text-xs uppercase text-gray-600 dark:text-white bg-gray-50 dark:bg-gray-600">
-                        <tr>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Release date') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-link mr-1.5"></i>{{ __('Store link') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-arrow-up-right-dots mr-1.5"></i>{{ __('Movement') }}</th>
-                            <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @php
-                            $orderedRows = collect($rows)
-                                ->map(function ($row, $index) {
-                                    $name = trim((string) ($row['name'] ?? ''));
-                                    $normalizedName = \Illuminate\Support\Str::lower($name);
+                    <div class="overflow-auto flex-1">
+                        <table class="min-w-[980px] w-full text-xs sm:text-sm text-left text-gray-600 dark:text-gray-300">
+                            <thead class="text-xs uppercase text-gray-600 dark:text-white bg-gray-50 dark:bg-gray-600 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-download mr-1.5"></i>{{ __('Downloads') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-comments mr-1.5"></i>{{ __('Reviews') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-regular fa-calendar mr-1.5"></i>{{ __('Release date') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-link mr-1.5"></i>{{ __('Store link') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-arrow-up-right-dots mr-1.5"></i>{{ __('Movement') }}</th>
+                                    <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                @php
+                                    $orderedRows = collect($rows)
+                                        ->map(function ($row, $index) {
+                                            $name = trim((string) ($row['name'] ?? ''));
+                                            $normalizedName = \Illuminate\Support\Str::lower($name);
 
-                                    return [
-                                        'index' => $index,
-                                        'row' => $row,
-                                        'normalized_name' => $normalizedName,
-                                        'is_primary_name' => $normalizedName === 'startv stream',
-                                        'is_empty_name' => $normalizedName === '',
-                                    ];
-                                })
-                                ->sort(function ($a, $b) {
-                                    if ($a['is_primary_name'] !== $b['is_primary_name']) {
-                                        return $a['is_primary_name'] ? -1 : 1;
-                                    }
+                                            return [
+                                                'index' => $index,
+                                                'row' => $row,
+                                                'normalized_name' => $normalizedName,
+                                                'is_primary_name' => $normalizedName === 'startv stream',
+                                                'is_empty_name' => $normalizedName === '',
+                                            ];
+                                        })
+                                        ->sort(function ($a, $b) {
+                                            if ($a['is_primary_name'] !== $b['is_primary_name']) {
+                                                return $a['is_primary_name'] ? -1 : 1;
+                                            }
 
-                                    if ($a['is_empty_name'] !== $b['is_empty_name']) {
-                                        return $a['is_empty_name'] ? 1 : -1;
-                                    }
+                                            if ($a['is_empty_name'] !== $b['is_empty_name']) {
+                                                return $a['is_empty_name'] ? 1 : -1;
+                                            }
 
-                                    $nameCompare = strcmp($a['normalized_name'], $b['normalized_name']);
-                                    if ($nameCompare !== 0) {
-                                        return $nameCompare;
-                                    }
+                                            $nameCompare = strcmp($a['normalized_name'], $b['normalized_name']);
+                                            if ($nameCompare !== 0) {
+                                                return $nameCompare;
+                                            }
 
-                                    return $a['index'] <=> $b['index'];
-                                })
-                                ->values();
-                        @endphp
+                                            return $a['index'] <=> $b['index'];
+                                        })
+                                        ->values();
+                                @endphp
 
-                        @foreach($orderedRows as $orderedRow)
-                            @php
-                                $index = $orderedRow['index'];
-                                $row = $orderedRow['row'];
-                            @endphp
-                            <tr class="bg-white dark:bg-gray-800 dark:hover:bg-gray-600">
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                                    @if(empty($row['competitor_app_id']))
-                                        <div>
-                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.name" placeholder="{{ __('Example: StarTV Stream') }}"
-                                                class="min-w-[180px] w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
-                                            @error("rows.$index.name")
-                                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    @else
-                                        {{ $row['name'] }}
-                                    @endif
-                                    @if($row['is_primary'])
-                                        <span class="ml-2 inline-flex items-center bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2 py-1.5 rounded-full text-[10px] font-bold text-center">
-                                            <i class="fa-solid fa-crown"></i>
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                        <x-input type="text" inputmode="decimal"
-                                        x-on:input="let v = $event.target.value.replace(',', '.').replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); if (i !== -1) { v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); } const m = v.match(/^\d*(?:\.\d{0,1})?/); v = m ? m[0] : ''; if (v !== '' && parseFloat(v) > 5) v = '5'; $event.target.value = v"
-                                        wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
-                                    class="w-16 sm:w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.downloads_label" placeholder="{{ __('50 K +') }}"
-                                    class="w-24 sm:w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.reviews_label" placeholder="{{ __('248') }}"
-                                    class="w-20 sm:w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                    <x-input type="date" wire:model.defer="rows.{{ $index }}.release_date"
-                                    class="w-[132px] sm:w-auto rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3">
-                                    <x-input type="url" wire:model.defer="rows.{{ $index }}.store_url" placeholder="{{ __('Enter the store link') }}"
-                                    class="w-28 sm:w-40 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm" />
-                                    <x-input type="hidden" wire:model.defer="rows.{{ $index }}.competitor_app_id" />
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center uppercase">
+                                @foreach($orderedRows as $orderedRow)
                                     @php
-                                        $movement = $row['movement'] ?? null;
-                                        $delta = (int) ($row['rank_delta'] ?? 0);
+                                        $index = $orderedRow['index'];
+                                        $row = $orderedRow['row'];
+                                        $isDraft = empty($row['competitor_app_id']);
                                     @endphp
-                                    @if($movement === 'up')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-                                            <i class="fa-solid fa-arrow-up mr-1"></i>
-                                            +{{ abs($delta) }}
-                                        </span>
-                                    @elseif($movement === 'down')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold">
-                                            <i class="fa-solid fa-arrow-down mr-1"></i>
-                                            {{ $delta }}
-                                        </span>
-                                    @elseif($movement === 'same')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold">
-                                            <i class="fa-solid fa-minus mr-1"></i>
-                                            {{ __('Stayed the same') }}
-                                        </span>
-                                    @elseif($movement === 'new')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-400 text-xs font-semibold">
-                                            <i class="fa-solid fa-star mr-1"></i>
-                                            {{ __('New') }}
-                                        </span>
-                                    @else
-                                        <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
-                                    @endif
-                                </td>
-                                <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                    @if(empty($row['competitor_app_id']))
-                                        <button type="button" wire:click="removeDraftRow({{ $index }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            >
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    @else
-                                        <button type="button"
-                                            x-on:click="Swal.fire({
-                                                title: '{{ addslashes(__('Delete app')) }}',
-                                                text: '{{ addslashes(__('Are you sure you want to delete this app and all its history? This action cannot be undone.')) }}',
-                                                icon: 'warning',
-                                                showCancelButton: true,
-                                                confirmButtonColor: '#ef4444',
-                                                cancelButtonColor: '#6b7280',
-                                                confirmButtonText: '{{ addslashes(__('Yes, delete')) }}',
-                                                cancelButtonText: '{{ addslashes(__('Cancel')) }}',
-                                            }).then(result => { if (result.isConfirmed) $wire.deleteApp({{ $index }}) })"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-500 dark:hover:text-red-400">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                    <tr class="{{ $isDraft ? 'bg-blue-50 dark:bg-blue-900/10 border-l-2 border-blue-400 dark:border-blue-500' : 'bg-white dark:bg-gray-800' }} hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors">
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                            @if(empty($row['competitor_app_id']))
+                                                <div>
+                                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.name" placeholder="{{ __('Example: StarTV Stream') }}"
+                                                        class="min-w-[180px] w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
+                                                    @error("rows.$index.name")
+                                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @else
+                                                {{ $row['name'] }}
+                                            @endif
+                                            @if($row['is_primary'])
+                                                <span class="ml-2 inline-flex items-center bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2 py-1.5 rounded-full text-[10px] font-bold text-center">
+                                                    <i class="fa-solid fa-crown"></i>
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                                <x-input type="text" inputmode="decimal"
+                                                x-on:input="let v = $event.target.value.replace(',', '.').replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); if (i !== -1) { v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); } const m = v.match(/^\d*(?:\.\d{0,1})?/); v = m ? m[0] : ''; if (v !== '' && parseFloat(v) > 5) v = '5'; $event.target.value = v"
+                                                wire:model.defer="rows.{{ $index }}.rating" placeholder="{{ __('5 ☆') }}"
+                                            class="w-16 sm:w-20 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                                    <x-input type="text" wire:model.defer="rows.{{ $index }}.downloads_label" placeholder="{{ __('50 K +') }}"
+                                            class="w-24 sm:w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                            <x-input type="text" wire:model.defer="rows.{{ $index }}.reviews_label" placeholder="{{ __('248') }}"
+                                            class="w-20 sm:w-24 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-sm" />
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                            <x-input type="date" wire:model.defer="rows.{{ $index }}.release_date"
+                                            class="w-[132px] sm:w-auto rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" />
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3">
+                                            <x-input type="url" wire:model.defer="rows.{{ $index }}.store_url" placeholder="{{ __('Enter the store link') }}"
+                                            class="w-28 sm:w-40 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-left text-sm" />
+                                            <x-input type="hidden" wire:model.defer="rows.{{ $index }}.competitor_app_id" />
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center uppercase">
+                                            @php
+                                                $movement = $row['movement'] ?? null;
+                                                $delta = (int) ($row['rank_delta'] ?? 0);
+                                            @endphp
+                                            @if($movement === 'up')
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                                                    <i class="fa-solid fa-arrow-up mr-1"></i>
+                                                    +{{ abs($delta) }}
+                                                </span>
+                                            @elseif($movement === 'down')
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold">
+                                                    <i class="fa-solid fa-arrow-down mr-1"></i>
+                                                    {{ $delta }}
+                                                </span>
+                                            @elseif($movement === 'same')
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold">
+                                                    <i class="fa-solid fa-minus mr-1"></i>
+                                                    {{ __('Stayed the same') }}
+                                                </span>
+                                            @elseif($movement === 'new')
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-400 text-xs font-semibold">
+                                                    <i class="fa-solid fa-star mr-1"></i>
+                                                    {{ __('New') }}
+                                                </span>
+                                            @else
+                                                <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                            @if(empty($row['competitor_app_id']))
+                                                <button type="button" wire:click="removeDraftRow({{ $index }})"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    >
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @else
+                                                <button type="button"
+                                                    x-on:click="Swal.fire({
+                                                        title: '{{ addslashes(__('Delete app')) }}',
+                                                        text: '{{ addslashes(__('Are you sure you want to delete this app and all its history? This action cannot be undone.')) }}',
+                                                        icon: 'warning',
+                                                        showCancelButton: true,
+                                                        confirmButtonColor: '#ef4444',
+                                                        cancelButtonColor: '#6b7280',
+                                                        confirmButtonText: '{{ addslashes(__('Yes, delete')) }}',
+                                                        cancelButtonText: '{{ addslashes(__('Cancel')) }}',
+                                                    }).then(result => { if (result.isConfirmed) $wire.deleteApp({{ $index }}) })"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-500 dark:hover:text-red-400">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
 
-            <div class="mt-5 flex flex-col sm:flex-row justify-end gap-3">
-                <button type="button" wire:click="saveRows"
-                    class="w-full sm:w-auto justify-center items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i>
-                    {{ __('Save') }}
-                </button>
-                <button type="button" wire:click="recalculateRanking"
-                    class="w-full sm:w-auto justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
-                    ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
-                    <i class="fa-solid fa-arrows-rotate mr-1"></i>
-                    {{ __('Recalculate ranking') }}
-                </button>
-            </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/60 rounded-b-xl flex-shrink-0">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
+                            <i class="fa-solid fa-circle-info mr-1"></i>{{ __('After saving, recalculate the ranking to update positions.') }}
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <button type="button" wire:click="saveRows"
+                                class="inline-flex items-center justify-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow">
+                                <i class="fa-solid fa-floppy-disk mr-1.5"></i>{{ __('Save') }}
+                            </button>
+                            <button type="button" wire:click="recalculateRanking"
+                                class="inline-flex items-center justify-center text-white {{ Auth::user()?->area === 'DTH'
+                                ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                                : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow">
+                                <i class="fa-solid fa-arrows-rotate mr-1.5"></i>{{ __('Recalculate ranking') }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endif
@@ -351,7 +361,7 @@
                                                 class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold text-white {{ Auth::user()?->area === 'DTH'
                                                 ? 'bg-secondary-700 hover:bg-secondary-800 dark:bg-secondary-600 dark:hover:bg-secondary-700'
                                                 : 'bg-primary-700 hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-700' }}">
-                                                <i class="fa-solid fa-up-right-from-square mr-1"></i>{{ __('View') }}
+                                                <i class="fa-solid fa-up-right-from-square mr-1"></i>{{ __('View store') }}
                                             </a>
                                         @else
                                             <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
