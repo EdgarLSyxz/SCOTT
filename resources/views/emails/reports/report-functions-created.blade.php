@@ -244,7 +244,7 @@
         @endforeach
 
         <div class="footer">
-            <p class="footer-subtitle">{{ __('SCOTT • OTT Communications System') }}</p>
+            <p class="footer-subtitle">{{ __('SCOTT • OTT •  DTH Communications System') }}</p>
         </div>
     </div>
 </body>

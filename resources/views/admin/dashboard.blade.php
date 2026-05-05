@@ -32,7 +32,7 @@
                     {{ config('app.name', 'Laravel') }}
                 </h1>
                 <p class="text-gray-600 dark:text-gray-300 text-sm tracking-wide">
-                    {{ __('OTT Communications System') }}
+                    {{ __('OTT •  DTH Communications System') }}
                 </p>
             </div>
 

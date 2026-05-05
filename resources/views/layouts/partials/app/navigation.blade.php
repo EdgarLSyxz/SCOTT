@@ -26,7 +26,7 @@
             </a>
 
             <span class="hidden sm:inline text-xs font-normal text-gray-500 dark:text-gray-400 ml-2">
-                {{ __('OTT Communications System') }}
+                {{ __('OTT •  DTH Communications System') }}
             </span>
         </div>
 

@@ -12,7 +12,7 @@
     <div class="flex flex-col text-left ms-2">
         {{ config('app.name', 'Laravel') }}
         <span class="text-sm font-normal text-gray-600 dark:text-gray-400">
-            {{ __('OTT Communications System') }}
+            {{ __('OTT •  DTH Communications System') }}
         </span>
     </div>
 </a>
