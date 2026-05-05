@@ -144,6 +144,7 @@ use App\Enums\ChannelOrigin;
                     <select id="audio_spanish_enabled" wire:model="audio_spanish_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
                         ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
                         : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
                         <option value="">{{ __('Not specified') }}</option>
                         <option value="1">{{ __('Active') }}</option>
                         <option value="0">{{ __('Inactive') }}</option>
@@ -157,6 +158,7 @@ use App\Enums\ChannelOrigin;
                     <select id="audio_english_enabled" wire:model="audio_english_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
                         ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
                         : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
                         <option value="">{{ __('Not specified') }}</option>
                         <option value="1">{{ __('Active') }}</option>
                         <option value="0">{{ __('Inactive') }}</option>
@@ -170,6 +172,7 @@ use App\Enums\ChannelOrigin;
                     <select id="subtitles_enabled" wire:model="subtitles_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
                         ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
                         : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
                         <option value="">{{ __('Not specified') }}</option>
                         <option value="1">{{ __('Active') }}</option>
                         <option value="0">{{ __('Inactive') }}</option>

@@ -187,19 +187,19 @@ use App\Enums\ChannelOrigin;
                         <x-label for="profile_high" class="text-sm"><i
                                 class="fa-solid fa-arrow-up mr-1"></i>{{ __('High') }}</x-label>
                         <x-input id="profile_high" type="number" step="0.1" min="0" wire:model="profiles.high"
-                            placeholder="{{ __('ex. 6') }}" />
+                            placeholder="{{ __('Ex. 6') }}" />
                     </div>
                     <div>
                         <x-label for="profile_medium" class="text-sm"><i
                                 class="fa-solid fa-arrows-left-right mr-1"></i>{{ __('Medium') }}</x-label>
                         <x-input id="profile_medium" type="number" step="0.1" min="0" wire:model="profiles.medium"
-                            placeholder="{{ __('ex. 3') }}" />
+                            placeholder="{{ __('Ex. 3') }}" />
                     </div>
                     <div>
                         <x-label for="profile_low" class="text-sm"><i
                                 class="fa-solid fa-arrow-down mr-1"></i>{{ __('Low') }}</x-label>
                         <x-input id="profile_low" type="number" step="0.1" min="0" wire:model="profiles.low"
-                            placeholder="{{ __('ex. 1.5') }}" />
+                            placeholder="{{ __('Ex. 1.5') }}" />
                     </div>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
