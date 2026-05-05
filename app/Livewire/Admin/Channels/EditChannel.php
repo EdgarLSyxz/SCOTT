@@ -21,6 +21,9 @@ class EditChannel extends Component
     public $image_url;
     public $new_image;
     public $area;
+    public $audio_spanish_enabled;
+    public $audio_english_enabled;
+    public $subtitles_enabled;
     public $profiles = [];
 
     public function boot()
@@ -55,6 +58,9 @@ class EditChannel extends Component
         $this->status = $channel->status;
         $this->image_url = $channel->image_url;
         $this->area = $channel->area;
+        $this->audio_spanish_enabled = $channel->audio_spanish_enabled;
+        $this->audio_english_enabled = $channel->audio_english_enabled;
+        $this->subtitles_enabled = $channel->subtitles_enabled;
         $this->profiles = $channel->profiles ?? [];
     }
 
@@ -67,6 +73,9 @@ class EditChannel extends Component
             'area' => 'required|string|in:OTT,DTH,DTH/OTT',
             'url' => 'nullable',
             'category' => 'required|string',
+            'audio_spanish_enabled' => 'nullable|boolean',
+            'audio_english_enabled' => 'nullable|boolean',
+            'subtitles_enabled' => 'nullable|boolean',
             'status' => 'required|numeric',
             'new_image' => 'nullable|image',
             'profiles' => 'nullable|array',
@@ -79,6 +88,9 @@ class EditChannel extends Component
             'name' => __('channel name'),
             'url' => __('channel URL'),
             'category' => __('channel category'),
+            'audio_spanish_enabled' => __('Spanish audio'),
+            'audio_english_enabled' => __('English audio'),
+            'subtitles_enabled' => __('Subtitles'),
             'status' => __('channel status'),
             'new_image' => __('new channel image'),
         ]);
@@ -99,6 +111,9 @@ class EditChannel extends Component
             'name' => $this->name,
             'url' => $this->url,
             'category' => $this->category,
+            'audio_spanish_enabled' => $this->audio_spanish_enabled,
+            'audio_english_enabled' => $this->audio_english_enabled,
+            'subtitles_enabled' => $this->subtitles_enabled,
             'status' => $this->status,
             'image_url' => $this->image_url,
             'profiles' => $this->profiles ?: null

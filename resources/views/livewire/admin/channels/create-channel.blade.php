@@ -93,8 +93,8 @@ use App\Enums\ChannelOrigin;
                         {{ __('Area') }}
                     </x-label>
                     <select id="area" wire:model="area" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
-    ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
-    : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         required>
                         <option value="" disabled>{{ __('Select area') }}</option>
                         <option value="DTH">{{ __('DTH') }}</option>
@@ -107,10 +107,9 @@ use App\Enums\ChannelOrigin;
                         <i class="fa-solid fa-list mr-1"></i>
                         {{ __('Category') }}
                     </x-label>
-                    <select id="category" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                            {{ Auth::user()?->area === 'DTH'
-    ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
-    : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                    <select id="category" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         wire:model="category" required>
                         <option value="" disabled>{{ __('Select category') }}</option>
                         @foreach (ChannelCategory::cases() as $category)
@@ -123,15 +122,58 @@ use App\Enums\ChannelOrigin;
                         <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i>
                         {{ __('Origin') }}
                     </x-label>
-                    <select id="origin" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                            {{ Auth::user()?->area === 'DTH'
-    ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
-    : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                    <select id="origin" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         wire:model="origin" required>
                         <option value="" selected disabled>{{ __('Select origin') }}</option>
                         @foreach (ChannelOrigin::cases() as $origin)
                             <option value="{{ $origin->value }}">{{ $origin->value }}</option>
                         @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                    <x-label for="audio_spanish_enabled">
+                        <i class="fa-solid fa-language mr-1"></i>
+                        {{ __('Spanish audio') }}
+                    </x-label>
+                    <select id="audio_spanish_enabled" wire:model="audio_spanish_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
+                        <option value="">{{ __('Not specified') }}</option>
+                        <option value="1">{{ __('Active') }}</option>
+                        <option value="0">{{ __('Inactive') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <x-label for="audio_english_enabled">
+                        <i class="fa-solid fa-language mr-1"></i>
+                        {{ __('English audio') }}
+                    </x-label>
+                    <select id="audio_english_enabled" wire:model="audio_english_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
+                        <option value="">{{ __('Not specified') }}</option>
+                        <option value="1">{{ __('Active') }}</option>
+                        <option value="0">{{ __('Inactive') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <x-label for="subtitles_enabled">
+                        <i class="fa-solid fa-closed-captioning mr-1"></i>
+                        {{ __('Subtitles') }}
+                    </x-label>
+                    <select id="subtitles_enabled" wire:model="subtitles_enabled" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
+                        ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                        <option value="" disabled>{{ __('Select an option') }}</option>
+                        <option value="">{{ __('Not specified') }}</option>
+                        <option value="1">{{ __('Active') }}</option>
+                        <option value="0">{{ __('Inactive') }}</option>
                     </select>
                 </div>
             </div>
@@ -169,8 +211,7 @@ use App\Enums\ChannelOrigin;
                     <i class="fa-solid fa-toggle-on mr-1"></i>
                     {{ __('Status') }}
                 </x-label>
-                <select id="status" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                        {{ Auth::user()?->area === 'DTH'
+                <select id="status" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()?->area === 'DTH'
                     ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
                     : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                     wire:model="status" required>

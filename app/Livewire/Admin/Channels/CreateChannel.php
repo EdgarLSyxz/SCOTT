@@ -17,6 +17,9 @@ class CreateChannel extends Component
     public $name;
     public $url;
     public $category = '';
+    public $audio_spanish_enabled;
+    public $audio_english_enabled;
+    public $subtitles_enabled;
     public $status = '';
     public $profiles = [];
 
@@ -51,6 +54,9 @@ class CreateChannel extends Component
             'name' => 'required|string',
             'url' => 'nullable',
             'category' => 'required|string',
+            'audio_spanish_enabled' => 'nullable|boolean',
+            'audio_english_enabled' => 'nullable|boolean',
+            'subtitles_enabled' => 'nullable|boolean',
             'profiles' => 'nullable|array',
             'profiles.high' => 'nullable|string',
             'profiles.medium' => 'nullable|string',
@@ -64,6 +70,9 @@ class CreateChannel extends Component
             'name' => __('channel name'),
             'url' => __('channel URL'),
             'category' => __('channel category'),
+            'audio_spanish_enabled' => __('Spanish audio'),
+            'audio_english_enabled' => __('English audio'),
+            'subtitles_enabled' => __('Subtitles'),
             'status' => __('channel status'),
         ]);
 
@@ -79,6 +88,9 @@ class CreateChannel extends Component
             'name' => $this->name,
             'url' => $this->url,
             'category' => $this->category,
+            'audio_spanish_enabled' => $this->audio_spanish_enabled,
+            'audio_english_enabled' => $this->audio_english_enabled,
+            'subtitles_enabled' => $this->subtitles_enabled,
             'status' => $this->status,
             'profiles' => $this->profiles ?: null
         ]);

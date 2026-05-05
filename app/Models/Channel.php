@@ -16,12 +16,18 @@ class Channel extends Model
         "name",
         "url",
         "category",
+        "audio_spanish_enabled",
+        "audio_english_enabled",
+        "subtitles_enabled",
         "profiles",
         "status",
     ];
 
     protected $casts = [
         'profiles' => 'array',
+        'audio_spanish_enabled' => 'boolean',
+        'audio_english_enabled' => 'boolean',
+        'subtitles_enabled' => 'boolean',
     ];
 
     protected function image(): Attribute

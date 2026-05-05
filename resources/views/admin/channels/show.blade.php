@@ -171,6 +171,35 @@
                         value="{{ $channel->origin }}" disabled />
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <x-label for="audio_spanish_enabled">
+                        <i class="fa-solid fa-language mr-1"></i>
+                        {{ __('Spanish audio') }}
+                    </x-label>
+                    <x-input id="audio_spanish_enabled" class="block mt-1 w-full" type="text"
+                        value="{{ $channel->audio_spanish_enabled === null ? __('Not specified') : ($channel->audio_spanish_enabled ? __('Yes') : __('No')) }}"
+                        disabled />
+                </div>
+                <div>
+                    <x-label for="audio_english_enabled">
+                        <i class="fa-solid fa-language mr-1"></i>
+                        {{ __('English audio') }}
+                    </x-label>
+                    <x-input id="audio_english_enabled" class="block mt-1 w-full" type="text"
+                        value="{{ $channel->audio_english_enabled === null ? __('Not specified') : ($channel->audio_english_enabled ? __('Yes') : __('No')) }}"
+                        disabled />
+                </div>
+                <div>
+                    <x-label for="subtitles_enabled">
+                        <i class="fa-solid fa-closed-captioning mr-1"></i>
+                        {{ __('Subtitles') }}
+                    </x-label>
+                    <x-input id="subtitles_enabled" class="block mt-1 w-full" type="text"
+                        value="{{ $channel->subtitles_enabled === null ? __('Not specified') : ($channel->subtitles_enabled ? __('Yes') : __('No')) }}"
+                        disabled />
+                </div>
+            </div>
                 <div class="mt-4">
                     <x-label>
                         <i class="fa-solid fa-sliders mr-1"></i>
