@@ -20,8 +20,8 @@
             wire:click="openForm"
             type="button"
             class="justify-center items-center text-white {{ Auth::user()?->area === 'DTH'
-            ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-            : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+        ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+        : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
             <i class="fa-solid fa-plus mr-1"></i>
             {{ __('Add record') }}
         </button>
@@ -130,7 +130,7 @@
                     {{ __('No growth records yet. Add the first one!') }}
                 </p>
             @endif
-            <div class="flex items-center justify-center gap-5 my-1.5">
+            <div class="flex items-center justify-center gap-5 pt-4">
                 <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                     <span class="inline-block w-5 h-0.5 rounded-full bg-[#1d6fa4]"></span>
                     {{ __('Customers') }}
@@ -143,13 +143,13 @@
         </div>
 
         <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
-            <div class="px-4 py-3">
+            <div class="px-4 py-3 bg-white dark:bg-gray-600">
                 <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300 flex items-center gap-2">
                     <i class="fa-solid fa-table"></i>
                     {{ __('Growth records') }}
                 </p>
             </div>
-            <div class="overflow-y-auto max-h-[340px]">
+            <div class="overflow-y-auto max-h-[388px]">
                 <table class="min-w-full text-sm text-left">
                     <thead class="dark:bg-gray-600 bg-white sticky top-0 z-10">
                         <tr>
@@ -172,7 +172,7 @@
                         @forelse($records->sortByDesc('recorded_at') as $record)
                         <tr class="dark:hover:bg-gray-600 transition-colors group">
                             <td class="px-4 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap font-medium text-xs">
-                                {{ $record->recorded_at->format('d-M-Y') }}
+                                {{ $record->recorded_at->format('d-m-Y') }}
                             </td>
                             <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-100 text-xs font-mono">
                                 {{ number_format($record->customers) }}
@@ -228,7 +228,8 @@
                 $custGrowth = ($latest && $previous) ? ($latest->customers - $previous->customers) : 0;
                 $devGrowth = ($latest && $previous) ? ($latest->devices - $previous->devices) : 0;
             @endphp
-            <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 bg-gray-100 dark:bg-gray-600 grid grid-cols-2 gap-3 mt-auto">
+
+            <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-600 grid grid-cols-2 gap-3">
                 <div class="text-center">
                     <p class="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-300 mb-0.5 flex items-center justify-center gap-1">
                         <i class="fa-solid fa-user-group text-[10px]"></i>
