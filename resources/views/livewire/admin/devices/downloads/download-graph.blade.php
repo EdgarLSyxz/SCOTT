@@ -763,7 +763,7 @@
                         }
                     } catch (e) { }
 
-                    if (!useAllYears && !preData) {
+                    if (!preData) {
                         try {
                             const resp = await fetch(downloadsDataUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest', ...(headers || {}) } });
                             if (!resp.ok) throw new Error('Data fetch failed with status ' + resp.status);
@@ -793,16 +793,16 @@
                     }
 
                     if (useAllYears) {
-                        chartsByYear = null;
+                        chartsByYear = await buildAllYearsCharts(preData);
                     }
 
                     let globalBarChartEmail = null;
                     if (useAllYears) {
-                        globalBarChartEmail = null;
+                        globalBarChartEmail = await buildGlobalYearBarChart(preData);
                     }
 
                     const fd = new FormData();
-                    if (!useAllYears && preData) {
+                    if (preData) {
                         fd.append('data', JSON.stringify(preData));
                     }
                     if (monthlyData) fd.append('charts[monthly]', monthlyData);
