@@ -92,6 +92,9 @@ class ReportSlaService
             'elapsed_human' => $lastActivityAt->diffForHumans(),
             'last_activity_at' => $lastActivityAt,
             'last_activity_unix' => $lastActivityAt->timestamp,
+            'level_1_minutes' => $settings['level_1_minutes'],
+            'level_2_minutes' => $settings['level_2_minutes'],
+            'level_3_minutes' => $settings['level_3_minutes'],
         ];
     }
 }

@@ -39,6 +39,8 @@
             <span class="bg-amber-500"></span>
             <span class="text-orange-800 bg-orange-200 dark:text-orange-200 dark:bg-orange-800"></span>
             <span class="bg-orange-500"></span>
+            <span class="text-yellow-800 bg-yellow-200 dark:text-yellow-200 dark:bg-yellow-800"></span>
+            <span class="bg-yellow-500"></span>
             <span class="text-red-800 bg-red-200 dark:text-red-200 dark:bg-red-800 animate-pulse"></span>
             <span class="bg-red-500 animate-pulse"></span>
             <span class="text-emerald-800 bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-800"></span>
@@ -147,19 +149,24 @@
                             </td>
                             @if($showSlaColumn)
                                 <td class="py-2 px-3 w-[220px]">
-                                    @if(data_get($report, 'sla.enabled', false))
-                                        <div class="flex flex-col">
-                                            <span class="inline-flex self-start items-center whitespace-nowrap px-2 py-1 text-xs font-semibold rounded-full {{ $report->sla['badge'] }}">
-                                                <span class="inline-block flex-shrink-0 w-2 h-2 rounded-full mr-1.5 {{ $report->sla['dot'] }}"></span>
-                                                {{ $report->sla['label'] }}
-                                            </span>
-                                            <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap"
-                                                x-data="slaElapsedTimer({{ (int) ($report->sla['last_activity_unix'] ?? now()->timestamp) }})"
-                                                x-init="init()">
-                                                <i class="fa-regular fa-clock mr-0.5"></i>
-                                                <span x-text="label"></span>
-                                            </span>
-                                        </div>
+                            @if(data_get($report, 'sla.enabled', false))
+                                <div class="flex flex-col"
+                                    x-data="slaLiveStatus({
+                                        lastActivityUnix: {{ (int) ($report->sla['last_activity_unix'] ?? now()->timestamp) }},
+                                        level1: {{ $report->sla['level_1_minutes'] ?? 30 }},
+                                        level2: {{ $report->sla['level_2_minutes'] ?? 60 }},
+                                        level3: {{ $report->sla['level_3_minutes'] ?? 90 }}
+                                    })"
+                                    x-init="init()">
+                                    <span class="inline-flex self-start items-center whitespace-nowrap px-2 py-1 text-xs font-semibold rounded-full" :class="badge">
+                                        <span class="inline-block flex-shrink-0 w-2 h-2 rounded-full mr-1.5" :class="dot"></span>
+                                        <span x-text="statusLabel"></span>
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">
+                                        <i class="fa-regular fa-clock mr-0.5"></i>
+                                        <span x-text="elapsed"></span>
+                                    </span>
+                                </div>
                                     @else
                                         <span class="text-[11px] text-gray-400 dark:text-gray-500">-</span>
                                     @endif
@@ -222,12 +229,18 @@
         hour_one: @json(__('Updated :count hour ago', ['count' => ':count'])),
         hour_other: @json(__('Updated :count hours ago', ['count' => ':count'])),
         day_one: @json(__('Updated :count d ago', ['count' => ':count'])),
-        day_other: @json(__('Updated :count days ago', ['count' => ':count']))
+        day_other: @json(__('Updated :count days ago', ['count' => ':count'])),
+        sla_normal: @json(__('Normal follow-up')),
+        sla_attention: @json(__('It requires attention')),
+        sla_delayed: @json(__('Delayed follow-up')),
     };
 
-    function slaElapsedTimer(lastActivityUnix) {
+    function slaLiveStatus({ lastActivityUnix, level1, level2, level3 }) {
         return {
-            label: '',
+            badge: '',
+            dot: '',
+            statusLabel: '',
+            elapsed: '',
             timer: null,
             init() {
                 this.tick();
@@ -240,22 +253,29 @@
                 const hours = Math.floor(mins / 60);
                 const days = Math.floor(hours / 24);
 
+                if (mins >= level3) {
+                    this.badge = 'text-red-800 bg-red-200 dark:text-red-200 dark:bg-red-800 animate-pulse';
+                    this.dot = 'bg-red-500 animate-pulse';
+                    this.statusLabel = SLA_TRANSLATIONS.sla_delayed;
+                } else if (mins >= level2) {
+                    this.badge = 'text-yellow-800 bg-yellow-200 dark:text-yellow-200 dark:bg-yellow-800';
+                    this.dot = 'bg-yellow-500';
+                    this.statusLabel = SLA_TRANSLATIONS.sla_attention;
+                } else {
+                    this.badge = 'text-emerald-800 bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-800';
+                    this.dot = 'bg-emerald-500';
+                    this.statusLabel = SLA_TRANSLATIONS.sla_normal;
+                }
+
                 if (mins < 1) {
-                    this.label = SLA_TRANSLATIONS.just_now;
-                    return;
+                    this.elapsed = SLA_TRANSLATIONS.just_now;
+                } else if (mins < 60) {
+                    this.elapsed = (mins === 1 ? SLA_TRANSLATIONS.min_one : SLA_TRANSLATIONS.min_other).replace(':count', mins);
+                } else if (hours < 24) {
+                    this.elapsed = (hours === 1 ? SLA_TRANSLATIONS.hour_one : SLA_TRANSLATIONS.hour_other).replace(':count', hours);
+                } else {
+                    this.elapsed = (days === 1 ? SLA_TRANSLATIONS.day_one : SLA_TRANSLATIONS.day_other).replace(':count', days);
                 }
-
-                if (mins < 60) {
-                    this.label = (mins === 1 ? SLA_TRANSLATIONS.min_one : SLA_TRANSLATIONS.min_other).replace(':count', mins);
-                    return;
-                }
-
-                if (hours < 24) {
-                    this.label = (hours === 1 ? SLA_TRANSLATIONS.hour_one : SLA_TRANSLATIONS.hour_other).replace(':count', hours);
-                    return;
-                }
-
-                this.label = (days === 1 ? SLA_TRANSLATIONS.day_one : SLA_TRANSLATIONS.day_other).replace(':count', days);
             }
         };
     }
