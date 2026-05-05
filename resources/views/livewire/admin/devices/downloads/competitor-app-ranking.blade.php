@@ -44,36 +44,38 @@
         @endif
 
         @if($showFormModal)
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6">
-                <div class="w-full max-w-7xl max-h-[92vh] flex flex-col rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6"
+                x-data="{ hasUnsavedChanges: false, hasSavedOnce: false }"
+                x-on:competitor-ranking-saved.window="hasUnsavedChanges = false; hasSavedOnce = true">
+                <div class="w-full max-w-7xl max-h-[92vh] flex flex-col rounded-xl bg-white dark:bg-gray-600 shadow-2xl border border-gray-200 dark:border-gray-700">
 
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
+                    <div class="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-600 rounded-t-xl flex-shrink-0">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
                                 <i class="fa-solid fa-pen-to-square mr-1.5"></i>{{ __('Edit competitor apps') }}
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                <i class="fa-regular fa-calendar mr-1"></i>{{ __('Snapshot date') }}:
+                            <p class="text-xs text-gray-700 dark:text-gray-200 mt-0.5">
+                                {{ __('Snapshot date') }}:
                                 <span class="font-semibold text-gray-700 dark:text-gray-200">{{ \Carbon\Carbon::parse($snapshotDate)->format('d M Y') }}</span>
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" wire:click="addRow"
+                            <button type="button" wire:click="addRow" x-on:click="hasUnsavedChanges = true"
                                 class="inline-flex items-center text-white {{ Auth::user()?->area === 'DTH'
                                 ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                                 : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-xs px-3 py-1.5 focus:outline-none shadow">
                                 <i class="fa-solid fa-plus mr-1.5"></i>{{ __('Add app') }}
                             </button>
                             <button type="button" wire:click="closeFormModal"
-                                class="inline-flex items-center text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 font-medium rounded-lg text-xs px-3 py-1.5 shadow">
+                                class="inline-flex items-center text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-700 dark:hover:opacity-80 font-medium rounded-lg text-xs px-3 py-1.5 shadow">
                                 <i class="fa-solid fa-xmark mr-1.5"></i>{{ __('Close') }}
                             </button>
                         </div>
                     </div>
 
-                    <div class="overflow-auto flex-1">
+                    <div class="overflow-auto flex-1" x-on:input="hasUnsavedChanges = true" x-on:change="hasUnsavedChanges = true">
                         <table class="min-w-[980px] w-full text-xs sm:text-sm text-left text-gray-600 dark:text-gray-300">
-                            <thead class="text-xs uppercase text-gray-600 dark:text-white bg-gray-50 dark:bg-gray-600 sticky top-0 z-10">
+                            <thead class="text-xs uppercase text-gray-600 dark:text-white bg-white dark:bg-gray-600 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-2 py-2 sm:px-4 sm:py-3"><i class="fa-solid fa-mobile-screen-button mr-1.5"></i>{{ __('Application') }}</th>
                                     <th class="px-2 py-2 sm:px-4 sm:py-3 text-center"><i class="fa-solid fa-star mr-1.5"></i>{{ __('Rating') }}</th>
@@ -225,16 +227,19 @@
                             </tbody>
                         </table>
 
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/60 rounded-b-xl flex-shrink-0">
-                        <p class="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
-                            <i class="fa-solid fa-circle-info mr-1"></i>{{ __('After saving, recalculate the ranking to update positions.') }}
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-600 rounded-b-xl flex-shrink-0">
+                        <p class="text-xs text-gray-800 dark:text-gray-100 hidden sm:block">
+                            <i class="fa-solid fa-circle-info mr-1.5"></i>{{ __('After saving, recalculate the ranking to update positions.') }}
                         </p>
                         <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                             <button type="button" wire:click="saveRows"
-                                class="inline-flex items-center justify-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow">
+                                x-bind:disabled="!hasUnsavedChanges"
+                                x-bind:class="!hasUnsavedChanges ? 'opacity-50 cursor-not-allowed' : ''"
+                                class="inline-flex items-center justify-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-700 dark:hover:opacity-80 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow">
                                 <i class="fa-solid fa-floppy-disk mr-1.5"></i>{{ __('Save') }}
                             </button>
-                            <button type="button" wire:click="recalculateRanking"
+                            <button type="button" wire:click="recalculateRanking" x-bind:disabled="hasUnsavedChanges || !hasSavedOnce"
+                                x-bind:class="hasUnsavedChanges || !hasSavedOnce ? 'opacity-50 cursor-not-allowed' : ''"
                                 class="inline-flex items-center justify-center text-white {{ Auth::user()?->area === 'DTH'
                                 ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
                                 : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow">

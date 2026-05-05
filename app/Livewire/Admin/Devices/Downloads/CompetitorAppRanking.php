@@ -183,6 +183,8 @@ class CompetitorAppRanking extends Component
             'title' => __('Data saved'),
             'text' => __('Competitor app data was saved successfully.'),
         ]);
+
+        $this->dispatch('competitor-ranking-saved');
     }
 
     public function recalculateRanking(): void
