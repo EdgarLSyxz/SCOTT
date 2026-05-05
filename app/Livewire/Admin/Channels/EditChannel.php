@@ -58,10 +58,28 @@ class EditChannel extends Component
         $this->status = $channel->status;
         $this->image_url = $channel->image_url;
         $this->area = $channel->area;
-        $this->audio_spanish_enabled = $channel->audio_spanish_enabled;
-        $this->audio_english_enabled = $channel->audio_english_enabled;
-        $this->subtitles_enabled = $channel->subtitles_enabled;
+        $this->audio_spanish_enabled = $this->normalizeBooleanForSelect($channel->audio_spanish_enabled);
+        $this->audio_english_enabled = $this->normalizeBooleanForSelect($channel->audio_english_enabled);
+        $this->subtitles_enabled = $this->normalizeBooleanForSelect($channel->subtitles_enabled);
         $this->profiles = $channel->profiles ?? [];
+    }
+
+    private function normalizeBooleanForSelect($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        return $value ? '1' : '0';
+    }
+
+    private function normalizeSelectForDatabase($value): ?bool
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return $value === '1' || $value === 1 || $value === true;
     }
 
     public function update()
@@ -104,6 +122,10 @@ class EditChannel extends Component
             $this->image_url = $this->new_image->storeAs('channels', $imageName, 'public');
         }
 
+        $audioSpanishEnabled = $this->normalizeSelectForDatabase($this->audio_spanish_enabled);
+        $audioEnglishEnabled = $this->normalizeSelectForDatabase($this->audio_english_enabled);
+        $subtitlesEnabled = $this->normalizeSelectForDatabase($this->subtitles_enabled);
+
         $this->channel->update([
             'area' => $this->area,
             'number' => $this->number,
@@ -111,9 +133,9 @@ class EditChannel extends Component
             'name' => $this->name,
             'url' => $this->url,
             'category' => $this->category,
-            'audio_spanish_enabled' => $this->audio_spanish_enabled,
-            'audio_english_enabled' => $this->audio_english_enabled,
-            'subtitles_enabled' => $this->subtitles_enabled,
+            'audio_spanish_enabled' => $audioSpanishEnabled,
+            'audio_english_enabled' => $audioEnglishEnabled,
+            'subtitles_enabled' => $subtitlesEnabled,
             'status' => $this->status,
             'image_url' => $this->image_url,
             'profiles' => $this->profiles ?: null

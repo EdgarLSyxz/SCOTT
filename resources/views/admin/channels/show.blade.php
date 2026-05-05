@@ -86,12 +86,11 @@
                             </span>
                         @else
                             <span
-                                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
-                                    {{ $channel->area === 'DTH'
-                                        ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
-                                        : ($channel->area === 'OTT'
-                                            ? 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200'
-                                            : 'text-gray-800 bg-gray-200 dark:bg-gray-800 dark:text-gray-200') }}">
+                                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full {{ $channel->area === 'DTH'
+                                ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
+                                : ($channel->area === 'OTT'
+                                ? 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200'
+                                : 'text-gray-800 bg-gray-200 dark:bg-gray-800 dark:text-gray-200') }}">
                                 @if($channel->area === 'DTH')
                                     <i class="fa-solid fa-satellite-dish mr-1"></i>
                                 @elseif($channel->area === 'OTT')
@@ -199,6 +198,9 @@
                         value="{{ $channel->subtitles_enabled === null ? __('Not specified') : ($channel->subtitles_enabled ? __('Yes') : __('No')) }}"
                         disabled />
                 </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 pb-1">
+                    {{ __('Dual audio is available on all HLS and DASH devices, except Roku.') }}
+                </p>
             </div>
                 <div class="mt-4">
                     <x-label>
