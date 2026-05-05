@@ -49,10 +49,18 @@
                             {{ __('Show only active channels') }}
                         </label>
                     </div>
-                    <x-checkbox id="inactive-filter" wire:model.live="showInactive"></x-checkbox>
-                    <label for="inactive-filter" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer">
-                        {{ __('Show only inactive channels') }}
-                    </label>
+                    <div class="mb-2">
+                        <x-checkbox id="inactive-filter" wire:model.live="showInactive"></x-checkbox>
+                        <label for="inactive-filter" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer">
+                            {{ __('Show only inactive channels') }}
+                        </label>
+                    </div>
+                    <div>
+                        <x-checkbox id="dual-audio-filter" wire:model.live="showDualAudio"></x-checkbox>
+                        <label for="dual-audio-filter" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer">
+                            {{ __('Show dual audio channels') }}
+                        </label>
+                    </div>
                 </div>
                 <button wire:click="resetFilters"
                     class="w-full sm:w-full md:w-auto flex justify-center items-center gap-2 py-2 px-4 text-xs sm:text-sm font-medium text-gray-700 border rounded-lg border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
@@ -74,52 +82,89 @@
                         <i class="fa-solid fa-tv mr-1"></i>
                         {{ __('Channel') }}
                     </th>
-                    <th class="py-3 px-4 text-left cursor-pointer w-[150px]"
-                        wire:click="toggleOriginFilter">
-                        <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i>
-                        <span class="text-gray-500 dark:text-white">
-                            @if ($originFilter)
-                                {{ $originFilter }}
-                            @else
-                                {{ __('All Origins') }}
-                            @endif
-                            <i class="ml-1 fa-solid fa-sort"></i>
-                        </span>
-                    </th>
-                    <th class="py-3 px-4 text-left cursor-pointer w-[225px]"
-                        wire:click="toggleCategoryFilter">
-                        <i class="fa-solid fa-list mr-1"></i>
-                        <span class="text-gray-500 dark:text-white">
-                            @if ($categoryFilter)
-                                {{ __($categoryFilter) }}
-                            @else
-                                {{ __('All Categories') }}
-                            @endif
-                            <i class="ml-1 fa-solid fa-sort"></i>
-                        </span>
-                    </th>
-                    <th scope="col" class="px-4 py-3 w-[225px] text-left cursor-pointer"
-                        wire:click="toggleAreaFilter">
-                        <i class="fa-solid fa-building mr-1"></i>
-                        <span class="text-gray-500 dark:text-white">
-                            @if ($areaFilter && $areaFilter !== 'all')
-                                {{ $areaFilter }}
-                            @else
-                                {{ __('All Areas') }}
-                            @endif
-                            <i class="ml-1 fa-solid fa-sort"></i>
-                        </span>
-                    </th>
-                    <th scope="col" class="px-4 py-3 w-[150px]">
-                        <i class="fa-solid fa-toggle-on mr-1"></i>
-                        {{ __('Status') }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 w-[80px]">
-                        <span class="sr-only">
-                            <i class="fa-solid fa-sliders-h mr-1"></i>
-                            {{ __('Options') }}
-                        </span>
-                    </th>
+                    @if ($showDualAudio)
+                        <th scope="col" class="px-4 py-3 w-[185px]">
+                            <i class="fa-solid fa-language mr-1"></i>
+                            {{ __('Spanish audio') }}
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[185px]">
+                            <i class="fa-solid fa-language mr-1"></i>
+                            {{ __('English audio') }}
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[185px]">
+                            <i class="fa-solid fa-closed-captioning mr-1"></i>
+                            {{ __('Subtitles') }}
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[200px] text-left cursor-pointer"
+                            wire:click="toggleAreaFilter">
+                            <i class="fa-solid fa-building mr-1"></i>
+                            <span class="text-gray-500 dark:text-white">
+                                @if ($areaFilter && $areaFilter !== 'all')
+                                    {{ $areaFilter }}
+                                @else
+                                    {{ __('All Areas') }}
+                                @endif
+                                <i class="ml-1 fa-solid fa-sort"></i>
+                            </span>
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[150px]">
+                            <i class="fa-solid fa-toggle-on mr-1"></i>
+                            {{ __('Status') }}
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[80px]">
+                            <span class="sr-only">
+                                <i class="fa-solid fa-sliders-h mr-1"></i>
+                                {{ __('Options') }}
+                            </span>
+                        </th>
+                    @else
+                        <th class="py-3 px-4 text-left cursor-pointer w-[150px]"
+                            wire:click="toggleOriginFilter">
+                            <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i>
+                            <span class="text-gray-500 dark:text-white">
+                                @if ($originFilter)
+                                    {{ $originFilter }}
+                                @else
+                                    {{ __('All Origins') }}
+                                @endif
+                                <i class="ml-1 fa-solid fa-sort"></i>
+                            </span>
+                        </th>
+                        <th class="py-3 px-4 text-left cursor-pointer w-[225px]"
+                            wire:click="toggleCategoryFilter">
+                            <i class="fa-solid fa-list mr-1"></i>
+                            <span class="text-gray-500 dark:text-white">
+                                @if ($categoryFilter)
+                                    {{ __($categoryFilter) }}
+                                @else
+                                    {{ __('All Categories') }}
+                                @endif
+                                <i class="ml-1 fa-solid fa-sort"></i>
+                            </span>
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[225px] text-left cursor-pointer"
+                            wire:click="toggleAreaFilter">
+                            <i class="fa-solid fa-building mr-1"></i>
+                            <span class="text-gray-500 dark:text-white">
+                                @if ($areaFilter && $areaFilter !== 'all')
+                                    {{ $areaFilter }}
+                                @else
+                                    {{ __('All Areas') }}
+                                @endif
+                                <i class="ml-1 fa-solid fa-sort"></i>
+                            </span>
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[150px]">
+                            <i class="fa-solid fa-toggle-on mr-1"></i>
+                            {{ __('Status') }}
+                        </th>
+                        <th scope="col" class="px-4 py-3 w-[80px]">
+                            <span class="sr-only">
+                                <i class="fa-solid fa-sliders-h mr-1"></i>
+                                {{ __('Options') }}
+                            </span>
+                        </th>
+                    @endif
                 </tr>
             </thead>
             <tbody x-data="{ openDropdown: null }">
@@ -134,47 +179,104 @@
                             class="px-4 py-2.5 font-bold text-gray-900 dark:text-white w-[275px] truncate overflow-hidden">
                             {{ $channel->number }} {{ $channel->name }}
                         </th>
-                        <td class="px-4 py-2.5 w-[150px] truncate whitespace-nowrap overflow-hidden">
-                            {{ $channel->origin }}
-                        </td>
-                        <td class="px-4 py-2.5 w-[225px]">
-                            <span
-                                class="inline-flex items-center px-2 py-1 text-xs font-medium truncate whitespace-nowrap overflow-hidden
-                                    {{ Auth::user()?->area === 'DTH'
-                                        ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
-                                        : 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200' }}
-                                    rounded-full">
-                                @switch($channel->category)
-                                    @case('Standard TV Channel')
-                                        <i class="fa-solid fa-tv mr-1.5"></i>
-                                    @break
+                        @if ($showDualAudio)
+                            <td class="px-4 py-2.5 w-[185px]">
+                                @if ($channel->audio_spanish_enabled === true)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-200 rounded-full dark:bg-green-800 dark:text-green-200">
+                                        <i class="fa-solid fa-check-circle mr-1"></i>
+                                        {{ __('Active') }}
+                                    </span>
+                                @elseif ($channel->audio_spanish_enabled === false)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-200 rounded-full dark:bg-red-800 dark:text-red-200">
+                                        <i class="fa-solid fa-times-circle mr-1"></i>
+                                        {{ __('Inactive') }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-500 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                                        <i class="fa-solid fa-minus mr-1"></i>
+                                        {{ __('Not specified') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-2.5 w-[185px]">
+                                @if ($channel->audio_english_enabled === true)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-200 rounded-full dark:bg-green-800 dark:text-green-200">
+                                        <i class="fa-solid fa-check-circle mr-1"></i>
+                                        {{ __('Active') }}
+                                    </span>
+                                @elseif ($channel->audio_english_enabled === false)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-200 rounded-full dark:bg-red-800 dark:text-red-200">
+                                        <i class="fa-solid fa-times-circle mr-1"></i>
+                                        {{ __('Inactive') }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-500 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                                        <i class="fa-solid fa-minus mr-1"></i>
+                                        {{ __('Not specified') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-2.5 w-[185px]">
+                                @if ($channel->subtitles_enabled === true)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-200 rounded-full dark:bg-green-800 dark:text-green-200">
+                                        <i class="fa-solid fa-check-circle mr-1"></i>
+                                        {{ __('Active') }}
+                                    </span>
+                                @elseif ($channel->subtitles_enabled === false)
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-200 rounded-full dark:bg-red-800 dark:text-red-200">
+                                        <i class="fa-solid fa-times-circle mr-1"></i>
+                                        {{ __('Inactive') }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-500 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                                        <i class="fa-solid fa-minus mr-1"></i>
+                                        {{ __('Not specified') }}
+                                    </span>
+                                @endif
+                            </td>
+                        @else
+                            <td class="px-4 py-2.5 w-[150px] truncate whitespace-nowrap overflow-hidden">
+                                {{ $channel->origin }}
+                            </td>
+                            <td class="px-4 py-2.5 w-[225px]">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium truncate whitespace-nowrap overflow-hidden
+                                        {{ Auth::user()?->area === 'DTH'
+                                            ? 'text-secondary-800 bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-200'
+                                            : 'text-primary-800 bg-primary-200 dark:bg-primary-800 dark:text-primary-200' }}
+                                        rounded-full">
+                                    @switch($channel->category)
+                                        @case('Standard TV Channel')
+                                            <i class="fa-solid fa-tv mr-1.5"></i>
+                                        @break
 
-                                    @case('Stingray Music')
-                                        <i class="fa-solid fa-music mr-1.5"></i>
-                                    @break
+                                        @case('Stingray Music')
+                                            <i class="fa-solid fa-music mr-1.5"></i>
+                                        @break
 
-                                    @case('RESTART/CUTV')
-                                        <i class="fa-solid fa-repeat mr-1.5"></i>
-                                    @break
+                                        @case('RESTART/CUTV')
+                                            <i class="fa-solid fa-repeat mr-1.5"></i>
+                                        @break
 
-                                    @case('FAST')
-                                        <i class="fa-solid fa-bolt mr-1.5"></i>
-                                    @break
+                                        @case('FAST')
+                                            <i class="fa-solid fa-bolt mr-1.5"></i>
+                                        @break
 
-                                    @case('Radio TV Channel')
-                                        <i class="fa-solid fa-radio mr-1.5 pb-[1px]"></i>
-                                    @break
+                                        @case('Radio TV Channel')
+                                            <i class="fa-solid fa-radio mr-1.5 pb-[1px]"></i>
+                                        @break
 
-                                    @case('Learning TV Channel')
-                                        <i class="fa-solid fa-book-open mr-1.5"></i>
-                                    @break
+                                        @case('Learning TV Channel')
+                                            <i class="fa-solid fa-book-open mr-1.5"></i>
+                                        @break
 
-                                    @default
-                                        <i class="fa-solid fa-layer-group mr-1.5"></i>
-                                @endswitch
-                                {{ __($channel->category) }}
-                            </span>
-                        </td>
+                                        @default
+                                            <i class="fa-solid fa-layer-group mr-1.5"></i>
+                                    @endswitch
+                                    {{ __($channel->category) }}
+                                </span>
+                            </td>
+                        @endif
                         <td class="px-4 py-2.5 w-[150px] truncate whitespace-nowrap overflow-hidden">
                             @if($channel->area === 'DTH/OTT')
                                 <span

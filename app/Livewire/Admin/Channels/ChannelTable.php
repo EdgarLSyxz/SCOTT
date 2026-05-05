@@ -15,10 +15,11 @@ class ChannelTable extends Component
     public $search = '';
     public $showInactive = false;
     public $showActive = false;
+    public $showDualAudio = false;
     public $originFilter = null;
     public $categoryFilter = null;
     public $areaFilter = 'all';
-    protected $queryString = ['search', 'showInactive', 'showActive', 'originFilter', 'categoryFilter', 'areaFilter' => ['except' => 'all']];
+    protected $queryString = ['search', 'showInactive', 'showActive', 'showDualAudio', 'originFilter', 'categoryFilter', 'areaFilter' => ['except' => 'all']];
 
     public function updatingSearch()
     {
@@ -40,6 +41,11 @@ class ChannelTable extends Component
             $this->showInactive = false;
         }
 
+        $this->resetPage();
+    }
+
+    public function updatingShowDualAudio()
+    {
         $this->resetPage();
     }
 
@@ -88,6 +94,7 @@ class ChannelTable extends Component
         $this->search = '';
         $this->showInactive = false;
         $this->showActive = false;
+        $this->showDualAudio = false;
         $this->originFilter = null;
         $this->categoryFilter = null;
     }
@@ -153,6 +160,7 @@ class ChannelTable extends Component
 
         return view('livewire.admin.channels.channel-table', [
             'channels' => $channels,
+            'showDualAudio' => $this->showDualAudio,
         ]);
     }
 }
