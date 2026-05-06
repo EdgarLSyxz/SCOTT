@@ -141,7 +141,7 @@
                                                 {{ $row['name'] }}
                                             @endif
                                             @if($row['is_primary'])
-                                                <span class="ml-2 inline-flex items-center bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2 py-1.5 rounded-full text-[10px] font-bold text-center">
+                                                <span class="ml-2 inline-flex items-center {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-300' : 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' }} px-2 py-1.5 rounded-full text-[10px] font-bold text-center">
                                                     <i class="fa-solid fa-crown"></i>
                                                 </span>
                                             @endif
@@ -266,7 +266,9 @@
                                     <p class="text-[11px] uppercase font-semibold tracking-wide text-gray-500 dark:text-gray-400">{{ __('Application') }}</p>
                                     <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $primaryAppRow->app->name }}</p>
                                 </div>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold {{ Auth::user()?->area === 'DTH'
+                                    ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-300'
+                                    : 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' }} whitespace-nowrap">
                                     <i class="fa-solid fa-crown mr-1"></i>
                                     @if(isset($primaryAppRow->rank_position) && $primaryAppRow->rank_position)
                                         {{ __('Top') }} {{ $primaryAppRow->rank_position }}
@@ -335,7 +337,7 @@
                                     $movement = $item->movement;
                                     $delta = (int) ($item->rank_delta ?? 0);
                                 @endphp
-                                <tr class="{{ $isPrimary ? 'bg-primary-100 dark:bg-primary-900/40' : 'bg-white dark:bg-gray-800' }}">
+                                <tr class="{{ $isPrimary ? (Auth::user()?->area === 'DTH' ? 'bg-secondary-100 dark:bg-secondary-900/40' : 'bg-primary-100 dark:bg-primary-900/40') : 'bg-white dark:bg-gray-800' }}">
                                     <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-gray-900 dark:text-white">{{ $item->rank_position ?: '-' }}</td>
                                     <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-gray-900 dark:text-white">{{ $item->app->name }}</td>
                                     <td class="px-2 py-2 sm:px-3 sm:py-2 font-semibold text-center text-gray-700 dark:text-gray-300">{{ number_format((float) $item->rating, 1) }} ☆</td>
