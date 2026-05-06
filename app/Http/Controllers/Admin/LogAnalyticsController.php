@@ -83,7 +83,7 @@ class LogAnalyticsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Log report uploaded successfully'),
+                'message' => __('Log report uploaded successfully.'),
                 'report_id' => $logAnalytic->id,
             ]);
         } catch (ValidationException $e) {

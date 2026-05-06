@@ -381,7 +381,7 @@ class LogReportManager extends Component
             $this->categories = [];
             $this->totalRecords = 0;
             $this->dispatch('log-upload-deleted', [
-                'message' => __('Log report deleted successfully'),
+                'message' => __('Log report deleted successfully.'),
             ]);
         }
     }
