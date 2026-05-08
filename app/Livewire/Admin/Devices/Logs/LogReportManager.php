@@ -169,25 +169,23 @@ class LogReportManager extends Component
 
         if (is_array($raw)) {
             foreach ($raw as $categoryKey => $items) {
-                if (is_array($items) && !empty($items)) {
-                    $categoryItems = [];
-                    foreach ($items as $idx => $item) {
+                $categoryItems = [];
+                if (is_array($items)) {
+                    foreach ($items as $item) {
                         if (is_array($item)) {
                             $categoryItems[] = $item;
                         }
                     }
-
-                    if (!empty($categoryItems)) {
-                        $aggForCount = $this->aggregateRecords($categoryItems);
-                        $categories[] = [
-                            'key' => $categoryKey,
-                            'name' => $this->formatCategoryName($categoryKey),
-                            'items' => $categoryItems,
-                            'count' => count($categoryItems),
-                            'unique_count' => count($aggForCount),
-                        ];
-                    }
                 }
+
+                $aggForCount = $this->aggregateRecords($categoryItems);
+                $categories[] = [
+                    'key' => (string) $categoryKey,
+                    'name' => $this->formatCategoryName($categoryKey),
+                    'items' => $categoryItems,
+                    'count' => count($categoryItems),
+                    'unique_count' => count($aggForCount),
+                ];
             }
         }
 
