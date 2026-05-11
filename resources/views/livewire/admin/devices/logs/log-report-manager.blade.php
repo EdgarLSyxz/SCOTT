@@ -56,15 +56,15 @@
                     </div>
                 </div>
 
-                <div id="upload-progress" class="mt-4 space-y-2" x-show="uploading" x-cloak>
+                <div class="mt-4 space-y-2" x-show="uploading" x-cloak>
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-700 dark:text-gray-300 font-medium">{{ __('Processing...') }}</span>
-                        <span id="progress-percent" class="text-gray-500 dark:text-gray-400">0%</span>
+                        <span x-text="progress + '%'" class="text-gray-500 dark:text-gray-400">0%</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                        <div id="progress-bar"
+                        <div
                             class="bg-gradient-to-r from-{{ $color }}-500 to-{{ $color }}-600 h-full rounded-full transition-all duration-300"
-                            style="width: 0%"></div>
+                            :style="'width: ' + progress + '%'"></div>
                     </div>
                 </div>
             </div>
@@ -128,7 +128,7 @@
         </div>
     @endif
 
-    @if (count($uploads) > 1)
+    {{-- @if (count($uploads) > 1)
         @php
             $filteredAnalyticsUploads = $this->getFilteredUploadsForAnalytics();
             $availableAnalyticsYears = $this->getAvailableAnalyticsYears();
@@ -417,7 +417,7 @@
                 </div>
             @endif
         </div>
-    @endif
+    @endif --}}
 
     @if ($totalRecords)
         <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
@@ -828,6 +828,7 @@
             file: null,
             fileName: '',
             uploading: false,
+            progress: 0,
             error: '',
 
             humanFileSize(bytes) {
@@ -867,30 +868,36 @@
                 this.error = '';
             },
 
-            async submit() {
+            submit() {
                 if (!this.file) return;
                 this.uploading = true;
+                this.progress = 0;
                 this.error = '';
 
+                const self = this;
                 const formData = new FormData();
                 formData.append('file', this.file);
 
-                try {
-                    const response = await fetch('/admin/log-analytics/upload', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                        }
-                    });
+                const xhr = new XMLHttpRequest();
 
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok) {
-                        this.error = data.error || data.errors?.file?.[0] || 'Upload failed';
-                        this.uploading = false;
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        self.progress = Math.round((e.loaded / e.total) * 100);
+                    }
+                });
+
+                xhr.addEventListener('load', function () {
+                    let data = {};
+                    try { data = JSON.parse(xhr.responseText); } catch (_) {}
+
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        self.error = data.error || data.errors?.file?.[0] || 'Upload failed';
+                        self.uploading = false;
+                        self.progress = 0;
                         return;
                     }
 
+                    self.progress = 100;
                     Livewire.dispatch('refresh-log-uploads');
 
                     Swal.fire({
@@ -903,14 +910,22 @@
                         position: 'top-right'
                     });
 
-                    this.file = null;
-                    this.fileName = '';
-                    if (this.$refs.uploadInput) this.$refs.uploadInput.value = '';
-                } catch (err) {
-                    this.error = err.message || 'Upload failed';
-                }
+                    self.file = null;
+                    self.fileName = '';
+                    self.progress = 0;
+                    self.uploading = false;
+                    if (self.$refs.uploadInput) self.$refs.uploadInput.value = '';
+                });
 
-                this.uploading = false;
+                xhr.addEventListener('error', function () {
+                    self.error = 'Upload failed';
+                    self.uploading = false;
+                    self.progress = 0;
+                });
+
+                xhr.open('POST', '/admin/log-analytics/upload');
+                xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]')?.content || '');
+                xhr.send(formData);
             }
         };
     }
