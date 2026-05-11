@@ -1171,5 +1171,6 @@
     "Example: 30000": "Ejemplo: 30000",
     "After saving, recalculate the ranking to update positions.": "Después de guardar, recalcula el ranking para actualizar posiciones.",
     "Log report deleted successfully.": "Reporte de logs eliminado con éxito.",
-    "Log report uploaded successfully.": "Reporte de logs subido con éxito."
+    "Log report uploaded successfully.": "Reporte de logs subido con éxito.",
+    "Test": "Prueba"
 }
