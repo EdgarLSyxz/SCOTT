@@ -375,9 +375,15 @@ class LogReportManager extends Component
         if ($upload) {
             $upload->delete();
             $this->loadUploads();
-            $this->selectedCategory = null;
-            $this->categories = [];
-            $this->totalRecords = 0;
+
+            if (empty($this->uploads)) {
+                $this->selectedCategory = null;
+                $this->categories = [];
+                $this->totalRecords = 0;
+                $this->selectedUploadId = null;
+                $this->currentReportDate = null;
+            }
+
             $this->dispatch('log-upload-deleted', [
                 'message' => __('Log report deleted successfully.'),
             ]);
@@ -510,6 +516,7 @@ class LogReportManager extends Component
                 $keyMatch = strpos(strtolower($cat['key'] ?? ''), $term) !== false;
                 return $nameMatch || $keyMatch;
             })
+            ->sortBy(fn($cat) => $cat['name'] ?? '', SORT_NATURAL | SORT_FLAG_CASE)
             ->values()
             ->toArray();
     }
