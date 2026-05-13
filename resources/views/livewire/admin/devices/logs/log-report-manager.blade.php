@@ -882,7 +882,7 @@
 
                 xhr.upload.addEventListener('progress', function (e) {
                     if (e.lengthComputable) {
-                        self.progress = Math.round((e.loaded / e.total) * 100);
+                        self.progress = Math.round((e.loaded / e.total) * 90);
                     }
                 });
 

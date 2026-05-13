@@ -374,15 +374,14 @@ class LogReportManager extends Component
 
         if ($upload) {
             $upload->delete();
-            $this->loadUploads();
 
-            if (empty($this->uploads)) {
-                $this->selectedCategory = null;
-                $this->categories = [];
-                $this->totalRecords = 0;
-                $this->selectedUploadId = null;
-                $this->currentReportDate = null;
-            }
+            $this->selectedUploadId = null;
+            $this->categories = [];
+            $this->totalRecords = 0;
+            $this->currentReportDate = null;
+            $this->selectedCategory = null;
+
+            $this->loadUploads();
 
             $this->dispatch('log-upload-deleted', [
                 'message' => __('Log report deleted successfully.'),
