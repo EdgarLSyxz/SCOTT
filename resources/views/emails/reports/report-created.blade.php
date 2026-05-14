@@ -286,7 +286,7 @@
         </div>
         <div class="footer">
             <p class="footer-subtitle">
-                {{ __('SCOTT • OTT •  DTH Communications System') }}
+                {{ __('SCOTT') }}
             </p>
         </div>
     </div>

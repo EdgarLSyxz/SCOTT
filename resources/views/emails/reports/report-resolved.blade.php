@@ -202,19 +202,19 @@
                     <th>{{ __('Duration') }}</th>
                     <td>
                         @php
-                            $createdAt = \Carbon\Carbon::parse($report->created_at);
-                            $resolvedAt = \Carbon\Carbon::parse($report->updated_at);
-                            $totalSeconds = intval($createdAt->diffInSeconds($resolvedAt));
+$createdAt = \Carbon\Carbon::parse($report->created_at);
+$resolvedAt = \Carbon\Carbon::parse($report->updated_at);
+$totalSeconds = intval($createdAt->diffInSeconds($resolvedAt));
 
-                            if ($totalSeconds < 60) {
-                                echo $totalSeconds . ' seconds';
-                            } elseif ($totalSeconds < 3600) {
-                                echo floor($totalSeconds / 60) . ' minutes';
-                            } else {
-                                $hours = floor($totalSeconds / 3600);
-                                $minutes = floor(($totalSeconds % 3600) / 60);
-                                echo $hours . ' hours ' . ($minutes > 0 ? $minutes . ' minutes' : '');
-                            }
+if ($totalSeconds < 60) {
+    echo $totalSeconds . ' seconds';
+} elseif ($totalSeconds < 3600) {
+    echo floor($totalSeconds / 60) . ' minutes';
+} else {
+    $hours = floor($totalSeconds / 3600);
+    $minutes = floor(($totalSeconds % 3600) / 60);
+    echo $hours . ' hours ' . ($minutes > 0 ? $minutes . ' minutes' : '');
+}
                         @endphp
                     </td>
                 </tr>
@@ -254,7 +254,7 @@
         </div>
 
         <div class="footer">
-            <p class="footer-subtitle">{{ __('SCOTT • OTT •  DTH Communications System') }}</p>
+            <p class="footer-subtitle">{{ __('SCOTT') }}</p>
         </div>
     </div>
 </body>

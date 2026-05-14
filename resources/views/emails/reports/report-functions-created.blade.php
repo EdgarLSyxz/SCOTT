@@ -198,7 +198,7 @@
                                     </td>
                                     <td class="stage-protocol">
                                         @php
-                                            $stage = \App\Models\Stage::find($channel['stage']);
+            $stage = \App\Models\Stage::find($channel['stage']);
                                         @endphp
                                         {{ $stage ? $stage->name : '-' }}
                                         <span class="protocol">({{ $channel['protocol'] ?? '-' }})</span>
@@ -209,14 +209,14 @@
                                 @if ($category['name'] == 'CUTV' && !empty($channel['loss_periods']))
                                     @foreach ($channel['loss_periods'] as $period)
                                         @php
-                                            $start = \Carbon\Carbon::parse($period['start_time']);
-                                            $end = \Carbon\Carbon::parse($period['end_time']);
-                                            $diff = $start->diff($end);
-                                            $days = $diff->format('%a');
-                                            $hours = $diff->format('%H');
-                                            $minutes = $diff->format('%I');
+                    $start = \Carbon\Carbon::parse($period['start_time']);
+                    $end = \Carbon\Carbon::parse($period['end_time']);
+                    $diff = $start->diff($end);
+                    $days = $diff->format('%a');
+                    $hours = $diff->format('%H');
+                    $minutes = $diff->format('%I');
 
-                                            $duration = ($days > 0 ? "{$days}d " : '') . "{$hours}h {$minutes}m";
+                    $duration = ($days > 0 ? "{$days}d " : '') . "{$hours}h {$minutes}m";
                                         @endphp
                                         <tr>
                                             <td>{{ $start->format('d/m/Y H:i') }}</td>
@@ -244,7 +244,9 @@
         @endforeach
 
         <div class="footer">
-            <p class="footer-subtitle">{{ __('SCOTT • OTT •  DTH Communications System') }}</p>
+            <p class="footer-subtitle">
+                {{ __('SCOTT') }}
+            </p>
         </div>
     </div>
 </body>
