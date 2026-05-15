@@ -19,6 +19,7 @@
                     </div>
                 </form>
             </div>
+
             @php
                 $userArea = strtolower(trim(auth()->user()->area ?? ''));
                 $historyBtnClasses = $userArea === 'dth'
@@ -96,7 +97,7 @@
                 </thead>
                 <tbody>
                     @forelse ($reports as $report)
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer"
+                        <tr wire:key="report-row-{{ $report->id }}-{{ (int) data_get($report, 'sla.last_activity_unix', 0) }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600 text-black dark:text-white cursor-pointer"
                             wire:click="openReportDetails({{ $report->id }})">
                             <td
                                 class="py-2 px-3 w-[240px] font-bold leading-tight truncate whitespace-nowrap overflow-hidden text-ellipsis">
