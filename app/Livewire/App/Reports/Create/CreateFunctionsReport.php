@@ -21,7 +21,7 @@ class CreateFunctionsReport extends Component
     public $categories = [];
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
     public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
-    public $allowedStages = ['CDN CEF+', 'CDN BPK', 'CDN CEF+/BPK'];
+    public $allowedStages = ['CDN BPK', 'CDN TELMEX', 'CDN BPK/TELMEX'];
 
     public function mount()
     {
