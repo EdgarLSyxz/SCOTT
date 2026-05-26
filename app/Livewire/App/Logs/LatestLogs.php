@@ -19,8 +19,13 @@ class LatestLogs extends Component
     public function fetchLogs()
     {
         $userArea = auth()->user()?->area;
+        $previousLatestIssueId = (int) $this->latestIssueId;
+
         $issues = Issue::orderByDesc('created_at')->limit(28)->get()->reverse();
         $this->latestIssueId = Issue::max('id') ?? 0;
+
+        $this->emitDashboardAlertForNewLogs($previousLatestIssueId, (int) $this->latestIssueId, $userArea);
+
         $channelNumbers = collect($issues)->map(function ($issue) {
             $originalChannel = $issue->channel ?? '';
             if (is_string($originalChannel) && preg_match('/^(\d+)/', $originalChannel, $matches)) {
@@ -68,6 +73,57 @@ class LatestLogs extends Component
             }
             return true;
         })->values()->toArray();
+    }
+
+    protected function emitDashboardAlertForNewLogs(int $previousLatestIssueId, int $currentLatestIssueId, ?string $userArea): void
+    {
+        if ($previousLatestIssueId <= 0 || $currentLatestIssueId <= $previousLatestIssueId) {
+            return;
+        }
+
+        $newIssues = Issue::where('id', '>', $previousLatestIssueId)
+            ->orderBy('id')
+            ->get();
+
+        if ($newIssues->isEmpty()) {
+            return;
+        }
+
+        $visibleIssues = $newIssues->filter(function ($issue) use ($userArea) {
+            return $this->shouldIncludeIssueForArea($issue, $userArea);
+        })->values();
+
+        if ($visibleIssues->isEmpty()) {
+            return;
+        }
+
+        $latest = $visibleIssues->last();
+        $channel = trim((string) ($latest->channel ?? ''));
+        $type = strtoupper((string) ($latest->issueType ?? ''));
+        $level = strtoupper((string) ($latest->tag ?? 'LOW'));
+        $count = $visibleIssues->count();
+
+        $this->dispatch('dashboard-log-alert',
+            title: __('New logs detected'),
+            message: __(':count new log(s). Last: :type on :channel', [
+                'count' => $count,
+                'type' => $type !== '' ? $type : __('No type'),
+                'channel' => $channel !== '' ? $channel : __('Unknown channel'),
+            ]),
+            level: $level,
+            count: $count
+        );
+    }
+
+    protected function shouldIncludeIssueForArea(Issue $issue, ?string $userArea): bool
+    {
+        if (strtolower((string) $userArea) !== 'dth') {
+            return true;
+        }
+
+        $type = strtoupper((string) ($issue->issueType ?? ''));
+
+        return !in_array($type, ['CUTV_EU', 'CUTV_OR'], true);
     }
 
     public function render()

@@ -25,6 +25,21 @@
                 {{ __('Report channel issues') }}
             </button>
 
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button id="dashboard-alert-toggle-btn" type="button"
+                    onclick="window.toggleDashboardLogAlertsEnabled && window.toggleDashboardLogAlertsEnabled()"
+                    class="w-full bg-white/20 border border-white/40 text-white rounded-lg py-2.5 flex items-center justify-center shadow-md hover:bg-white/30 transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-bell-concierge mr-2"></i>
+                    <span id="dashboard-alert-toggle-label">{{ __('Alerts: ON') }}</span>
+                </button>
+
+                <button type="button" onclick="window.showDashboardLogAlertDemo && window.showDashboardLogAlertDemo()"
+                    class="w-full bg-white/20 border border-white/40 text-white rounded-lg py-2.5 flex items-center justify-center shadow-md hover:bg-white/30 transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-bell mr-2"></i>
+                    {{ __('Alert demo') }}
+                </button>
+            </div>
+
             {{-- <button type="button" data-modal-target="create-hourly-report-modal"
                 data-modal-toggle="create-hourly-report-modal"
                 class="w-full bg-green-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">
@@ -195,7 +210,7 @@
                     @endif
                 </div>
             </div>
-            <div class="lg:w-1/4 w-full">
+            <div id="dashboard-logs-widget" class="lg:w-1/4 w-full">
                 @livewire('app.logs.latest-logs')
             </div>
         </div>
@@ -204,7 +219,7 @@
             <div class="lg:w-3/4 w-full flex flex-col gap-6">
                 @livewire('app.grafana.grafana-dynamic')
             </div>
-            <div class="lg:w-1/4 w-full">
+            <div id="dashboard-logs-widget" class="lg:w-1/4 w-full">
                 @livewire('app.logs.latest-logs')
             </div>
         </div>
@@ -218,6 +233,61 @@
             </div>
         </div>
     @endif
+
+    <div x-data="dashboardLogAlerts()" x-init="init()"
+        class="fixed top-4 right-4 z-[120] w-[min(410px,calc(100vw-1.5rem))] space-y-3 pointer-events-none">
+        <template x-for="alert in alerts" :key="alert.id">
+            <div x-show="alert.visible" x-transition:enter="transform ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transform ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-2"
+                @mouseenter="pause(alert.id)" @mouseleave="resume(alert.id)"
+                class="pointer-events-auto rounded-2xl shadow-2xl border backdrop-blur-sm overflow-hidden"
+                :class="alert.wrapperClass">
+                <div class="relative rounded-xl overflow-hidden bg-white/30 dark:bg-white/[0.02]">
+                    <div class="px-3 py-3.5">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center bg-white/70 dark:bg-black/20 border border-white/60 dark:border-white/10">
+                                <i :class="alert.iconClass"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="text-sm font-semibold leading-5 truncate" x-text="alert.title"></p>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide"
+                                        :class="alert.badgeClass" x-text="alert.levelLabel"></span>
+                                </div>
+                                <p class="text-xs mt-1 opacity-90 leading-5" x-text="alert.message"></p>
+                            </div>
+                            <button type="button" @click="dismiss(alert.id)"
+                                class="mt-0.5 h-6 w-6 rounded-full inline-flex items-center justify-center text-xs opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-all">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-3 flex items-center justify-between gap-2 text-[11px] opacity-90">
+                            <span class="inline-flex items-center gap-1.5">
+                                <i class="fa-regular fa-clock"></i>
+                                <span x-text="alert.timeLabel"></span>
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="scrollToLogs()"
+                                    class="px-2 py-1 rounded-md bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors font-medium">
+                                    {{ __('View logs') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-1.5 mx-2 mb-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
+                        <div class="h-full rounded-full transition-[width] ease-linear" :class="alert.barClass"
+                            :style="'width: ' + alert.progress + '%'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
 
     <div id="create-momently-report-modal" tabindex="-1"
         class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -283,4 +353,209 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    function dashboardLogAlerts() {
+        return {
+            alerts: [],
+            nextId: 1,
+            enabled: true,
+            maxVisible: 4,
+            init() {
+                this.enabled = this.readEnabledPreference();
+                this.syncControls();
+
+                window.addEventListener('dashboard-log-alert', (event) => {
+                    if (!this.enabled) return;
+
+                    const detail = Array.isArray(event?.detail) ? (event.detail[0] || {}) : (event?.detail || {});
+                    this.pushAlert({
+                        title: detail.title || '{{ __('New logs detected') }}',
+                        message: detail.message || '{{ __('A new log has arrived.') }}',
+                        level: (detail.level || 'LOW').toUpperCase(),
+                        timeout: 5500,
+                    });
+                });
+
+                window.showDashboardLogAlertDemo = () => {
+                    this.pushAlert({
+                        title: '{{ __('Demo: New logs detected') }}',
+                        message: '{{ __('This is how the global alert will be shown when new logs arrive.') }}',
+                        level: 'MID',
+                        timeout: 5500,
+                        force: true,
+                    });
+                };
+
+                window.toggleDashboardLogAlertsEnabled = () => {
+                    this.enabled = !this.enabled;
+                    window.localStorage.setItem('dashboard-log-alerts-enabled', this.enabled ? '1' : '0');
+                    this.syncControls();
+
+                    this.pushAlert({
+                        title: this.enabled ? '{{ __('Alerts enabled') }}' : '{{ __('Alerts paused') }}',
+                        message: this.enabled
+                            ? '{{ __('You will receive new log alerts again.') }}'
+                            : '{{ __('New log alerts are paused. You can still use Demo.') }}',
+                        level: this.enabled ? 'LOW' : 'MID',
+                        timeout: 2600,
+                        force: true,
+                    });
+                };
+            },
+            pushAlert({ title, message, level = 'LOW', timeout = 5500, force = false }) {
+                if (!this.enabled && !force) {
+                    return;
+                }
+
+                const styles = this.getStyles(level);
+                const id = this.nextId++;
+                const alert = {
+                    id,
+                    title,
+                    message,
+                    visible: true,
+                    level: level,
+                    levelLabel: styles.levelLabel,
+                    timeLabel: new Date().toLocaleTimeString(),
+                    wrapperClass: styles.wrapperClass,
+                    barClass: styles.barClass,
+                    badgeClass: styles.badgeClass,
+                    accentClass: styles.accentClass,
+                    iconClass: styles.iconClass,
+                    timeout: timeout,
+                    remaining: timeout,
+                    progress: 100,
+                    intervalId: null,
+                };
+
+                this.alerts.unshift(alert);
+                if (this.alerts.length > this.maxVisible) {
+                    const overflow = this.alerts.splice(this.maxVisible);
+                    overflow.forEach((a) => {
+                        if (a.intervalId) {
+                            window.clearInterval(a.intervalId);
+                        }
+                    });
+                }
+
+                this.startCountdown(id);
+            },
+            startCountdown(id) {
+                const idx = this.alerts.findIndex((a) => a.id === id);
+                if (idx === -1) return;
+
+                if (this.alerts[idx].intervalId) {
+                    window.clearInterval(this.alerts[idx].intervalId);
+                }
+
+                const startedAt = Date.now();
+                const initialRemaining = this.alerts[idx].remaining;
+
+                this.alerts[idx].intervalId = window.setInterval(() => {
+                    const currentIdx = this.alerts.findIndex((a) => a.id === id);
+                    if (currentIdx === -1) {
+                        return;
+                    }
+
+                    const current = this.alerts[currentIdx];
+                    const elapsed = Date.now() - startedAt;
+                    current.remaining = Math.max(0, initialRemaining - elapsed);
+                    current.progress = Math.max(0, (current.remaining / current.timeout) * 100);
+
+                    if (current.remaining <= 0) {
+                        this.dismiss(id);
+                    }
+                }, 90);
+            },
+            pause(id) {
+                const alert = this.alerts.find((a) => a.id === id);
+                if (!alert) return;
+                if (alert.intervalId) {
+                    window.clearInterval(alert.intervalId);
+                    alert.intervalId = null;
+                }
+            },
+            resume(id) {
+                const alert = this.alerts.find((a) => a.id === id);
+                if (!alert || alert.remaining <= 0 || alert.intervalId) {
+                    return;
+                }
+
+                this.startCountdown(id);
+            },
+            scrollToLogs() {
+                const widget = document.getElementById('dashboard-logs-widget');
+                if (!widget) return;
+
+                widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                widget.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2', 'ring-offset-gray-200', 'dark:ring-offset-gray-900', 'rounded-lg');
+                window.setTimeout(() => {
+                    widget.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2', 'ring-offset-gray-200', 'dark:ring-offset-gray-900', 'rounded-lg');
+                }, 1600);
+            },
+            dismiss(id) {
+                const idx = this.alerts.findIndex((a) => a.id === id);
+                if (idx === -1) return;
+                if (this.alerts[idx].intervalId) {
+                    window.clearInterval(this.alerts[idx].intervalId);
+                    this.alerts[idx].intervalId = null;
+                }
+                this.alerts[idx].visible = false;
+
+                window.setTimeout(() => {
+                    this.alerts = this.alerts.filter((a) => a.id !== id);
+                }, 220);
+            },
+            readEnabledPreference() {
+                const raw = window.localStorage.getItem('dashboard-log-alerts-enabled');
+                return raw !== '0';
+            },
+            syncControls() {
+                const button = document.getElementById('dashboard-alert-toggle-btn');
+                const label = document.getElementById('dashboard-alert-toggle-label');
+                if (!button || !label) return;
+
+                label.textContent = this.enabled ? '{{ __('Alerts: ON') }}' : '{{ __('Alerts: OFF') }}';
+
+                button.classList.remove('bg-white/20', 'hover:bg-white/30', 'bg-black/30', 'hover:bg-black/40');
+                if (this.enabled) {
+                    button.classList.add('bg-white/20', 'hover:bg-white/30');
+                } else {
+                    button.classList.add('bg-black/30', 'hover:bg-black/40');
+                }
+            },
+            getStyles(level) {
+                if (level === 'HIGH') {
+                    return {
+                        wrapperClass: 'bg-red-50/95 border-red-200 text-red-900 dark:bg-red-900/85 dark:border-red-700 dark:text-red-100',
+                        barClass: 'bg-red-500',
+                        badgeClass: 'bg-red-200/80 text-red-800 dark:bg-red-800/70 dark:text-red-100',
+                        accentClass: 'bg-red-500',
+                        iconClass: 'fa-solid fa-circle-exclamation text-red-600 dark:text-red-300',
+                        levelLabel: '{{ __('Critical') }}',
+                    };
+                }
+
+                if (level === 'MID') {
+                    return {
+                        wrapperClass: 'bg-amber-50/95 border-amber-200 text-amber-900 dark:bg-amber-900/85 dark:border-amber-700 dark:text-amber-100',
+                        barClass: 'bg-amber-500',
+                        badgeClass: 'bg-amber-200/80 text-amber-800 dark:bg-amber-800/70 dark:text-amber-100',
+                        accentClass: 'bg-amber-500',
+                        iconClass: 'fa-solid fa-triangle-exclamation text-amber-600 dark:text-amber-300',
+                        levelLabel: '{{ __('Warning') }}',
+                    };
+                }
+
+                return {
+                    wrapperClass: 'bg-blue-50/95 border-blue-200 text-blue-900 dark:bg-blue-900/85 dark:border-blue-700 dark:text-blue-100',
+                    barClass: 'bg-blue-500',
+                    badgeClass: 'bg-blue-200/80 text-blue-800 dark:bg-blue-800/70 dark:text-blue-100',
+                    accentClass: 'bg-blue-500',
+                    iconClass: 'fa-solid fa-circle-info text-blue-600 dark:text-blue-300',
+                    levelLabel: '{{ __('Info') }}',
+                };
+            },
+        };
+    }
 </script>
