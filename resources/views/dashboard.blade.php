@@ -25,21 +25,6 @@
                 {{ __('Report channel issues') }}
             </button>
 
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button id="dashboard-alert-toggle-btn" type="button"
-                    onclick="window.toggleDashboardLogAlertsEnabled && window.toggleDashboardLogAlertsEnabled()"
-                    class="w-full bg-white/20 border border-white/40 text-white rounded-lg py-2.5 flex items-center justify-center shadow-md hover:bg-white/30 transition-all font-semibold text-sm">
-                    <i class="fa-solid fa-bell-concierge mr-2"></i>
-                    <span id="dashboard-alert-toggle-label">{{ __('Alerts: ON') }}</span>
-                </button>
-
-                <button type="button" onclick="window.showDashboardLogAlertDemo && window.showDashboardLogAlertDemo()"
-                    class="w-full bg-white/20 border border-white/40 text-white rounded-lg py-2.5 flex items-center justify-center shadow-md hover:bg-white/30 transition-all font-semibold text-sm">
-                    <i class="fa-solid fa-bell mr-2"></i>
-                    {{ __('Alert demo') }}
-                </button>
-            </div>
-
             {{-- <button type="button" data-modal-target="create-hourly-report-modal"
                 data-modal-toggle="create-hourly-report-modal"
                 class="w-full bg-green-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">
@@ -358,15 +343,9 @@
         return {
             alerts: [],
             nextId: 1,
-            enabled: true,
             maxVisible: 4,
             init() {
-                this.enabled = this.readEnabledPreference();
-                this.syncControls();
-
                 window.addEventListener('dashboard-log-alert', (event) => {
-                    if (!this.enabled) return;
-
                     const detail = Array.isArray(event?.detail) ? (event.detail[0] || {}) : (event?.detail || {});
                     this.pushAlert({
                         title: detail.title || '{{ __('New logs detected') }}',
@@ -375,38 +354,8 @@
                         timeout: 5500,
                     });
                 });
-
-                window.showDashboardLogAlertDemo = () => {
-                    this.pushAlert({
-                        title: '{{ __('Demo: New logs detected') }}',
-                        message: '{{ __('This is how the global alert will be shown when new logs arrive.') }}',
-                        level: 'MID',
-                        timeout: 5500,
-                        force: true,
-                    });
-                };
-
-                window.toggleDashboardLogAlertsEnabled = () => {
-                    this.enabled = !this.enabled;
-                    window.localStorage.setItem('dashboard-log-alerts-enabled', this.enabled ? '1' : '0');
-                    this.syncControls();
-
-                    this.pushAlert({
-                        title: this.enabled ? '{{ __('Alerts enabled') }}' : '{{ __('Alerts paused') }}',
-                        message: this.enabled
-                            ? '{{ __('You will receive new log alerts again.') }}'
-                            : '{{ __('New log alerts are paused. You can still use Demo.') }}',
-                        level: this.enabled ? 'LOW' : 'MID',
-                        timeout: 2600,
-                        force: true,
-                    });
-                };
             },
-            pushAlert({ title, message, level = 'LOW', timeout = 5500, force = false }) {
-                if (!this.enabled && !force) {
-                    return;
-                }
-
+            pushAlert({ title, message, level = 'LOW', timeout = 5500 }) {
                 const styles = this.getStyles(level);
                 const id = this.nextId++;
                 const alert = {
@@ -505,24 +454,6 @@
                 window.setTimeout(() => {
                     this.alerts = this.alerts.filter((a) => a.id !== id);
                 }, 220);
-            },
-            readEnabledPreference() {
-                const raw = window.localStorage.getItem('dashboard-log-alerts-enabled');
-                return raw !== '0';
-            },
-            syncControls() {
-                const button = document.getElementById('dashboard-alert-toggle-btn');
-                const label = document.getElementById('dashboard-alert-toggle-label');
-                if (!button || !label) return;
-
-                label.textContent = this.enabled ? '{{ __('Alerts: ON') }}' : '{{ __('Alerts: OFF') }}';
-
-                button.classList.remove('bg-white/20', 'hover:bg-white/30', 'bg-black/30', 'hover:bg-black/40');
-                if (this.enabled) {
-                    button.classList.add('bg-white/20', 'hover:bg-white/30');
-                } else {
-                    button.classList.add('bg-black/30', 'hover:bg-black/40');
-                }
             },
             getStyles(level) {
                 if (level === 'HIGH') {
