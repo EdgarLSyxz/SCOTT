@@ -1173,5 +1173,7 @@
     "Log report deleted successfully.": "Reporte de logs eliminado con éxito.",
     "Log report uploaded successfully.": "Reporte de logs subido con éxito.",
     "Test": "Prueba",
-    "Success": "Éxito"
+    "Success": "Éxito",
+    "New logs detected": "Nuevos logs detectados",
+    "A new log has arrived.": "Ha llegado un nuevo log."
 }
