@@ -552,11 +552,8 @@
                                             {{ $cat['name'] }}
                                         </h4>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                            <span class="font-semibold">{{ $cat['unique_count'] ?? $cat['count'] ?? 0 }}</span>
-                                            <span class="text-xs">{{ __('Unique') }}</span>
-                                            &nbsp;•&nbsp;
                                             <span class="text-xs">{{ $cat['count'] ?? 0 }}</span>
-                                            <span class="text-xs">{{ __('Total') }}</span>
+                                            <span class="text-xs">{{ __('Records') }}</span>
                                         </p>
                                     </div>
                                 </div>
