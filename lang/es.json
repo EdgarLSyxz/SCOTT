@@ -1178,5 +1178,6 @@
     "A new log has arrived.": "Ha llegado un nuevo log.",
     ":count new log(s). Last: :type on :channel": ":count nuevo(s) log(s). Último: :type en :channel",
     "No type": "Sin tipo",
-    "Unknown channel": "Canal desconocido"
+    "Unknown channel": "Canal desconocido",
+    "CDN Traffic": "Tráfico CDN"
 }
