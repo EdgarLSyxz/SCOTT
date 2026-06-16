@@ -229,6 +229,92 @@ class DownloadExportController extends Controller
         return $summary;
     }
 
+    private function getCdnConsumptionStats(): array
+    {
+        $file = base_path('documents/Calculo de Consumo por CDN.xlsx');
+
+        if (!file_exists($file)) {
+            return ['rows' => [], 'headers' => []];
+        }
+
+        try {
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $headers = [
+                $sheet->getCell('A1')->getCalculatedValue() ?? 'Descripción',
+                $sheet->getCell('B1')->getCalculatedValue() ?? 'StarTV Stream',
+                $sheet->getCell('C1')->getCalculatedValue() ?? 'StarTV Everywhere',
+            ];
+
+            $rows = [];
+            $rowDefinitions = [
+                ['label' => 'Usuarios (Marketing)', 'cols' => ['B', 'C']],
+                ['label' => 'Dispositivos Simultáneos por Usuario (Fijo)', 'cols' => ['B', 'C']],
+                ['label' => 'Dispositivos', 'cols' => ['B', 'C']],
+                ['label' => 'Usuarios Totales', 'cols' => ['B', 'C']],
+                ['label' => 'Dispositivos Totales', 'cols' => ['B', 'C']],
+                ['label' => 'Bandwidth Promedio de Consumo (Mbps) por Dispositivo OTT (Fijo)', 'cols' => ['B', 'C']],
+                ['label' => 'Consumo Promedio en una Hora (GB) por Dispositivo OTT', 'cols' => ['B', 'C']],
+                ['label' => 'Consumo (GB) por Dispositivo OTT', 'cols' => ['B', 'C']],
+                ['label' => 'GiB Consumidos', 'cols' => ['B', 'C']],
+                ['label' => 'TB Consumidos', 'cols' => ['B', 'C']],
+                ['label' => 'Costo de CDN BPK ≤ 1 PB (Fijo)', 'cols' => ['B', 'C']],
+                ['label' => 'Costo por TB Consumido', 'cols' => ['B', 'C']],
+                ['label' => 'Costo por Dispositivo', 'cols' => ['B', 'C']],
+                ['label' => 'Costo Por Usuario', 'cols' => ['B', 'C']],
+            ];
+
+            foreach ($rowDefinitions as $index => $def) {
+                $rowNum = $index + 2;
+                $cols = [];
+                $rawCols = [];
+                foreach ($def['cols'] as $col) {
+                    $cell = $sheet->getCell($col . $rowNum);
+                    $val = $cell->getCalculatedValue();
+                    $rawCols[$col] = $val;
+                    $cols[$col] = $this->formatCdnValue($val);
+                }
+
+                $cEmpty = !isset($rawCols['C']) || $rawCols['C'] === null || $rawCols['C'] === '' || (is_string($rawCols['C']) && trim((string) $rawCols['C']) === '');
+
+                $rows[] = [
+                    'label' => $def['label'],
+                    'B' => $cols['B'] ?? '—',
+                    'C' => $cols['C'] ?? '—',
+                    'B_raw' => $rawCols['B'] ?? null,
+                    'merge' => $cEmpty,
+                ];
+            }
+
+            return ['headers' => $headers, 'rows' => $rows];
+        } catch (\Throwable $e) {
+            \Log::error('Error reading CDN consumption Excel', ['error' => $e->getMessage()]);
+            return ['rows' => [], 'headers' => []];
+        }
+    }
+
+    private function formatCdnValue($val): string
+    {
+        if ($val === null || $val === '') {
+            return '—';
+        }
+
+        if (!is_numeric($val)) {
+            return (string) $val;
+        }
+
+        $floatVal = (float) $val;
+
+        if (abs($floatVal - round($floatVal)) < 0.0001) {
+            return number_format($floatVal, 0);
+        }
+
+        return number_format($floatVal, 2);
+    }
+
     public function historyCSV(Request $request)
     {
         $start = $request->query('start');
@@ -1134,6 +1220,7 @@ class DownloadExportController extends Controller
         ]);
 
         $data['competitor_ranking'] = $this->getCompetitorRankingForPdf();
+        $data['cdn_stats'] = $this->getCdnConsumptionStats();
 
         $html = view('admin.devices.monthly-downloads.download-history', $data)->render();
 
@@ -1350,6 +1437,7 @@ class DownloadExportController extends Controller
         );
         $pdfData['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($pdfData['download_rows'] ?? []);
         $pdfData['competitor_ranking'] = $this->getCompetitorRankingForPdf();
+        $pdfData['cdn_stats'] = $this->getCdnConsumptionStats();
 
         \Log::info('historyEmail: PDF data before render', [
             'download_rows_count' => count($pdfData['download_rows'] ?? []),

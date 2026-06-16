@@ -69,6 +69,31 @@
         .trend-down { background: #fee2e2; color: #991b1b; }
         .trend-same { background: #e5e7eb; color: #374151; }
         .trend-new { background: #dbeafe; color: #1e40af; }
+        .cdn-panel, .cdn-panel-header, .cdn-panel-title, .cdn-panel-subtitle,
+        .cdn-panel *,
+        .cdn-table, .cdn-table thead th, .cdn-table tbody td, .cdn-table th, .cdn-table td,
+        .cdn-group-row td,
+        .cdn-label, .cdn-value, .cdn-row-merged td, .cdn-pill {
+            font-family: DejaVuSans, "DejaVu Sans", Arial, Helvetica, sans-serif !important;
+        }
+        .cdn-panel { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; }
+        .cdn-panel-header { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; background: #fafafa; }
+        .cdn-panel-title { margin: 0; font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.2px; }
+        .cdn-panel-subtitle { margin-top: 4px; font-size: 10px; color: var(--muted); }
+        .cdn-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .cdn-table thead th { padding: 9px 12px; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.35px; color: #374151; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+        .cdn-table thead th:first-child { text-align: left; }
+        .cdn-table thead th:not(:first-child) { text-align: center; }
+        .cdn-table tbody td { padding: 9px 12px; border-bottom: 1px solid #edf0f3; color: var(--text); vertical-align: middle; }
+        .cdn-table tbody tr:last-child td { border-bottom: none; }
+        .cdn-table tbody tr:nth-child(even):not(.cdn-group-row):not(.cdn-row-merged) td { background: #fcfcfd; }
+        .cdn-group-row td { background: #f4f5f7; color: #4b5563; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.35px; padding: 8px 12px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+        .cdn-label { font-weight: 600; color: #374151; }
+        .cdn-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; }
+        .cdn-row-merged td { background: #f9fafb; }
+        .cdn-row-merged .cdn-label { color: #111827; }
+        .cdn-row-merged .cdn-value-merged { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: #111827; }
+        .cdn-pill { display: inline-block; min-width: 88px; padding: 3px 10px; border: 1px solid #d1d5db; border-radius: 999px; background: #fff; font-variant-numeric: tabular-nums; }
     </style>
 </head>
 <body>
@@ -592,6 +617,112 @@
                     </tbody>
                 </table>
                 <div class="note">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 3 }}. {{ __('Competing apps of StarTV Stream on Google Play, sorted by rating for the selected range.') }}</div>
+            </div>
+        @endif
+
+        @php
+            $cdnStatsHeaders = $cdn_stats['headers'] ?? [];
+            $cdnStatsRows = $cdn_stats['rows'] ?? [];
+        @endphp
+
+        @if(!empty($cdnStatsRows))
+            @php
+                $mergedRowLabels = [
+                    'Usuarios Totales',
+                    'Dispositivos Totales',
+                    'Bandwidth Promedio de Consumo (Mbps) por Dispositivo OTT (Fijo)',
+                    'Consumo Promedio en una Hora (GB) por Dispositivo OTT',
+                    'Consumo (GB) por Dispositivo OTT',
+                    'GiB Consumidos',
+                    'TB Consumidos',
+                    'Costo de CDN BPK ≤ 1 PB (Fijo)',
+                    'Costo por TB Consumido',
+                    'Costo por Dispositivo'
+                ];
+                $cdnGroupLabels = [
+                    'Datos base' => [
+                        'Usuarios (Marketing)',
+                        'Dispositivos Simultáneos por Usuario (Fijo)',
+                        'Dispositivos',
+                    ],
+                    'Resumen general' => [
+                        'Usuarios Totales',
+                        'Dispositivos Totales',
+                    ],
+                    'Consumo OTT' => [
+                        'Bandwidth Promedio de Consumo (Mbps) por Dispositivo OTT (Fijo)',
+                        'Consumo Promedio en una Hora (GB) por Dispositivo OTT',
+                        'Consumo (GB) por Dispositivo OTT',
+                        'GiB Consumidos',
+                        'TB Consumidos',
+                    ],
+                    'Costos' => [
+                        'Costo de CDN BPK ≤ 1 PB (Fijo)',
+                        'Costo por TB Consumido',
+                        'Costo por Dispositivo',
+                        'Costo Por Usuario',
+                    ],
+                ];
+                $cdnRowGroupMap = [];
+                foreach ($cdnGroupLabels as $groupLabel => $groupRows) {
+                    foreach ($groupRows as $groupRowLabel) {
+                        $cdnRowGroupMap[$groupRowLabel] = $groupLabel;
+                    }
+                }
+            @endphp
+            <div class="section" style="page-break-before: always;">
+                <h3>{{ __('CDN Consumption Statistics') }}</h3>
+                <div class="note" style="margin-bottom: 12px;">
+                    {{ __('Summary of CDN consumption and cost projection.') }}
+                </div>
+                <div class="cdn-panel">
+                    <div class="cdn-panel-header">
+                        <div class="cdn-panel-title">{{ __('Consumption overview') }}</div>
+                    </div>
+                    <table class="cdn-table">
+                        <thead>
+                            <tr>
+                                <th>{{ $cdnStatsHeaders[0] ?? 'Descripción' }}</th>
+                                <th>{{ $cdnStatsHeaders[1] ?? 'StarTV Stream' }}</th>
+                                <th>{{ $cdnStatsHeaders[2] ?? 'StarTV Everywhere' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $currentGroup = null; @endphp
+                            @foreach($cdnStatsRows as $idx => $row)
+                                @php
+                                    $label = $row['label'] ?? '';
+                                    $groupLabel = $cdnRowGroupMap[$label] ?? null;
+                                    $isMergedRow = in_array($label, $mergedRowLabels, true);
+                                    $valueB = $row['B'] ?? '—';
+                                    $valueC = $row['C'] ?? '—';
+                                    $mergedValue = $valueB !== '—' ? $valueB : $valueC;
+                                @endphp
+                                @if($groupLabel && $groupLabel !== $currentGroup)
+                                    <tr class="cdn-group-row">
+                                        <td colspan="3">{{ $groupLabel }}</td>
+                                    </tr>
+                                    @php $currentGroup = $groupLabel; @endphp
+                                @endif
+                                @if($isMergedRow)
+                                    <tr class="cdn-row-merged">
+                                        <td class="cdn-label">{{ $label }}</td>
+                                        <td colspan="2" class="cdn-value-merged">
+                                            <span class="cdn-pill">{{ $mergedValue }}</span>
+                                        </td>
+                                    </tr>
+                                @else
+                                    <tr>
+                                        <td class="cdn-label">{{ $label }}</td>
+                                        <td class="cdn-value">{{ $valueB }}</td>
+                                        <td class="cdn-value">{{ $valueC }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="note" style="margin-top: 10px;">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 4 }}. {{ __('CDN consumption and cost estimates from the reference Excel file.') }}</div>
             </div>
         @endif
 

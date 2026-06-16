@@ -1179,5 +1179,9 @@
     ":count new log(s). Last: :type on :channel": ":count nuevo(s) log(s). Último: :type en :channel",
     "No type": "Sin tipo",
     "Unknown channel": "Canal desconocido",
-    "CDN Traffic": "Tráfico CDN"
+    "CDN Traffic": "Tráfico CDN",
+    "CDN Consumption Statistics": "Estadísticas de Consumo de CDN",
+    "Summary of CDN consumption and cost projection.": "Resumen del consumo de CDN y proyección de costos.",
+    "Consumption overview": "Resumen del consumo",
+    "CDN consumption and cost estimates from the reference Excel file.": "Consumo de CDN y estimaciones de costos a partir del archivo Excel de referencia."
 }
