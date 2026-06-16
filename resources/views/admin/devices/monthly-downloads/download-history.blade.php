@@ -69,31 +69,32 @@
         .trend-down { background: #fee2e2; color: #991b1b; }
         .trend-same { background: #e5e7eb; color: #374151; }
         .trend-new { background: #dbeafe; color: #1e40af; }
-        .cdn-panel, .cdn-panel-header, .cdn-panel-title, .cdn-panel-subtitle,
-        .cdn-panel *,
+        .cdn-panel, .cdn-panel-header, .cdn-panel-title,
         .cdn-table, .cdn-table thead th, .cdn-table tbody td, .cdn-table th, .cdn-table td,
         .cdn-group-row td,
         .cdn-label, .cdn-value, .cdn-row-merged td, .cdn-pill {
-            font-family: DejaVuSans, "DejaVu Sans", Arial, Helvetica, sans-serif !important;
+            font-family: Arial, Helvetica, sans-serif !important;
         }
-        .cdn-panel { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; }
-        .cdn-panel-header { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; background: #fafafa; }
-        .cdn-panel-title { margin: 0; font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.2px; }
-        .cdn-panel-subtitle { margin-top: 4px; font-size: 10px; color: var(--muted); }
+        .cdn-panel { border: 1px solid #e9d5f3; border-radius: 10px; overflow: hidden; background: #fff; }
+        .cdn-panel-header { padding: 14px 16px; border-bottom: 1px solid #e9d5f3; background: linear-gradient(135deg, #fdf7ff 0%, #ffffff 50%); border-left: 4px solid #9F24A5; }
+        .cdn-panel-title { margin: 0; font-size: 12px; font-weight: 700; color: #9F24A5; letter-spacing: 0.3px; }
         .cdn-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .cdn-table thead th { padding: 9px 12px; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.35px; color: #374151; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-        .cdn-table thead th:first-child { text-align: left; }
-        .cdn-table thead th:not(:first-child) { text-align: center; }
-        .cdn-table tbody td { padding: 9px 12px; border-bottom: 1px solid #edf0f3; color: var(--text); vertical-align: middle; }
-        .cdn-table tbody tr:last-child td { border-bottom: none; }
-        .cdn-table tbody tr:nth-child(even):not(.cdn-group-row):not(.cdn-row-merged) td { background: #fcfcfd; }
-        .cdn-group-row td { background: #f4f5f7; color: #4b5563; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.35px; padding: 8px 12px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
-        .cdn-label { font-weight: 600; color: #374151; }
-        .cdn-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; }
-        .cdn-row-merged td { background: #f9fafb; }
-        .cdn-row-merged .cdn-label { color: #111827; }
-        .cdn-row-merged .cdn-value-merged { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: #111827; }
-        .cdn-pill { display: inline-block; min-width: 88px; padding: 3px 10px; border: 1px solid #d1d5db; border-radius: 999px; background: #fff; font-variant-numeric: tabular-nums; }
+        .cdn-table thead th { padding: 10px 14px; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.4px; color: #ffffff; text-align: center; }
+        .cdn-table thead .cdn-th-desc { background: #9F24A5; text-align: left; }
+        .cdn-table thead .cdn-th-stream { background: #00A7C4; }
+        .cdn-table thead .cdn-th-everywhere { background: #8B5CF6; }
+        .cdn-table tbody td { padding: 9px 14px; vertical-align: middle; }
+        .cdn-table tbody td:not(.cdn-group-row td) { border-bottom: 1px solid #f2eaf5; color: #374151; }
+        .cdn-table tbody tr:last-child td:not(.cdn-group-row td) { border-bottom: none; }
+        .cdn-group-row td { background: #f3e8f9; color: #7a1d82; font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 7px 14px; border-top: 1px solid #e9d5f3; border-bottom: 1px solid #e9d5f3; }
+        .cdn-group-row td:first-child { border-left: 3px solid #9F24A5; }
+        .cdn-label { font-weight: 600; color: #374151; padding-left: 8px; }
+        .cdn-value-stream { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0089a3; }
+        .cdn-value-everywhere { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #7c3aed; }
+        .cdn-row-merged td { background: #fafafa; }
+        .cdn-row-merged .cdn-label { color: #6b21a8; }
+        .cdn-row-merged .cdn-value-merged { text-align: center; font-variant-numeric: tabular-nums; }
+        .cdn-pill { display: inline-block; min-width: 80px; padding: 4px 12px; border: 1px solid #9F24A5; border-radius: 5px; background: #fdf7ff; font-variant-numeric: tabular-nums; color: #9F24A5; font-weight: 700; font-size: 10.5px; }
     </style>
 </head>
 <body>
@@ -682,9 +683,9 @@
                     <table class="cdn-table">
                         <thead>
                             <tr>
-                                <th>{{ $cdnStatsHeaders[0] ?? 'Descripción' }}</th>
-                                <th>{{ $cdnStatsHeaders[1] ?? 'StarTV Stream' }}</th>
-                                <th>{{ $cdnStatsHeaders[2] ?? 'StarTV Everywhere' }}</th>
+                                <th class="cdn-th-desc">{{ $cdnStatsHeaders[0] ?? 'Descripción' }}</th>
+                                <th class="cdn-th-stream">{{ $cdnStatsHeaders[1] ?? 'StarTV Stream' }}</th>
+                                <th class="cdn-th-everywhere">{{ $cdnStatsHeaders[2] ?? 'StarTV Everywhere' }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -714,8 +715,8 @@
                                 @else
                                     <tr>
                                         <td class="cdn-label">{{ $label }}</td>
-                                        <td class="cdn-value">{{ $valueB }}</td>
-                                        <td class="cdn-value">{{ $valueC }}</td>
+                                        <td class="cdn-value-stream">{{ $valueB }}</td>
+                                        <td class="cdn-value-everywhere">{{ $valueC }}</td>
                                     </tr>
                                 @endif
                             @endforeach
