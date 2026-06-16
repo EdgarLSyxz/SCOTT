@@ -72,7 +72,7 @@
         .cdn-panel, .cdn-panel-header, .cdn-panel-title,
         .cdn-table, .cdn-table thead th, .cdn-table tbody td, .cdn-table th, .cdn-table td,
         .cdn-group-row td,
-        .cdn-label, .cdn-value, .cdn-row-merged td, .cdn-pill {
+        .cdn-label, .cdn-value, .cdn-row-merged td, .cdn-pill, .cdn-th-desc, .cdn-th-stream, .cdn-th-everywhere, .cdn-value-stream, .cdn-value-everywhere {
             font-family: Arial, Helvetica, sans-serif !important;
         }
         .cdn-panel { border: 1px solid #e9d5f3; border-radius: 10px; overflow: hidden; background: #fff; }
