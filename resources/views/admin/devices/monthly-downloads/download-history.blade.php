@@ -636,7 +636,7 @@
                     'Consumo (GB) por Dispositivo OTT',
                     'GiB Consumidos',
                     'TB Consumidos',
-                    'Costo de CDN BPK ≤ 1 PB (Fijo)',
+                    'Costo de CDN BPK < 1 PB (Fijo)',
                     'Costo por TB Consumido',
                     'Costo por Dispositivo'
                 ];
@@ -658,7 +658,7 @@
                         'TB Consumidos',
                     ],
                     'Costos' => [
-                        'Costo de CDN BPK ≤ 1 PB (Fijo)',
+                        'Costo de CDN BPK < 1 PB (Fijo)',
                         'Costo por TB Consumido',
                         'Costo por Dispositivo',
                         'Costo Por Usuario',
