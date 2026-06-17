@@ -727,6 +727,8 @@
                                     ];
                                     $isCurrencyRow = in_array($label, $currencyRowLabels, true) || in_array($normalizedLabel, array_map(function($s){ return str_replace(['≤','<'], '<', $s); }, $currencyRowLabels), true);
                                     $pillValue = ($isMergedRow && $isCurrencyRow && $mergedValue !== '—') ? '$' . $mergedValue : $mergedValue;
+                                    $displayB = ($isCurrencyRow && !$isMergedRow && $valueB !== '—') ? '$' . $valueB : $valueB;
+                                    $displayC = ($isCurrencyRow && !$isMergedRow && $valueC !== '—') ? '$' . $valueC : $valueC;
                                 @endphp
                                 @if($groupLabel && $groupLabel !== $currentGroup)
                                     <tr class="cdn-group-row">
@@ -744,8 +746,8 @@
                                 @else
                                     <tr>
                                         <td class="cdn-label">{{ $label }}</td>
-                                        <td class="cdn-value-stream">{{ $valueB }}</td>
-                                        <td class="cdn-value-everywhere">{{ $valueC }}</td>
+                                        <td class="cdn-value-stream">{{ $displayB }}</td>
+                                        <td class="cdn-value-everywhere">{{ $displayC }}</td>
                                     </tr>
                                 @endif
                             @endforeach
