@@ -1181,7 +1181,7 @@
     "Unknown channel": "Canal desconocido",
     "CDN Traffic": "Tráfico CDN",
     "CDN Consumption Statistics": "Estadísticas de Consumo de CDN",
-    "Summary of CDN consumption and cost projection.": "Resumen del consumo de CDN y proyección de costos.",
+    "CDN Consumption and cost projection.": "Consumo de CDN y proyección de costos.",
     "Consumption overview": "Resumen del consumo",
-    "CDN consumption and cost estimates from the reference Excel file.": "Consumo de CDN y estimaciones de costos a partir del archivo Excel de referencia."
+    "CDN Consumption and cost estimates from the reference Excel file.": "Consumo de CDN y estimaciones de costos a partir del archivo Excel de referencia."
 }

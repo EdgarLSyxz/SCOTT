@@ -70,10 +70,14 @@
         .trend-same { background: #e5e7eb; color: #374151; }
         .trend-new { background: #dbeafe; color: #1e40af; }
         .cdn-panel, .cdn-panel-header, .cdn-panel-title,
-        .cdn-table, .cdn-table thead th, .cdn-table tbody td, .cdn-table th, .cdn-table td,
-        .cdn-group-row td,
-        .cdn-label, .cdn-value, .cdn-row-merged td, .cdn-pill, .cdn-th-desc, .cdn-th-stream, .cdn-th-everywhere, .cdn-value-stream, .cdn-value-everywhere {
-            font-family: Arial, Helvetica, sans-serif !important;
+        .cdn-table, .cdn-table *, .cdn-table thead, .cdn-table tbody, .cdn-table tr, .cdn-table th, .cdn-table td,
+        .cdn-table thead th, .cdn-table tbody td, .cdn-table tfoot td,
+        .cdn-group-row, .cdn-group-row td,
+        .cdn-label, .cdn-value, .cdn-row-merged, .cdn-row-merged td,
+        .cdn-pill, .cdn-pill *,
+        .cdn-th-desc, .cdn-th-stream, .cdn-th-everywhere,
+        .cdn-value-stream, .cdn-value-everywhere, .cdn-value-merged {
+            font-family: Arial, Helvetica, "Liberation Sans", "DejaVu Sans", sans-serif !important;
         }
         .cdn-panel { border: 1px solid #e9d5f3; border-radius: 10px; overflow: hidden; background: #fff; }
         .cdn-panel-header { padding: 14px 16px; border-bottom: 1px solid #e9d5f3; background: linear-gradient(135deg, #fdf7ff 0%, #ffffff 50%); border-left: 4px solid #9F24A5; }
@@ -95,6 +99,18 @@
         .cdn-row-merged .cdn-label { color: #6b21a8; }
         .cdn-row-merged .cdn-value-merged { text-align: center; font-variant-numeric: tabular-nums; }
         .cdn-pill { display: inline-block; min-width: 80px; padding: 4px 12px; border: 1px solid #9F24A5; border-radius: 5px; background: #fdf7ff; font-variant-numeric: tabular-nums; color: #9F24A5; font-weight: 700; font-size: 10.5px; }
+
+        .cdn-label,
+        .cdn-row-merged .cdn-label {
+            font-family: DejaVuSans, "DejaVu Sans", Arial, Helvetica, sans-serif !important;
+        }
+
+        .cdn-table th.cdn-th-desc,
+        .cdn-table td:first-child,
+        .cdn-table tr.cdn-row-merged td:first-child,
+        .cdn-table tr.cdn-group-row td:first-child {
+            font-family: DejaVuSans, "DejaVu Sans", Arial, Helvetica, sans-serif !important;
+        }
     </style>
 </head>
 <body>
@@ -637,6 +653,7 @@
                     'GiB Consumidos',
                     'TB Consumidos',
                     'Costo de CDN BPK < 1 PB (Fijo)',
+                    'Costo de CDN BPK < 1 PB (Fijo)',
                     'Costo por TB Consumido',
                     'Costo por Dispositivo'
                 ];
@@ -659,6 +676,7 @@
                     ],
                     'Costos' => [
                         'Costo de CDN BPK < 1 PB (Fijo)',
+                        'Costo de CDN BPK < 1 PB (Fijo)',
                         'Costo por TB Consumido',
                         'Costo por Dispositivo',
                         'Costo Por Usuario',
@@ -674,7 +692,7 @@
             <div class="section" style="page-break-before: always;">
                 <h3>{{ __('CDN Consumption Statistics') }}</h3>
                 <div class="note" style="margin-bottom: 12px;">
-                    {{ __('Summary of CDN consumption and cost projection.') }}
+                    {{ __('CDN Consumption and cost projection.') }}
                 </div>
                 <div class="cdn-panel">
                     <div class="cdn-panel-header">
@@ -683,7 +701,7 @@
                     <table class="cdn-table">
                         <thead>
                             <tr>
-                                <th class="cdn-th-desc">{{ $cdnStatsHeaders[0] ?? 'Descripción' }}</th>
+                                <th class="cdn-th-desc">{{ $cdnStatsHeaders[0] ?? __('Description') }}</th>
                                 <th class="cdn-th-stream">{{ $cdnStatsHeaders[1] ?? 'StarTV Stream' }}</th>
                                 <th class="cdn-th-everywhere">{{ $cdnStatsHeaders[2] ?? 'StarTV Everywhere' }}</th>
                             </tr>
@@ -694,10 +712,21 @@
                                 @php
                                     $label = $row['label'] ?? '';
                                     $groupLabel = $cdnRowGroupMap[$label] ?? null;
-                                    $isMergedRow = in_array($label, $mergedRowLabels, true);
+                                    $normalizedLabel = str_replace(['≤','<'], '<', $label);
+                                    $normalizedMerged = array_map(function($s){ return str_replace(['≤','<'], '<', $s); }, $mergedRowLabels);
+                                    $isMergedRow = in_array($label, $mergedRowLabels, true) || in_array($normalizedLabel, $normalizedMerged, true);
                                     $valueB = $row['B'] ?? '—';
                                     $valueC = $row['C'] ?? '—';
                                     $mergedValue = $valueB !== '—' ? $valueB : $valueC;
+                                    $currencyRowLabels = [
+                                        'Costo de CDN BPK < 1 PB (Fijo)',
+                                        'Costo de CDN BPK < 1 PB (Fijo)',
+                                        'Costo por TB Consumido',
+                                        'Costo por Dispositivo',
+                                        'Costo Por Usuario'
+                                    ];
+                                    $isCurrencyRow = in_array($label, $currencyRowLabels, true) || in_array($normalizedLabel, array_map(function($s){ return str_replace(['≤','<'], '<', $s); }, $currencyRowLabels), true);
+                                    $pillValue = ($isMergedRow && $isCurrencyRow && $mergedValue !== '—') ? '$' . $mergedValue : $mergedValue;
                                 @endphp
                                 @if($groupLabel && $groupLabel !== $currentGroup)
                                     <tr class="cdn-group-row">
@@ -709,7 +738,7 @@
                                     <tr class="cdn-row-merged">
                                         <td class="cdn-label">{{ $label }}</td>
                                         <td colspan="2" class="cdn-value-merged">
-                                            <span class="cdn-pill">{{ $mergedValue }}</span>
+                                            <span class="cdn-pill">{{ $pillValue }}</span>
                                         </td>
                                     </tr>
                                 @else
@@ -723,7 +752,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="note" style="margin-top: 10px;">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 4 }}. {{ __('CDN consumption and cost estimates from the reference Excel file.') }}</div>
+                <div class="note" style="margin-top: 10px;">{{ __('Figure') }} {{ !empty($is_multi_year) ? $annualFigureNumber++ : 4 }}. {{ __('CDN Consumption and cost estimates from the reference Excel file.') }}</div>
             </div>
         @endif
 
