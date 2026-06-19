@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
+use App\Http\Controllers\Admin\RackLayoutController;
 use App\Http\Controllers\Admin\ReportSlaController;
 use App\Http\Controllers\Admin\StageController;
 use App\Http\Controllers\Admin\UserController;
@@ -91,3 +92,17 @@ Route::resource('admin/reports/sla', ReportSlaController::class)
     ->middleware(['auth', 'verified']);
 
 Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])->name('user.switch-area')->middleware(['auth', 'verified']);
+
+Route::prefix('rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [RackLayoutController::class, 'index'])->name('index');
+    Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
+    Route::post('/', [RackLayoutController::class, 'store'])->name('store');
+    Route::get('/{rack}', [RackLayoutController::class, 'show'])->name('show');
+    Route::delete('/{rack}', [RackLayoutController::class, 'destroyRack'])->name('destroy-rack');
+    Route::get('/{rack}/export-pdf', [RackLayoutController::class, 'exportPdf'])->name('export-pdf');
+    Route::get('/{rack}/history', [RackLayoutController::class, 'history'])->name('history');
+    Route::get('/{rack}/position/{position}/edit', [RackLayoutController::class, 'edit'])->name('position.edit');
+    Route::put('/{rack}/position/{position}', [RackLayoutController::class, 'update'])->name('position.update');
+    Route::delete('/{rack}/position/{position}', [RackLayoutController::class, 'destroy'])->name('position.destroy');
+    Route::get('/{rack}/position/{position}/history', [RackLayoutController::class, 'positionHistory'])->name('position.history');
+});

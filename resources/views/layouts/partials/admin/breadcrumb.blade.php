@@ -1,8 +1,28 @@
-@if (count($breadcrumbs))
-    @php
-        $area = Auth::user()?->area;
-        $hoverColor = $area === 'OTT' ? 'hover:text-primary-600 dark:hover:text-primary-500' : ($area === 'DTH' ? 'hover:text-secondary-600 dark:hover:text-secondary-500' : 'hover:text-primary-600 dark:hover:text-primary-500');
-    @endphp
+@php
+    $hasBreadcrumbs = false;
+    if (isset($breadcrumbs)) {
+        if (is_countable($breadcrumbs)) {
+            $hasBreadcrumbs = count($breadcrumbs) > 0;
+        } elseif (is_iterable($breadcrumbs)) {
+            if (is_array($breadcrumbs)) {
+                $hasBreadcrumbs = count($breadcrumbs) > 0;
+            } else {
+                try {
+                    $hasBreadcrumbs = iterator_count($breadcrumbs) > 0;
+                } catch (\Throwable $_e) {
+                    $hasBreadcrumbs = true;
+                }
+            }
+        } else {
+            $hasBreadcrumbs = !empty($breadcrumbs);
+        }
+    }
+
+    $area = Auth::user()?->area;
+    $hoverColor = $area === 'OTT' ? 'hover:text-primary-600 dark:hover:text-primary-500' : ($area === 'DTH' ? 'hover:text-secondary-600 dark:hover:text-secondary-500' : 'hover:text-primary-600 dark:hover:text-primary-500');
+@endphp
+
+@if ($hasBreadcrumbs)
     <nav class="flex items-center px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-gray-300 text-sm"
         aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-2">
