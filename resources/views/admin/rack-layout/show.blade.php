@@ -1,15 +1,25 @@
-<x-admin-layout>
-    <x-slot name="breadcrumbs">
-        <li>
-            <a href="{{ route('admin.dashboard') }}" class="text-gray-500 hover:text-gray-700">{{ __('Dashboard') }}</a>
-        </li>
-        <li><span class="text-gray-400 mx-1">/</span></li>
-        <li>
-            <a href="{{ route('admin.rack-layout.index') }}" class="text-gray-500 hover:text-gray-700">{{ __('Rack Layout') }}</a>
-        </li>
-        <li><span class="text-gray-400 mx-1">/</span></li>
-        <li class="text-gray-700 font-medium">{{ $rack->name }}</li>
-    </x-slot>
+<x-admin-layout :breadcrumbs="[
+        [
+            'name' => __('Dashboard'),
+            'icon' => 'fa-solid fa-wrench',
+            'route' => route('admin.dashboard'),
+        ],
+        [
+            'name' => __('Devices'),
+            'icon' => 'fa-solid fa-hard-drive',
+            'route' => route('admin.devices.index'),
+        ],
+        [
+            'name' => __('Rack layout'),
+            'icon' => 'fa-solid fa-server',
+            'route' => route('admin.rack-layout.index'),
+        ],
+        [
+            'name' => __('Rack'),
+            'icon' => 'fa-solid fa-circle-info',
+        ],
+    ]">
+
 
     <x-slot name="action">
         <div class="flex gap-2">
@@ -83,9 +93,9 @@
         <div class="rack-grid">
             @foreach($positions as $idx => $equipment)
                 @php
-                    $position = $idx + 1;
-                    $isEmpty = ! $equipment || empty($equipment->equipment_name);
-                    $colorClass = $equipment && $equipment->color ? 'bg-' . $equipment->color : '';
+    $position = $idx + 1;
+    $isEmpty = !$equipment || empty($equipment->equipment_name);
+    $colorClass = $equipment && $equipment->color ? 'bg-' . $equipment->color : '';
                 @endphp
                 <div class="rack-pos-num">{{ $position }}</div>
                 <div class="rack-pos-cell {{ $isEmpty ? 'empty' : '' }} {{ $colorClass }}">

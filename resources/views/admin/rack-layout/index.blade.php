@@ -5,6 +5,11 @@
             'route' => route('admin.dashboard'),
         ],
         [
+            'name' => __('Devices'),
+            'icon' => 'fa-solid fa-hard-drive',
+            'route' => route('admin.devices.index'),
+        ],
+        [
             'name' => __('Rack layout'),
             'icon' => 'fa-solid fa-server',
         ],
@@ -149,5 +154,4 @@
             </div>
         </div>
     @endif
-
 </x-admin-layout>
