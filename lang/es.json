@@ -1196,5 +1196,10 @@
     "Rack description": "Descripción del rack",
     "Rack units": "Unidades del rack",
     "Units": "Unidades",
-    "Occupied": "Ocupado"
+    "Occupied": "Ocupado",
+    "History": "Historial",
+    "Empty": "Vacío",
+    "Legend": "Leyenda",
+    "Highlighted": "Correcto",
+    "Caution": "Precaución"
 }

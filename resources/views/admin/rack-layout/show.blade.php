@@ -10,115 +10,127 @@
             'route' => route('admin.devices.index'),
         ],
         [
-            'name' => __('Rack layout'),
+            'name' => __('Rack layouts'),
             'icon' => 'fa-solid fa-server',
             'route' => route('admin.rack-layout.index'),
         ],
         [
-            'name' => __('Rack'),
+            'name' => $rack->name,
             'icon' => 'fa-solid fa-circle-info',
         ],
     ]">
 
-
     <x-slot name="action">
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.rack-layout.index') }}"
+               class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 transition">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i>
+                {{ __('Go back') }}
+            </a>
             <a href="{{ route('admin.rack-layout.history', $rack) }}"
-               class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                <i class="fa-solid fa-clock-rotate-left mr-2"></i> {{ __('History') }}
+               class="inline-flex items-center text-white
+                    {{ Auth::user()?->area === 'DTH'
+                        ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-secondary-300'
+                        : 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300' }}
+                    focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 transition">
+                <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> {{ __('History') }}
             </a>
             <a href="{{ route('admin.rack-layout.export-pdf', $rack) }}"
-               class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-[#9F24A5] rounded-lg hover:bg-[#7a1d82]">
-                <i class="fa-solid fa-file-pdf mr-2"></i> {{ __('Export PDF') }}
+               class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 transition">
+                <i class="fa-solid fa-file-pdf mr-1.5"></i> {{ __('Export PDF') }}
             </a>
         </div>
     </x-slot>
 
-    <style>
-        .rack-grid {
-            display: grid;
-            grid-template-columns: 60px 1fr 110px;
-            gap: 4px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-        }
-        .rack-pos-num {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            font-weight: 700;
-            text-align: center;
-            padding: 8px 4px;
-            border-radius: 3px;
-        }
-        .rack-pos-cell {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 3px;
-            background: #ffffff;
-            min-height: 38px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            transition: background 0.15s;
-        }
-        .rack-pos-cell:hover { background: #faf5ff; }
-        .rack-pos-cell.empty { background: #f8fafc; color: #94a3b8; font-style: italic; }
-        .rack-pos-cell .label { font-weight: 700; color: #1e293b; }
-        .rack-pos-cell .subtitle { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .rack-pos-action { display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .rack-pos-cell.bg-green { background: #bbf7d0; }
-        .rack-pos-cell.bg-green .label { color: #14532d; }
-        .rack-pos-cell.bg-red { background: #fecaca; }
-        .rack-pos-cell.bg-red .label { color: #7f1d1d; }
-        .rack-pos-cell.bg-blue { background: #bfdbfe; }
-        .rack-pos-cell.bg-blue .label { color: #1e3a8a; }
-        .rack-pos-cell.bg-yellow { background: #fde68a; }
-        .rack-pos-cell.bg-yellow .label { color: #713f12; }
-        .rack-pos-cell.bg-orange { background: #fed7aa; }
-        .rack-pos-cell.bg-orange .label { color: #7c2d12; }
-    </style>
+    <div class="w-full bg-white rounded-lg shadow-2xl dark:border p-5 dark:bg-gray-800 dark:border-gray-700">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-300 flex items-center gap-2">
+                    <i class="fa-solid fa-server"></i>
+                    {{ $rack->name }}
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    @if($rack->location)
+                        <span><i class="fa-solid fa-location-dot mr-1.5 text-gray-400"></i>{{ $rack->location }}</span>
+                    @endif
+                    <span><i class="fa-solid fa-layer-group mr-1.5 text-gray-400"></i>{{ $rack->total_units }} {{ __('Units') }}</span>
+                    <span class="text-gray-400">
+                        <i class="fa-solid fa-circle-check text-gray-400 mr-1.5"></i>{{ $rack->occupied_positions_count }} / <b>{{ $rack->total_units }}</b> {{ __('Occupied') }}
+                    </span>
+                    <span class="text-gray-400">
+                        <i class="fa-solid fa-circle-xmark text-gray-400 mr-1.5"></i>{{ $rack->total_units - $rack->occupied_positions_count }} / <b>{{ $rack->total_units }}</b> {{ __('Empty') }}
+                    </span>
+                    @if($rack->description)
+                        <span class="text-gray-400 italic">{{ $rack->description }}</span>
+                    @endif
+                </p>
+            </div>
 
-    <div class="p-4 sm:p-6 bg-white rounded-lg shadow-sm">
-        <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">{{ $rack->name }}</h2>
-            <p class="text-sm text-gray-500 mt-1">
-                @if($rack->location) <span class="mr-3"><i class="fa-solid fa-location-dot mr-1"></i>{{ $rack->location }}</span> @endif
-                <span class="mr-3"><i class="fa-solid fa-server mr-1"></i>{{ $rack->total_units }}U</span>
-                <span class="mr-3"><i class="fa-solid fa-circle-check mr-1 text-green-600"></i>{{ $rack->occupied_positions_count }} {{ __('occupied') }}</span>
-                @if($rack->description) <span class="text-gray-400">{{ $rack->description }}</span> @endif
-            </p>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="font-medium text-gray-600 dark:text-gray-400">{{ __('Legend') }}:</span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-100 text-green-800">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>{{ __('Highlighted') }}
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-100 text-amber-800">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>{{ __('Caution') }}
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-orange-100 text-orange-800">
+                    <span class="w-2 h-2 rounded-full bg-orange-500"></span>{{ __('Warning') }}
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-100 text-red-800">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>{{ __('Critical') }}
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-100 text-blue-800">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>{{ __('Info') }}
+                </span>
+            </div>
         </div>
 
-        <div class="rack-grid">
+        <div class="grid grid-cols-[60px_1fr_120px] gap-1 font-mono text-sm">
             @foreach($positions as $idx => $equipment)
                 @php
-    $position = $idx + 1;
-    $isEmpty = !$equipment || empty($equipment->equipment_name);
-    $colorClass = $equipment && $equipment->color ? 'bg-' . $equipment->color : '';
+                    $position = $idx + 1;
+                    $isEmpty = ! $equipment || empty($equipment->equipment_name);
+                    $color = $equipment && $equipment->color ? $equipment->color : null;
+
+                    $cellClasses = match($color) {
+                        'green'  => 'bg-green-200 hover:bg-green-300 border-green-300 text-green-900',
+                        'red'    => 'bg-red-200 hover:bg-red-300 border-red-300 text-red-900',
+                        'blue'   => 'bg-blue-200 hover:bg-blue-300 border-blue-300 text-blue-900',
+                        'yellow' => 'bg-yellow-200 hover:bg-yellow-300 border-yellow-300 text-yellow-900',
+                        'orange' => 'bg-orange-200 hover:bg-orange-300 border-orange-300 text-orange-900',
+                        default  => $isEmpty
+                            ? 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-400 italic'
+                            : 'bg-white hover:bg-purple-50 border-gray-200 text-gray-800',
+                    };
                 @endphp
-                <div class="rack-pos-num">{{ $position }}</div>
-                <div class="rack-pos-cell {{ $isEmpty ? 'empty' : '' }} {{ $colorClass }}">
+
+                <div class="flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-600 font-bold rounded py-2 px-1">
+                    <b>{{ $position }}</b>
+                </div>
+
+                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] transition {{ $cellClasses }}">
                     @if($isEmpty)
-                        <span>{{ __('Empty') }}</span>
+                        <span class="text-xs">{{ __('Empty') }}</span>
                     @else
-                        <div class="label">{{ $equipment->equipment_name }}</div>
-                        <div class="subtitle">
+                        <div class="font-bold text-sm leading-tight">{{ $equipment->equipment_name }}</div>
+                        <div class="text-xs opacity-80 mt-0.5 leading-tight">
                             {{ trim(implode(' · ', array_filter([$equipment->equipment_model, $equipment->ip_address]))) }}
                             @if($equipment->equipment_role)
-                                <span class="text-purple-700 font-medium ml-1">— {{ $equipment->equipment_role }}</span>
+                                <span class="font-semibold ml-1">— {{ $equipment->equipment_role }}</span>
                             @endif
                         </div>
                     @endif
                 </div>
-                <div class="rack-pos-action">
+
+                <div class="flex items-center justify-center gap-1">
                     <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-7 h-7 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                       class="inline-flex items-center justify-center w-8 h-8 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-[#9F24A5] hover:text-white hover:border-[#9F24A5] transition"
                        title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
                         <i class="fa-solid fa-pen"></i>
                     </a>
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-7 h-7 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                       class="inline-flex items-center justify-center w-8 h-8 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-[#9F24A5] hover:text-white hover:border-[#9F24A5] transition"
                        title="{{ __('Position history') }}">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </a>
