@@ -1189,5 +1189,5 @@
     "New rack": "Nuevo rack",
     "Slots": "Ranuras",
     "Register new rack layout": "Registrar nuevo diseño de rack",
-    "There are no racks registered in the database.": "No hay racks registrados en la base de datos."
+    "There are no rack layouts registered in the database.": "No hay diseños de racks registrados en la base de datos."
 }
