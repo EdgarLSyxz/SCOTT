@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-[60px_1fr_120px] gap-1 font-mono text-sm">
+        <div class="grid grid-cols-[60px_1fr_100px] gap-1 font-mono text-sm">
             @foreach($positions as $idx => $equipment)
                 @php
                     $position = $idx + 1;
@@ -94,14 +94,14 @@
                     $color = $equipment && $equipment->color ? $equipment->color : null;
 
                     $cellClasses = match($color) {
-                        'green'  => 'bg-green-200 hover:bg-green-300 border-green-300 text-green-900',
-                        'red'    => 'bg-red-200 hover:bg-red-300 border-red-300 text-red-900',
-                        'blue'   => 'bg-blue-200 hover:bg-blue-300 border-blue-300 text-blue-900',
-                        'yellow' => 'bg-yellow-200 hover:bg-yellow-300 border-yellow-300 text-yellow-900',
-                        'orange' => 'bg-orange-200 hover:bg-orange-300 border-orange-300 text-orange-900',
+                        'green'  => 'bg-green-200 hover:bg-green-300 border-green-300 text-green-900 dark:bg-green-700 dark:border-green-600 dark:text-green-100',
+                        'red'    => 'bg-red-200 hover:bg-red-300 border-red-300 text-red-900 dark:bg-red-700 dark:border-red-600 dark:text-red-100',
+                        'blue'   => 'bg-blue-200 hover:bg-blue-300 border-blue-300 text-blue-900 dark:bg-blue-700 dark:border-blue-600 dark:text-blue-100',
+                        'yellow' => 'bg-yellow-200 hover:bg-yellow-300 border-yellow-300 text-yellow-900 dark:bg-yellow-600 dark:border-yellow-500 dark:text-yellow-900',
+                        'orange' => 'bg-orange-200 hover:bg-orange-300 border-orange-300 text-orange-900 dark:bg-orange-700 dark:border-orange-600 dark:text-orange-100',
                         default  => $isEmpty
-                            ? 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-400 italic'
-                            : 'bg-white hover:bg-purple-50 border-gray-200 text-gray-800',
+                            ? 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-400 italic dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+                            : 'bg-white hover:bg-purple-50 border-gray-200 text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200',
                     };
                 @endphp
 
@@ -109,7 +109,7 @@
                     <b>{{ $position }}</b>
                 </div>
 
-                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] transition {{ $cellClasses }}">
+                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] {{ $cellClasses }}">
                     @if($isEmpty)
                         <span class="text-xs">{{ __('Empty') }}</span>
                     @else
@@ -125,13 +125,14 @@
 
                 <div class="flex items-center justify-center gap-1">
                     <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-8 h-8 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-[#9F24A5] hover:text-white hover:border-[#9F24A5] transition"
-                       title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                       onclick="event.stopPropagation();" title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}" aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
                         <i class="fa-solid fa-pen"></i>
                     </a>
+
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-8 h-8 text-xs text-gray-600 bg-white border border-gray-300 rounded hover:bg-[#9F24A5] hover:text-white hover:border-[#9F24A5] transition"
-                       title="{{ __('Position history') }}">
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm {{ Auth::user()?->area === 'DTH' ? 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600' : 'bg-primary-700 text-white border border-primary-700 hover:bg-primary-800' }}"
+                       onclick="event.stopPropagation();" title="{{ __('Position history') }}" aria-label="{{ __('Position history') }}">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </a>
                 </div>
