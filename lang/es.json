@@ -1195,5 +1195,6 @@
     "Rack location": "Ubicación del rack",
     "Rack description": "Descripción del rack",
     "Rack units": "Unidades del rack",
-    "Units": "Unidades"
+    "Units": "Unidades",
+    "Occupied": "Ocupado"
 }
