@@ -10,7 +10,7 @@
             'route' => route('admin.devices.index'),
         ],
         [
-            'name' => __('Rack layout'),
+            'name' => __('Rack layouts'),
             'icon' => 'fa-solid fa-server',
         ],
     ]">

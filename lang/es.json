@@ -1184,10 +1184,16 @@
     "CDN Consumption and cost projection.": "Consumo de CDN y proyección de costos.",
     "Consumption overview": "Resumen del consumo",
     "CDN Consumption and cost estimates from the reference Excel file.": "Consumo de CDN y estimaciones de costos a partir del archivo Excel de referencia.",
-    "Rack layout": "Diseño de rack",
+    "Rack layouts": "Diseños de racks",
     "Manage rack inventory, assign equipment to each position, and review change history.": "Gestiona el inventario del rack, asigna equipos a cada posición y revisa el historial de cambios.",
-    "New rack": "Nuevo rack",
+    "New rack layout": "Nuevo diseño de rack",
     "Slots": "Ranuras",
     "Register new rack layout": "Registrar nuevo diseño de rack",
-    "There are no rack layouts registered in the database.": "No hay diseños de racks registrados en la base de datos."
+    "There are no rack layouts registered in the database.": "No hay diseños de racks registrados en la base de datos.",
+    "Enter the data for the new rack layout.": "Ingrese los datos para el nuevo diseño de rack.",
+    "Rack name": "Nombre del rack",
+    "Rack location": "Ubicación del rack",
+    "Rack description": "Descripción del rack",
+    "Rack units": "Unidades del rack",
+    "Units": "Unidades"
 }

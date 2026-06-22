@@ -33,7 +33,7 @@
                     <a href="{{ route('admin.rack-layout.index') }}"
                         class="hidden lg:block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                         <i class="fa-solid fa-server mr-1"></i>
-                        {{ __('Rack layout') }}
+                        {{ __('Rack layouts') }}
                     </a>
                 @endif
                 @if($isAllowedId)
@@ -70,7 +70,7 @@
             <a href="{{ route('admin.rack-layout.index') }}"
                 class="mb-4 lg:hidden block text-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                 <i class="fa-solid fa-server mr-1"></i>
-                {{ __('Rack layout') }}
+                {{ __('Rack layouts') }}
             </a>
         @endif
         @if($isAllowedId)
