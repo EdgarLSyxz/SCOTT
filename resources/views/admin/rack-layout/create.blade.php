@@ -39,6 +39,9 @@
             </h1>
             <form action="{{ route('admin.rack-layout.store') }}" method="POST">
                 @csrf
+
+                <x-validation-errors class="mb-4" />
+
                     <div>
                         <x-label for="name">
                             <i class="fa-solid fa-server mr-1"></i>

@@ -25,6 +25,8 @@
             @csrf
             @method('PUT')
 
+            <x-validation-errors class="mb-4" />
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Equipment name') }}</label>
@@ -87,16 +89,6 @@
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9F24A5] focus:border-[#9F24A5]">{{ old('notes', $equipment->notes) }}</textarea>
                 </div>
             </div>
-
-            @if($errors->any())
-                <div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-                    <ul class="list-disc list-inside">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             <div class="flex justify-between gap-2 pt-4 border-t">
                 @if($equipment->exists)

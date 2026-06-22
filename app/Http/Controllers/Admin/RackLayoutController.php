@@ -9,11 +9,16 @@ use App\Models\RackEquipmentHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RackLayoutController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
+        $this->authorize('viewAny', Rack::class);
+
         $racks = Rack::orderByDesc('is_active')
             ->orderBy('name')
             ->paginate(15);
@@ -23,31 +28,51 @@ class RackLayoutController extends Controller
 
     public function create()
     {
-        $this->ensureAdmin();
+        $this->authorize('create', Rack::class);
 
         return view('admin.rack-layout.create');
     }
 
     public function store(Request $request)
     {
-        $this->ensureAdmin();
+        $this->authorize('create', Rack::class);
 
-        $data = $this->validateRack($request);
-        $data['created_by'] = Auth::id();
+        $request->validate([
+            'name' => 'required|string|max:120',
+            'location' => 'nullable|string|max:160',
+            'total_units' => 'required|integer|min:1|max:100',
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'nullable|boolean',
+        ], [], [
+            'name' => __('rack name'),
+            'location' => __('rack location'),
+            'total_units' => __('total units'),
+            'description' => __('description'),
+            'is_active' => __('status'),
+        ]);
 
-        $rack = Rack::create($data);
+        $rack = Rack::create([
+            'name' => $request->name,
+            'location' => $request->location,
+            'total_units' => $request->total_units,
+            'description' => $request->description,
+            'is_active' => $request->boolean('is_active', true),
+            'created_by' => Auth::id(),
+        ]);
 
-        return redirect()
-            ->route('admin.rack-layout.show', $rack)
-            ->with('swal', [
-                'icon' => 'success',
-                'title' => __('Well done!'),
-                'text' => __('Rack created successfully.'),
-            ]);
+        session()->flash('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => __('Rack created successfully.')
+        ]);
+
+        return redirect()->route('admin.rack-layout.show', $rack);
     }
 
     public function show(Rack $rack)
     {
+        $this->authorize('view', $rack);
+
         $rack->load(['equipment' => function ($q) {
             $q->orderBy('position');
         }]);
@@ -70,7 +95,7 @@ class RackLayoutController extends Controller
 
     public function edit(Rack $rack, $position)
     {
-        $this->ensureAdmin();
+        $this->authorize('edit', $rack);
         $this->validatePosition($rack, $position);
 
         $equipment = RackEquipment::firstOrNew([
@@ -90,32 +115,65 @@ class RackLayoutController extends Controller
 
     public function update(Request $request, Rack $rack, $position)
     {
-        $this->ensureAdmin();
+        $this->authorize('update', $rack);
         $this->validatePosition($rack, $position);
 
-        $data = $this->validateEquipment($request);
-        $data['rack_id'] = $rack->id;
-        $data['position'] = (int) $position;
-        $data['updated_by'] = Auth::id();
-        $data['is_active'] = $request->boolean('is_active', true);
+        $request->validate([
+            'equipment_name' => 'nullable|string|max:160',
+            'equipment_model' => 'nullable|string|max:160',
+            'equipment_role' => 'nullable|string|max:120',
+            'ip_address' => 'nullable|string|max:64',
+            'serial_number' => 'nullable|string|max:120',
+            'mac_address' => 'nullable|string|max:32',
+            'vendor' => 'nullable|string|max:120',
+            'installation_date' => 'nullable|date',
+            'notes' => 'nullable|string|max:2000',
+            'color' => ['nullable', Rule::in(array_keys($this->getColorChoices()))],
+        ], [], [
+            'equipment_name' => __('equipment name'),
+            'equipment_model' => __('model'),
+            'equipment_role' => __('role / function'),
+            'ip_address' => __('IP address'),
+            'serial_number' => __('serial number'),
+            'mac_address' => __('MAC address'),
+            'vendor' => __('vendor'),
+            'installation_date' => __('installation date'),
+            'notes' => __('notes'),
+            'color' => __('highlight color'),
+        ]);
 
         $equipment = RackEquipment::updateOrCreate(
             ['rack_id' => $rack->id, 'position' => (int) $position],
-            $data
+            [
+                'rack_id' => $rack->id,
+                'position' => (int) $position,
+                'equipment_name' => $request->equipment_name,
+                'equipment_model' => $request->equipment_model,
+                'equipment_role' => $request->equipment_role,
+                'ip_address' => $request->ip_address,
+                'serial_number' => $request->serial_number,
+                'mac_address' => $request->mac_address,
+                'vendor' => $request->vendor,
+                'installation_date' => $request->installation_date,
+                'notes' => $request->notes,
+                'color' => $request->color,
+                'is_active' => $request->boolean('is_active', true),
+                'updated_by' => Auth::id(),
+            ]
         );
 
-        return redirect()
-            ->route('admin.rack-layout.show', $rack)
-            ->with('swal', [
-                'icon' => 'success',
-                'title' => __('Well done!'),
-                'text' => __('Equipment updated successfully.'),
-            ]);
+        session()->flash('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => __('Equipment updated successfully.')
+        ]);
+
+        return redirect()->route('admin.rack-layout.show', $rack);
     }
 
     public function destroy(Rack $rack, $position)
     {
-        $this->ensureAdmin();
+        $this->authorize('delete', $rack);
         $this->validatePosition($rack, $position);
 
         $equipment = RackEquipment::where('rack_id', $rack->id)
@@ -126,32 +184,34 @@ class RackLayoutController extends Controller
             $equipment->delete();
         }
 
-        return redirect()
-            ->route('admin.rack-layout.show', $rack)
-            ->with('swal', [
-                'icon' => 'success',
-                'title' => __('Well done!'),
-                'text' => __('Equipment cleared from position.'),
-            ]);
+        session()->flash('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => __('Equipment cleared from position.')
+        ]);
+
+        return redirect()->route('admin.rack-layout.show', $rack);
     }
 
     public function destroyRack(Rack $rack)
     {
-        $this->ensureAdmin();
+        $this->authorize('delete', $rack);
 
         $rack->delete();
 
-        return redirect()
-            ->route('admin.rack-layout.index')
-            ->with('swal', [
-                'icon' => 'success',
-                'title' => __('Well done!'),
-                'text' => __('Rack deleted successfully.'),
-            ]);
+        session()->flash('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => __('Rack deleted successfully.')
+        ]);
+
+        return redirect()->route('admin.rack-layout.index');
     }
 
     public function history(Request $request, Rack $rack)
     {
+        $this->authorize('view', $rack);
+
         $query = RackEquipmentHistory::where('rack_id', $rack->id)
             ->with('user');
 
@@ -184,6 +244,7 @@ class RackLayoutController extends Controller
 
     public function positionHistory(Rack $rack, $position)
     {
+        $this->authorize('view', $rack);
         $this->validatePosition($rack, $position);
 
         $history = RackEquipmentHistory::where('rack_id', $rack->id)
@@ -206,6 +267,8 @@ class RackLayoutController extends Controller
 
     public function exportPdf(Rack $rack)
     {
+        $this->authorize('view', $rack);
+
         $rack->load(['equipment' => function ($q) {
             $q->orderBy('position');
         }]);
@@ -234,46 +297,11 @@ class RackLayoutController extends Controller
         ]);
     }
 
-    private function validateRack(Request $request): array
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'location' => ['nullable', 'string', 'max:160'],
-            'total_units' => ['required', 'integer', 'min:1', 'max:100'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-    }
-
-    private function validateEquipment(Request $request): array
-    {
-        return $request->validate([
-            'equipment_name' => ['nullable', 'string', 'max:160'],
-            'equipment_model' => ['nullable', 'string', 'max:160'],
-            'equipment_role' => ['nullable', 'string', 'max:120'],
-            'ip_address' => ['nullable', 'string', 'max:64'],
-            'serial_number' => ['nullable', 'string', 'max:120'],
-            'mac_address' => ['nullable', 'string', 'max:32'],
-            'vendor' => ['nullable', 'string', 'max:120'],
-            'installation_date' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string', 'max:2000'],
-            'color' => ['nullable', Rule::in(array_keys($this->getColorChoices()))],
-        ]);
-    }
-
     private function validatePosition(Rack $rack, $position): void
     {
         $pos = (int) $position;
         if ($pos < 1 || $pos > $rack->total_units) {
             abort(404, __('Invalid rack position.'));
-        }
-    }
-
-    private function ensureAdmin(): void
-    {
-        $user = Auth::user();
-        if (! $user || $user->id !== 1) {
-            abort(403, __('Only administrators can perform this action.'));
         }
     }
 
