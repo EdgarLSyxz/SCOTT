@@ -62,12 +62,12 @@
         </div>
     </x-slot>
 
-    <div class="w-full bg-white dark:bg-gray-900 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
+    <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
 
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-server {{ $userAccent['textLight'] }} {{ $userAccent['textDark'] }}"></i>
+                    <i class="fa-solid fa-server"></i>
                     {{ $rack->name }}
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -125,21 +125,21 @@
                     };
 
                     $baseClasses = $isEmpty
-                        ? 'bg-gray-50 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500'
-                        : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200';
+                        ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200';
 
                     $borderClass = $indicator
                         ? $indicator['border']
                         : 'border-gray-200 dark:border-gray-700';
                 @endphp
 
-                <div class="flex items-center justify-center bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold rounded py-2 px-1">
+                <div class="flex items-center justify-center bg-gray-50 border border-gray-200 dark:bg-gray-700 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold rounded py-2 px-1">
                     <b>{{ $position }}</b>
                 </div>
 
-                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] transition
-                            {{ $baseClasses }} {{ $borderClass }}
-                            @if($indicator) {{ $userAccent['border'] }} dark:{{ str_replace('border-', 'border-', $userAccent['borderHi']) }} @endif">
+                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px]
+                        {{ $baseClasses }} {{ $borderClass }}
+                        @if($indicator) {{ $userAccent['border'] }} dark:{{ str_replace('border-', 'border-', $userAccent['borderHi']) }} @endif">
                     @if($isEmpty)
                         <span class="text-xs italic">{{ __('Empty') }}</span>
                     @else
@@ -162,18 +162,18 @@
 
                 <div class="flex items-center justify-center gap-1">
                     <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-10 h-10 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
-                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-400
-                              dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
+                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
+                              dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
                               {{ $userAccent['ring'] }}"
                        title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}" aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
                         <i class="fa-solid fa-pen"></i>
                     </a>
 
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-10 h-10 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
-                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-400
-                              dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
+                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
+                              dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
                               {{ $userAccent['ring'] }}"
                        title="{{ __('Position history') }}" aria-label="{{ __('Position history') }}">
                         <i class="fa-solid fa-clock-rotate-left"></i>
