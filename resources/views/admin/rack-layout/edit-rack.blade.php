@@ -1,0 +1,129 @@
+<x-admin-layout :breadcrumbs="[
+        [
+            'name' => __('Dashboard'),
+            'icon' => 'fa-solid fa-wrench',
+            'route' => route('admin.dashboard'),
+        ],
+        [
+            'name' => __('Devices'),
+            'icon' => 'fa-solid fa-hard-drive',
+            'route' => route('admin.devices.index'),
+        ],
+        [
+            'name' => __('Rack layouts'),
+            'icon' => 'fa-solid fa-server',
+            'route' => route('admin.rack-layout.index'),
+        ],
+        [
+            'name' => $rack->name,
+            'icon' => 'fa-solid fa-circle-info',
+            'route' => route('admin.rack-layout.show', $rack),
+        ],
+        [
+            'name' => __('Edit'),
+            'icon' => 'fa-solid fa-pen',
+        ],
+    ]">
+
+    <x-slot name="action">
+        <a href="{{ route('admin.rack-layout.show', $rack) }}"
+           class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2 transition">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>
+            {{ __('Go back') }}
+        </a>
+    </x-slot>
+
+    <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
+
+        <div class="mb-6">
+            <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-server"></i>
+                {{ __('Edit rack layout') }}
+            </h1>
+            <p class="text-sm font-light text-gray-500 dark:text-gray-400 mt-1">
+                {{ __('Update the rack layout data.') }}
+            </p>
+        </div>
+
+        <form action="{{ route('admin.rack-layout.update-rack', $rack) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <x-validation-errors class="mb-4" />
+
+            <div>
+                <x-label for="name">
+                    <i class="fa-solid fa-server mr-1"></i>
+                    {{ __('Name') }}
+                </x-label>
+                <x-input id="name" class="block mt-1 w-full" type="text" name="name"
+                    :value="old('name', $rack->name)" required autofocus autocomplete="name"
+                    placeholder="{{ __('Rack name') }}" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                <div>
+                    <x-label for="location">
+                        <i class="fa-solid fa-map-marker-alt mr-1"></i>
+                        {{ __('Location') }}
+                    </x-label>
+                    <x-input id="location" class="block mt-1 w-full" type="text" name="location"
+                        :value="old('location', $rack->location)" autocomplete="location"
+                        placeholder="{{ __('Rack location') }}" />
+                </div>
+
+                <div>
+                    <x-label for="total_units">
+                        <i class="fa-solid fa-hashtag mr-1"></i>
+                        {{ __('Units') }}
+                    </x-label>
+                    <x-input id="total_units" class="block mt-1 w-full" type="number" name="total_units"
+                        :value="old('total_units', $rack->total_units)" required min="1" max="100" autocomplete="total_units"
+                        placeholder="{{ __('Rack units') }}" />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ __('Note: You can only reduce units down to the highest occupied position.') }}
+                    </p>
+                </div>
+
+                <div>
+                    <x-label for="is_active">
+                        <i class="fa-solid fa-toggle-on mr-1"></i>
+                        {{ __('Status') }}
+                    </x-label>
+                    <select id="is_active"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+                            {{ Auth::user()?->area === 'DTH'
+                                ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                                : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                        name="is_active">
+                        <option value="1" {{ old('is_active', $rack->is_active) == 1 ? 'selected' : '' }}>{{ __('Active') }}</option>
+                        <option value="0" {{ old('is_active', $rack->is_active) == 0 ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <x-label for="description">
+                    <i class="fa-solid fa-align-left mr-1"></i>
+                    {{ __('Description') }}
+                </x-label>
+                <textarea id="description" name="description" rows="4"
+                    class="block p-2.5 w-full text-sm {{ Auth::user()?->area === 'DTH'
+                        ? 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-secondary-500 focus:border-secondary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                    placeholder="{{ __('Rack description') }}">{{ old('description', $rack->description) }}</textarea>
+            </div>
+
+            <div class="flex flex-col sm:flex-row-reverse sm:justify-between gap-3 mt-6 mb-2">
+                <x-button class="inline-flex justify-center items-center font-bold
+                    {{ Auth::user()?->area === 'DTH'
+                        ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                        : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }}
+                    text-white rounded-lg px-5 py-2 focus:outline-none shadow-xl">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i>
+                    {{ __('Save changes') }}
+                </x-button>
+            </div>
+        </form>
+    </div>
+</x-admin-layout>

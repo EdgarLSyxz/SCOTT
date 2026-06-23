@@ -1204,5 +1204,10 @@
     "Caution": "Precaución",
     "Assign equipment": "Asignar equipo",
     "Edit position": "Editar posición",
-    "Position history": "Historial de posición"
+    "Position history": "Historial de posición",
+    "Edit rack": "Editar rack",
+    "Delete rack": "Eliminar rack",
+    "Edit rack layout": "Editar diseño de rack",
+    "Update the rack layout data.": "Actualice los datos del diseño de rack.",
+    "Note: You can only reduce units down to the highest occupied position.": "Nota: Solo puede reducir las unidades hasta la posición ocupada más alta."
 }

@@ -93,6 +93,65 @@ class RackLayoutController extends Controller
         ]);
     }
 
+    public function editRack(Rack $rack)
+    {
+        $this->authorize('edit', $rack);
+
+        return view('admin.rack-layout.edit-rack', compact('rack'));
+    }
+
+    public function updateRack(Request $request, Rack $rack)
+    {
+        $this->authorize('edit', $rack);
+
+        $request->validate([
+            'name' => 'required|string|max:120',
+            'location' => 'nullable|string|max:160',
+            'total_units' => 'required|integer|min:1|max:100',
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'nullable|boolean',
+        ], [], [
+            'name' => __('rack name'),
+            'location' => __('rack location'),
+            'total_units' => __('total units'),
+            'description' => __('description'),
+            'is_active' => __('status'),
+        ]);
+
+        $maxOccupiedPosition = (int) RackEquipment::where('rack_id', $rack->id)
+            ->where('is_active', true)
+            ->max('position');
+
+        if ($request->integer('total_units') < $maxOccupiedPosition) {
+            session()->flash('swal', [
+                'icon' => 'error',
+                'title' => __('Cannot update rack'),
+                'text' => __('The new total units (:new) is lower than the highest occupied position (:pos). Please clear or move that equipment first.', [
+                    ':new' => $request->integer('total_units'),
+                    ':pos' => $maxOccupiedPosition,
+                ]),
+            ]);
+
+            return redirect()->back()->withInput();
+        }
+
+        $rack->update([
+            'name' => $request->name,
+            'location' => $request->location,
+            'total_units' => $request->total_units,
+            'description' => $request->description,
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        session()->flash('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => __('Rack updated successfully.')
+        ]);
+
+        return redirect()->route('admin.rack-layout.show', $rack);
+    }
+
     public function edit(Rack $rack, $position)
     {
         $this->authorize('edit', $rack);
@@ -197,12 +256,24 @@ class RackLayoutController extends Controller
     {
         $this->authorize('delete', $rack);
 
-        $rack->delete();
+        $rackName = $rack->name;
+        $equipmentCount = $rack->equipment()->count();
+        $historyCount = $rack->history()->count();
+
+        \DB::transaction(function () use ($rack) {
+            $rack->equipment()->delete();
+            $rack->history()->delete();
+            $rack->delete();
+        });
 
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Rack deleted successfully.')
+            'text' => __('Rack ":name" deleted successfully. (:eq equipment, :h history)', [
+                ':name' => $rackName,
+                ':eq' => $equipmentCount,
+                ':h' => $historyCount,
+            ]),
         ]);
 
         return redirect()->route('admin.rack-layout.index');

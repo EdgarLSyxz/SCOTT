@@ -97,6 +97,8 @@ Route::prefix('rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'v
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');
     Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
     Route::post('/', [RackLayoutController::class, 'store'])->name('store');
+    Route::get('/{rack}/edit', [RackLayoutController::class, 'editRack'])->name('edit-rack');
+    Route::put('/{rack}', [RackLayoutController::class, 'updateRack'])->name('update-rack');
     Route::get('/{rack}', [RackLayoutController::class, 'show'])->name('show');
     Route::delete('/{rack}', [RackLayoutController::class, 'destroyRack'])->name('destroy-rack');
     Route::get('/{rack}/export-pdf', [RackLayoutController::class, 'exportPdf'])->name('export-pdf');
