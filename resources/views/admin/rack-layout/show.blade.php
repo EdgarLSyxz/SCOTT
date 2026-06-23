@@ -89,19 +89,19 @@
 
             <div class="flex flex-wrap items-center gap-2 text-xs">
                 <span class="font-medium text-gray-600 dark:text-gray-400">{{ __('Legend') }}:</span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>{{ __('Highlighted') }}
                 </span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                     <span class="w-2 h-2 rounded-full bg-amber-500"></span>{{ __('Caution') }}
                 </span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                     <span class="w-2 h-2 rounded-full bg-orange-500"></span>{{ __('Warning') }}
                 </span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                     <span class="w-2 h-2 rounded-full bg-red-500"></span>{{ __('Critical') }}
                 </span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>{{ __('Info') }}
                 </span>
             </div>
