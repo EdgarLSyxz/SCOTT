@@ -47,16 +47,16 @@
     <x-slot name="action">
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('admin.rack-layout.index') }}"
-               class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2 transition">
+               class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-arrow-left mr-1.5"></i>
                 {{ __('Go back') }}
             </a>
             <a href="{{ route('admin.rack-layout.history', $rack) }}"
-               class="inline-flex items-center text-white {{ $userAccent['bg'] }} {{ $userAccent['bgHover'] }} focus:ring-4 focus:outline-none {{ $userAccent['ring'] }} font-medium rounded-lg text-sm px-4 py-2 transition">
+               class="inline-flex items-center text-white {{ $userAccent['bg'] }} {{ $userAccent['bgHover'] }} focus:ring-4 focus:outline-none {{ $userAccent['ring'] }} font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> {{ __('History') }}
             </a>
             <a href="{{ route('admin.rack-layout.export-pdf', $rack) }}"
-               class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 transition">
+               class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-file-pdf mr-1.5"></i> {{ __('Export PDF') }}
             </a>
         </div>
@@ -162,7 +162,7 @@
 
                 <div class="flex items-center justify-center gap-1">
                     <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm
                               bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
                               dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
                               {{ $userAccent['ring'] }}"
@@ -171,7 +171,7 @@
                     </a>
 
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm transition
+                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm
                               bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
                               dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
                               {{ $userAccent['ring'] }}"
