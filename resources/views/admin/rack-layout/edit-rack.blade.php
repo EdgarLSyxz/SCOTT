@@ -113,8 +113,12 @@
                         : 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                     placeholder="{{ __('Rack description') }}">{{ old('description', $rack->description) }}</textarea>
             </div>
-
-            <div class="flex flex-col sm:flex-row-reverse sm:justify-between gap-3 mt-6 mb-2">
+            <div class="flex flex-col sm:flex-row gap-3 sm:justify-end mt-6 mb-1">
+                <a href="{{ route('admin.rack-layout.show', $rack) }}"
+                    class="inline-flex justify-center items-center text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600 font-medium rounded-lg px-5 py-2 transition">
+                    <i class="fa-solid fa-xmark mr-1.5"></i>
+                    {{ __('Cancel') }}
+                </a>
                 <x-button class="inline-flex justify-center items-center font-bold
                     {{ Auth::user()?->area === 'DTH'
                         ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'

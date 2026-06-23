@@ -1209,5 +1209,22 @@
     "Delete rack": "Eliminar rack",
     "Edit rack layout": "Editar diseño de rack",
     "Update the rack layout data.": "Actualice los datos del diseño de rack.",
-    "Note: You can only reduce units down to the highest occupied position.": "Nota: Solo puede reducir las unidades hasta la posición ocupada más alta."
+    "Note: You can only reduce units down to the highest occupied position.": "Nota: Solo puede reducir las unidades hasta la posición ocupada más alta.",
+    "Assign equipment to this position. Leave the name blank to mark the position as empty.": "Asigne equipo a esta posición. Deje el nombre en blanco para marcar la posición como vacía.",
+    "Equipment name": "Nombre del equipo",
+    "Model": "Modelo",
+    "Function": "Función",
+    "IP Address": "Dirección IP",
+    "Serial number": "Número de serie",
+    "MAC Address": "Dirección MAC",
+    "Vendor": "Proveedor",
+    "Installation date": "Fecha de instalación",
+    "Highlight color": "Color de resaltado",
+    "Additional notes about this equipment...": "Notas adicionales sobre este equipo...",
+    "Equipment model": "Modelo del equipo",
+    "Equipment function": "Función del equipo",
+    "Equipment vendor": "Proveedor del equipo",
+    "Equipment IP address": "Dirección IP del equipo",
+    "Equipment serial number": "Número de serie del equipo",
+    "Equipment MAC address": "Dirección MAC del equipo"
 }
