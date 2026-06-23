@@ -93,35 +93,6 @@
                                         style="vertical-align: middle; font-size: 1.1em; line-height: 1;"></i>
                                     </span>
                                 </td>
-                                {{-- <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a href="{{ route('admin.rack-layout.show', $rack) }}"
-                                        class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded shadow-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                                        onclick="event.stopPropagation();" aria-label="{{ __('View') }}">
-                                        <i class="fa-solid fa-eye mr-1"></i> {{ __('View') }}
-                                    </a>
-                                    <a href="{{ route('admin.rack-layout.history', $rack) }}"
-                                        class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded shadow-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 ml-1"
-                                        onclick="event.stopPropagation();" aria-label="{{ __('History') }}">
-                                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> {{ __('History') }}
-                                    </a>
-                                    <a href="{{ route('admin.rack-layout.export-pdf', $rack) }}"
-                                        class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded shadow-sm text-white bg-[#9F24A5] border border-[#9F24A5] hover:bg-[#7a1d82] ml-1"
-                                        onclick="event.stopPropagation();" aria-label="{{ __('PDF') }}">
-                                        <i class="fa-solid fa-file-pdf mr-1"></i> {{ __('PDF') }}
-                                    </a>
-                                    @if(auth()->id() === 1)
-                                        <form action="{{ route('admin.rack-layout.destroy-rack', $rack) }}" method="POST" class="inline ml-1"
-                                                onsubmit="return confirm('{{ __('Delete this rack and all its history?') }}');" onsubmit="event.stopPropagation();">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded shadow-sm text-white bg-red-600 border border-red-600 hover:bg-red-700"
-                                                    onclick="event.stopPropagation();" aria-label="{{ __('Delete') }}">
-                                                <i class="fa-solid fa-trash mr-1"></i> {{ __('Delete') }}
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td> --}}
                             </tr>
                         @endforeach
                     </tbody>

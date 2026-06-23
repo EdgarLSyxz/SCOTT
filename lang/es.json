@@ -1226,5 +1226,7 @@
     "Equipment vendor": "Proveedor del equipo",
     "Equipment IP address": "Dirección IP del equipo",
     "Equipment serial number": "Número de serie del equipo",
-    "Equipment MAC address": "Dirección MAC del equipo"
+    "Equipment MAC address": "Dirección MAC del equipo",
+    "No history records for this position yet.": "Aún no hay registros de historial para esta posición.",
+    "Change history for this specific position.": "Historial de cambios para esta posición específica."
 }

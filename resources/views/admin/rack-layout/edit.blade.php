@@ -20,7 +20,7 @@
             'route' => route('admin.rack-layout.show', $rack),
         ],
         [
-            'name' => 'U' . $position,
+            'name' => __('Edit') . ' ' . 'U' . $position,
             'icon' => 'fa-solid fa-pen',
         ],
     ]">
