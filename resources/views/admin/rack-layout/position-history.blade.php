@@ -26,7 +26,7 @@
     ]">
 
     <x-slot name="action">
-        <a href="{{ route('admin.rack-layout.history', $rack) }}"
+        <a href="{{ route('admin.rack-layout.show', $rack) }}"
            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
             <i class="fa-solid fa-arrow-left mr-2"></i> {{ __('Go back') }}
         </a>
