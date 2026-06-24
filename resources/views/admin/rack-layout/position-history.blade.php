@@ -238,10 +238,6 @@
                                             <i class="fa-solid {{ $style['icon'] }} text-[10px]"></i>
                                             {{ $entry->change_type_label }}
                                         </span>
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded">
-                                            <i class="fa-solid fa-location-dot text-[9px] text-gray-400"></i>
-                                            U{{ $entry->position }}
-                                        </span>
                                     </div>
                                 </div>
 
@@ -292,7 +288,7 @@
 
                                 <div class="mx-4 mb-3 flex flex-wrap items-stretch gap-2 p-2.5 rounded-lg border {{ $style['metaBg'] }}">
                                     <div class="flex items-center gap-2 flex-1 min-w-[180px]">
-                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#9F24A5] to-[#7a1d82] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                                             {{ $userInitial }}
                                         </div>
                                         <div class="min-w-0">
@@ -316,7 +312,7 @@
                                                 {{ __('When') }}
                                             </div>
                                             <div class="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate" title="{{ $entry->changed_at->format('Y-m-d H:i:s') }}">
-                                                {{ $entry->changed_at->diffForHumans() }}
+                                                {{ ucfirst($entry->changed_at->diffForHumans()) }}
                                             </div>
                                         </div>
                                     </div>
@@ -331,11 +327,13 @@
                                             <div class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 leading-none mb-0.5">
                                                 {{ __('Date') }}
                                             </div>
-                                            <div class="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate font-mono">
-                                                {{ $entry->changed_at->format('M d, Y') }}
-                                            </div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                                                {{ $entry->changed_at->format('H:i:s') }}
+                                            <div class="flex items-center gap-1.5">
+                                                <div class="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate font-mono">
+                                                    {{ $entry->changed_at->format('M d, Y') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 font-mono ml-0.5">
+                                                    {{ $entry->changed_at->format('H:i:s') }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -375,12 +373,12 @@
                                         </details>
                                     </div>
                                 @elseif($type === 'created' && $entry->equipment_name)
-                                    <div class="px-4 pb-4 text-xs text-green-700 dark:text-green-400 flex items-center gap-1.5">
+                                    <div class="px-4 pb-4 text-xs text-green-700 dark:text-green-400 flex items-center gap-1.5 mt-4">
                                         <i class="fa-solid fa-circle-check"></i>
                                         {{ __('Equipment installed at this position.') }}
                                     </div>
                                 @elseif($type === 'deleted')
-                                    <div class="px-4 pb-4 text-xs text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                                    <div class="px-4 pb-4 text-xs text-red-700 dark:text-red-400 flex items-center gap-1.5 mt-4">
                                         <i class="fa-solid fa-circle-xmark"></i>
                                         {{ __('Equipment removed from this position.') }}
                                     </div>
@@ -390,7 +388,6 @@
                     @endforeach
                 </ul>
             </div>
-
             <div class="mt-6">{{ $history->links() }}</div>
         @endif
     </div>

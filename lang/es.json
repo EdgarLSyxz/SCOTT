@@ -1235,5 +1235,7 @@
     "Current equipment": "Equipo actual",
     "This position is currently empty.": "Esta posición está actualmente vacía.",
     "Equipment installed at this position.": "Equipo instalado en esta posición.",
-    "This rack has :n equipment item(s) and :h history record(s) that will be permanently deleted.": "Este rack tiene :n equipo(s) y :h registro(s) de historial que se eliminarán permanentemente."
+    "This rack has :n equipment item(s) and :h history record(s) that will be permanently deleted.": "Este rack tiene :n equipo(s) y :h registro(s) de historial que se eliminarán permanentemente.",
+    "Changed by": "Cambiado por",
+    "When": "Cuando"
 }
