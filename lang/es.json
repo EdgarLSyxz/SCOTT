@@ -1237,5 +1237,14 @@
     "Equipment installed at this position.": "Equipo instalado en esta posición.",
     "This rack has :n equipment item(s) and :h history record(s) that will be permanently deleted.": "Este rack tiene :n equipo(s) y :h registro(s) de historial que se eliminarán permanentemente.",
     "Changed by": "Cambiado por",
-    "When": "Cuando"
+    "When": "Cuando",
+    "Every create, update, and delete is recorded with a field-level diff.": "Cada creación, actualización y eliminación se registra con un diff a nivel de campo.",
+    "Filters": "Filtros",
+    "Position (Unit)": "Posición (Unidad)",
+    "Change type": "Tipo de cambio",
+    "From": "De",
+    "To": "A",
+    "All": "Todos",
+    "Updated": "Actualizado",
+    "Any": "Cualquiera"
 }
