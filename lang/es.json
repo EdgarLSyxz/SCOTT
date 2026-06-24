@@ -1228,5 +1228,12 @@
     "Equipment serial number": "Número de serie del equipo",
     "Equipment MAC address": "Dirección MAC del equipo",
     "No history records for this position yet.": "Aún no hay registros de historial para esta posición.",
-    "Change history for this specific position.": "Historial de cambios para esta posición específica."
+    "Change history for this specific position.": "Historial de cambios para esta posición específica.",
+    "Equipment updated successfully.": "Equipo actualizado con éxito.",
+    "Rack updated successfully.": "Rack actualizado con éxito.",
+    ":count Record|:count Records": ":count Registro|:count Registros",
+    "Current equipment": "Equipo actual",
+    "This position is currently empty.": "Esta posición está actualmente vacía.",
+    "Equipment installed at this position.": "Equipo instalado en esta posición.",
+    "This rack has :n equipment item(s) and :h history record(s) that will be permanently deleted.": "Este rack tiene :n equipo(s) y :h registro(s) de historial que se eliminarán permanentemente."
 }
