@@ -37,7 +37,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-gray-700 dark:text-gray-300"></i>
+                    <i class="fa-solid fa-server text-gray-700 dark:text-gray-300"></i>
                     {{ $rack->name }}
                     <span class="text-gray-400 dark:text-gray-500">/</span>
                     <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded">
@@ -156,7 +156,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Changes will appear here as they happen.') }}</p>
             </div>
         @else
-            <div class="space-y-3">
+            <div class="space-y-2.5">
                 @foreach($history as $entry)
                     @php
                         $type = $entry->change_type;
@@ -165,24 +165,27 @@
                                 'icon'      => 'fa-circle-plus',
                                 'dot'       => 'bg-gradient-to-br from-green-400 to-green-600',
                                 'badge'     => 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 ring-1 ring-inset ring-green-200 dark:ring-green-800',
-                                'accent'    => 'border-l-green-400 dark:border-l-green-500',
-                                'hoverBg'   => 'hover:bg-green-50/50 dark:hover:bg-green-900/10',
+                                'accent'    => 'border-l-green-500 dark:border-l-green-500',
+                                'bg'        => 'bg-green-50/40 dark:bg-green-900/10',
+                                'hoverBg'   => 'hover:bg-green-50/60 dark:hover:bg-green-900/20',
                                 'label'     => __('Created'),
                             ],
                             'updated' => [
                                 'icon'      => 'fa-pen-to-square',
                                 'dot'       => 'bg-gradient-to-br from-blue-400 to-blue-600',
                                 'badge'     => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 ring-1 ring-inset ring-blue-200 dark:ring-blue-800',
-                                'accent'    => 'border-l-blue-400 dark:border-l-blue-500',
-                                'hoverBg'   => 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10',
+                                'accent'    => 'border-l-blue-500 dark:border-l-blue-500',
+                                'bg'        => 'bg-blue-50/40 dark:bg-blue-900/10',
+                                'hoverBg'   => 'hover:bg-blue-50/60 dark:hover:bg-blue-900/20',
                                 'label'     => __('Updated'),
                             ],
                             'deleted' => [
                                 'icon'      => 'fa-circle-minus',
                                 'dot'       => 'bg-gradient-to-br from-red-400 to-red-600',
                                 'badge'     => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 ring-1 ring-inset ring-red-200 dark:ring-red-800',
-                                'accent'    => 'border-l-red-400 dark:border-l-red-500',
-                                'hoverBg'   => 'hover:bg-red-50/50 dark:hover:bg-red-900/10',
+                                'accent'    => 'border-l-red-500 dark:border-l-red-500',
+                                'bg'        => 'bg-red-50/40 dark:bg-red-900/10',
+                                'hoverBg'   => 'hover:bg-red-50/60 dark:hover:bg-red-900/20',
                                 'label'     => __('Deleted'),
                             ],
                         ];
@@ -190,7 +193,8 @@
                             'icon'      => 'fa-circle',
                             'dot'       => 'bg-gradient-to-br from-gray-400 to-gray-600',
                             'badge'     => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-600',
-                            'accent'    => 'border-l-gray-300 dark:border-l-gray-600',
+                            'accent'    => 'border-l-gray-400 dark:border-l-gray-500',
+                            'bg'        => 'bg-gray-50/40 dark:bg-gray-700/20',
                             'hoverBg'   => 'hover:bg-gray-50 dark:hover:bg-gray-700/40',
                             'label'     => ucfirst($type),
                         ];
@@ -199,84 +203,106 @@
                     @endphp
 
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $entry->position]) }}"
-                       class="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 {{ $style['accent'] }} rounded-lg shadow-sm hover:shadow-md {{ $style['hoverBg'] }} transition-all duration-200">
+                        class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-5 items-stretch transition-all duration-200">
 
-                        <span class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-sm {{ $style['dot'] }}">
-                            <i class="fa-solid {{ $style['icon'] }} text-white text-sm"></i>
-                        </span>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap mb-1">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-full {{ $style['badge'] }}">
-                                    {{ $style['label'] }}
-                                </span>
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded">
-                                    <i class="fa-solid fa-location-dot text-[9px] text-gray-400"></i>
-                                    U{{ $entry->position }}
-                                </span>
-                            </div>
-                            <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate mb-1">
-                                {{ $entry->equipment_name ?? '—' }}
-                            </div>
-                            <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                @if($entry->equipment_model)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-microchip text-gray-400"></i>
-                                        <span class="font-medium">{{ $entry->equipment_model }}</span>
-                                    </span>
-                                @endif
-                                @if($entry->ip_address)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-network-wired text-gray-400"></i>
-                                        <span class="font-mono">{{ $entry->ip_address }}</span>
-                                    </span>
-                                @endif
-                                @if($entry->equipment_role)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-circle-nodes text-gray-400"></i>
-                                        <span>{{ $entry->equipment_role }}</span>
-                                    </span>
-                                @endif
-                            </div>
+                        <div class="flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-5 px-4 shadow-sm">
+                            <span class="text-lg font-black tracking-tight">U{{ $entry->position }}</span>
                         </div>
 
-                        <div class="hidden lg:flex items-center gap-4 flex-shrink-0 pl-4 border-l border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center gap-3" title="{{ $entry->changed_at->format('Y-m-d H:i:s') }}">
-                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 text-white text-sm font-bold shadow-sm flex-shrink-0">
-                                    {{ $userInitial }}
+                        <div class="flex flex-col justify-center rounded-xl border border-gray-200 dark:border-gray-700 {{ $style['bg'] }} border-l-4 {{ $style['accent'] }} px-5 py-5 shadow-sm group-hover:shadow-md transition-all duration-200">
+                            <div class="flex items-start gap-3">
+                                <span class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
+                                    <i class="fa-solid fa-hard-drive text-gray-500 dark:text-gray-400 text-xl"></i>
                                 </span>
-                                <div class="min-w-0">
-                                    <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 leading-none mb-1">
-                                        {{ __('Changed by') }}
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 truncate">
+                                            {{ $entry->equipment_name ?? '—' }}
+                                        </h3>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full {{ $style['badge'] }}">
+                                            <i class="fa-solid {{ $style['icon'] }} text-[8px]"></i>
+                                            {{ $style['label'] }}
+                                        </span>
                                     </div>
-                                    <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[180px]">
-                                        {{ $userName }}
+
+                                    <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[12px] text-gray-600 dark:text-gray-400 pt-2">
+                                        @if($entry->equipment_model)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
+                                                <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-medium">{{ $entry->equipment_model }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->vendor)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
+                                                <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                                <span>{{ $entry->vendor }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->ip_address)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
+                                                <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $entry->ip_address }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->mac_address)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
+                                                <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $entry->mac_address }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->serial_number)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
+                                                <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $entry->serial_number }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->equipment_role)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Role / Function') }}">
+                                                <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-semibold">{{ $entry->equipment_role }}</span>
+                                            </span>
+                                        @endif
+                                        @if($entry->installation_date)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Installation Date') }}">
+                                                <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                                <span>{{ $entry->installation_date->format('M d, Y') }}</span>
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="hidden sm:flex items-center gap-4 flex-shrink-0 pl-4 border-l border-gray-200 dark:border-gray-700">
-                            <div class="flex flex-col items-start min-w-[150px]">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 leading-none mb-1">
-                                    {{ __('When') }}
-                                </div>
-                                <div class="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                                    {{ ucfirst($entry->changed_at->diffForHumans()) }}
-                                </div>
-                                <div class="text-[11px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">
-                                    {{ $entry->changed_at->format('M d, Y · H:i') }}
+                        <div class="flex items-center gap-3 pl-3 min-w-[320px]" title="{{ $entry->changed_at->format('Y-m-d H:i:s') }}">
+                            <div class="flex flex-col items-start gap-2.5 flex-1 min-w-0">
+                                <div class="flex items-center gap-2.5 w-full">
+                                    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 text-white text-base font-bold shadow-sm flex-shrink-0">
+                                        {{ $userInitial }}
+                                    </span>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 leading-none mb-2">
+                                            {{ __('Changed by') }}
+                                        </div>
+                                        <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate mb-2">
+                                            {{ $userName }}
+                                        </div>
+                                        <div class="flex items-center gap-1.5 mt-1">
+                                            <i class="fa-regular fa-clock text-gray-400 dark:text-gray-500 text-[11px]"></i>
+                                            <span class="text-[11px] font-semibold text-gray-700 dark:text-gray-200">
+                                                {{ ucfirst($entry->changed_at->diffForHumans()) }}
+                                            </span>
+                                            <span class="text-[11px] text-gray-400 dark:text-gray-500">·</span>
+                                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                                                {{ $entry->changed_at->format('M d, Y · H:i') }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-[#9F24A5] dark:group-hover:text-purple-400 group-hover:translate-x-1 transition-all pl-2">
-                            <i class="fa-solid fa-chevron-right text-sm"></i>
                         </div>
                     </a>
                 @endforeach
             </div>
-
             <div class="mt-6">{{ $history->links() }}</div>
         @endif
     </div>
