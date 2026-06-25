@@ -1257,5 +1257,8 @@
     "Red - Critical": "Rojo - Crítico",
     "Blue - Information": "Azul - Información",
     "Orange - Warning": "Naranja - Advertencia",
-    "Clear": "Limpiar"
+    "Clear": "Limpiar",
+    "Rack created successfully.": "Rack creado con éxito.",
+    "No history records yet.": "Aún no hay registros de historial.",
+    "Changes will appear here as they happen.": "Los cambios aparecerán aquí a medida que ocurran."
 }
