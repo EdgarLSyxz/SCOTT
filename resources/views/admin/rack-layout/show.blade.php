@@ -1,25 +1,26 @@
 @php
-$isDth = Auth::user()?->area === 'DTH';
 
-$userAccent = $isDth
-    ? [
-        'bg' => 'bg-secondary-700',
-        'bgHover' => 'hover:bg-secondary-800',
-        'border' => 'border-secondary-500',
-        'ring' => 'focus:ring-secondary-400',
-        'textLight' => 'text-secondary-700',
-        'textDark' => 'dark:text-secondary-400',
-        'borderHi' => 'dark:border-secondary-500',
-    ]
-    : [
-        'bg' => 'bg-primary-700',
-        'bgHover' => 'hover:bg-primary-800',
-        'border' => 'border-primary-500',
-        'ring' => 'focus:ring-primary-400',
-        'textLight' => 'text-primary-700',
-        'textDark' => 'dark:text-primary-400',
-        'borderHi' => 'dark:border-primary-500',
-    ];
+    $isDth = Auth::user()?->area === 'DTH';
+
+    $userAccent = $isDth
+        ? [
+            'bg' => 'bg-secondary-700',
+            'bgHover' => 'hover:bg-secondary-800',
+            'border' => 'border-secondary-500',
+            'ring' => 'focus:ring-secondary-400',
+            'textLight' => 'text-secondary-700',
+            'textDark' => 'dark:text-secondary-400',
+            'borderHi' => 'dark:border-secondary-500',
+        ]
+        : [
+            'bg' => 'bg-primary-700',
+            'bgHover' => 'hover:bg-primary-800',
+            'border' => 'border-primary-500',
+            'ring' => 'focus:ring-primary-400',
+            'textLight' => 'text-primary-700',
+            'textDark' => 'dark:text-primary-400',
+            'borderHi' => 'dark:border-primary-500',
+        ];
 @endphp
 
 <x-admin-layout :breadcrumbs="[
@@ -60,11 +61,11 @@ $userAccent = $isDth
                 <i class="fa-solid fa-file-pdf mr-1.5"></i> {{ __('Export PDF') }}
             </a>
             <a href="{{ route('admin.rack-layout.edit-rack', $rack) }}"
-               class="hidden sm:inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 transition">
+               class="hidden sm:inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-pen mr-1.5"></i> {{ __('Edit rack') }}
             </a>
             <button type="button" onclick="confirmDeleteRack()"
-                    class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 transition">
+                    class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-trash-can mr-1.5"></i> {{ __('Delete rack') }}
             </button>
         </div>
@@ -74,7 +75,7 @@ $userAccent = $isDth
 
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-server"></i>
                     {{ $rack->name }}
                 </h2>
@@ -90,7 +91,10 @@ $userAccent = $isDth
                         <i class="fa-solid fa-circle-xmark mr-1.5"></i>{{ $rack->total_units - $rack->occupied_positions_count }} / {{ $rack->total_units }} {{ __('Empty') }}
                     </span>
                     @if($rack->description)
-                        <span class="text-gray-400 dark:text-gray-500 italic">{{ $rack->description }}</span>
+                        <span class="text-gray-400 dark:text-gray-500 italic">
+                            <i class="fa-solid fa-comment-dots mr-1.5"></i>
+                            {{ $rack->description }}
+                        </span>
                     @endif
                 </p>
             </div>
@@ -115,8 +119,7 @@ $userAccent = $isDth
             </div>
         </div>
 
-        <div class="grid grid-cols-[60px_1fr_100px] gap-1 font-mono text-sm">
-
+        <div class="space-y-2.5">
             @foreach($positions as $idx => $equipment)
                 @php
                     $position = $idx + 1;
@@ -124,108 +127,154 @@ $userAccent = $isDth
                     $color = $equipment && $equipment->color ? $equipment->color : null;
 
                     $indicator = match ($color) {
-                        'green' => ['dot' => 'bg-green-500', 'border' => 'border-green-400 dark:border-green-600 border-2', 'tone' => 'text-green-700 dark:text-green-300'],
-                        'red' => ['dot' => 'bg-red-500', 'border' => 'border-red-400 dark:border-red-600 border-2', 'tone' => 'text-red-700 dark:text-red-300'],
-                        'blue' => ['dot' => 'bg-blue-500', 'border' => 'border-blue-400 dark:border-blue-600 border-2', 'tone' => 'text-blue-700 dark:text-blue-300'],
-                        'yellow' => ['dot' => 'bg-amber-500', 'border' => 'border-amber-400 dark:border-amber-600 border-2', 'tone' => 'text-amber-700 dark:text-amber-300'],
-                        'orange' => ['dot' => 'bg-orange-500', 'border' => 'border-orange-400 dark:border-orange-600 border-2', 'tone' => 'text-orange-700 dark:text-orange-300'],
+                        'green' => [
+                            'dot' => 'bg-green-500',
+                            'bg' => 'bg-green-50/50 dark:bg-green-900/10',
+                            'border' => 'border-green-200 dark:border-green-800',
+                            'accent' => 'border-l-green-500',
+                            'tone' => 'text-green-800 dark:text-green-300',
+                        ],
+                        'red' => [
+                            'dot' => 'bg-red-500',
+                            'bg' => 'bg-red-50/50 dark:bg-red-900/10',
+                            'border' => 'border-red-200 dark:border-red-800',
+                            'accent' => 'border-l-red-500',
+                            'tone' => 'text-red-800 dark:text-red-300',
+                        ],
+                        'blue' => [
+                            'dot' => 'bg-blue-500',
+                            'bg' => 'bg-blue-50/50 dark:bg-blue-900/10',
+                            'border' => 'border-blue-200 dark:border-blue-800',
+                            'accent' => 'border-l-blue-500',
+                            'tone' => 'text-blue-800 dark:text-blue-300',
+                        ],
+                        'yellow' => [
+                            'dot' => 'bg-amber-500',
+                            'bg' => 'bg-amber-50/50 dark:bg-amber-900/10',
+                            'border' => 'border-amber-200 dark:border-amber-800',
+                            'accent' => 'border-l-amber-500',
+                            'tone' => 'text-amber-800 dark:text-amber-300',
+                        ],
+                        'orange' => [
+                            'dot' => 'bg-orange-500',
+                            'bg' => 'bg-orange-50/50 dark:bg-orange-900/10',
+                            'border' => 'border-orange-200 dark:border-orange-800',
+                            'accent' => 'border-l-orange-500',
+                            'tone' => 'text-orange-800 dark:text-orange-300',
+                        ],
                         default => null,
                     };
 
-                    $baseClasses = $isEmpty
-                        ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200';
-
-                    if ($isEmpty) {
-                        $borderClass = 'border-gray-200 dark:border-gray-700';
-                    } else {
-                        $borderClass = $indicator
-                            ? $indicator['border']
-                            : ($userAccent['border'] . ' ' . $userAccent['borderHi']);
-                    }
+                    $slotClasses = $isEmpty
+                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                        : ($indicator
+                            ? $indicator['bg'] . ' ' . $indicator['border']
+                            : 'bg-white dark:bg-gray-800 ' . $userAccent['border']);
                 @endphp
 
-                <div class="flex items-center justify-center bg-gray-50 border border-gray-200 dark:bg-gray-700 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold rounded py-2 px-1">
-                    <b>{{ $position }}</b>
-                </div>
+                <div class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
 
-                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] {{ $baseClasses }} {{ $borderClass }}">
-                    @if($isEmpty)
-                        <span class="text-xs italic">{{ __('Empty') }}</span>
-                    @else
-                        <div class="flex items-center gap-2">
-                            @if($indicator)
-                                <span class="w-2 h-2 rounded-full {{ $indicator['dot'] }} flex-shrink-0"></span>
-                            @else
-                                <span class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0"></span>
-                            @endif
-                            <div class="font-bold text-sm leading-tight {{ $indicator['tone'] ?? '' }}">{{ $equipment->equipment_name }}</div>
-                        </div>
-                        @if($equipment->equipment_model || $equipment->ip_address || $equipment->equipment_role || $equipment->vendor || $equipment->serial_number || $equipment->mac_address || $equipment->installation_date)
-                            <div class="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-gray-600 dark:text-gray-400 mt-2 pl-4">
-                                @if($equipment->equipment_model)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
-                                        <span class="font-medium">{{ $equipment->equipment_model }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->vendor)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
-                                        <span>{{ $equipment->vendor }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->ip_address)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
-                                        <span class="font-mono">{{ $equipment->ip_address }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->mac_address)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
-                                        <span class="font-mono">{{ $equipment->mac_address }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->serial_number)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
-                                        <span class="font-mono">{{ $equipment->serial_number }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->equipment_role)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
-                                        <span class="font-semibold">{{ $equipment->equipment_role }}</span>
-                                    </span>
-                                @endif
-                                @if($equipment->installation_date)
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
-                                        <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
-                                    </span>
-                                @endif
+                    <div class="flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-3 px-2 shadow-sm">
+                        <span class="text-sm font-black tracking-tight">U{{ $position }}</span>
+                    </div>
+
+                    <div class="flex flex-col justify-center rounded-xl border {{ $slotClasses }} {{ $indicator ? 'border-l-4 ' . $indicator['accent'] : '' }} px-4 py-3 shadow-sm-all duration-200 group-hover:shadow-md">
+                        @if($isEmpty)
+                            <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
+                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700/60">
+                                    <i class="fa-regular fa-square text-sm"></i>
+                                </span>
+                                <div>
+                                    <div class="text-sm font-medium">{{ __('Empty slot') }}</div>
+                                    <div class="text-xs opacity-75">{{ __('No equipment assigned') }}</div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex items-start gap-3">
+                                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
+                                    @if($indicator)
+                                        <i class="fa-solid fa-server {{ $indicator['tone'] }} text-base"></i>
+                                    @else
+                                        <i class="fa-solid fa-server text-gray-500 dark:text-gray-400 text-base"></i>
+                                    @endif
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate {{ $indicator['tone'] ?? '' }}">
+                                        {{ $equipment->equipment_name }}
+                                    </h3>
+
+                                    @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
+                                        <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
+                                            @if($equipment->equipment_model)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
+                                                    <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                                    <span class="font-medium">{{ $equipment->equipment_model }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->vendor)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
+                                                    <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                                    <span>{{ $equipment->vendor }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->ip_address)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
+                                                    <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                                    <span class="font-mono">{{ $equipment->ip_address }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->mac_address)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
+                                                    <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                                    <span class="font-mono">{{ $equipment->mac_address }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->serial_number)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
+                                                    <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                                    <span class="font-mono">{{ $equipment->serial_number }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->equipment_role)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Role / Function') }}">
+                                                    <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                                    <span class="font-semibold">{{ $equipment->equipment_role }}</span>
+                                                </span>
+                                            @endif
+                                            @if($equipment->installation_date)
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Installation Date') }}">
+                                                    <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                                    <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         @endif
-                    @endif
-                </div>
+                    </div>
 
-                <div class="flex items-center justify-center gap-1">
-                    <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-14 h-14 text-sm rounded font-medium shadow-sm
-                        bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
-                        dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500"
-                       title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}" aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
-                        <i class="fa-solid fa-pen"></i>
-                    </a>
+                    <div class="flex flex-col justify-center gap-2">
+                        <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
+                           class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                            bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                            hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                            dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                           title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}"
+                           aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
+                            <i class="fa-solid {{ $isEmpty ? 'fa-plus' : 'fa-pen' }}"></i>
+                        </a>
 
-                    <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-14 h-14 text-sm rounded font-medium shadow-sm
-                        bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
-                        dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500"
-                       title="{{ __('Position history') }}" aria-label="{{ __('Position history') }}">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </a>
+                        <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
+                           class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                            bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                            hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                            dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                           title="{{ __('Position history') }}"
+                           aria-label="{{ __('Position history') }}">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </a>
+                    </div>
                 </div>
             @endforeach
         </div>

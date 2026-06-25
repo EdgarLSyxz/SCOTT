@@ -1249,5 +1249,7 @@
     "Any": "Cualquiera",
     "This will clear the equipment at this position. History will be kept.": "Esto borrará el equipo en esta posición. El historial se mantendrá.",
     "Yes, clear it!": "¡Sí, bórralo!",
-    "Clear position": "Limpiar posición"
+    "Clear position": "Limpiar posición",
+    "Empty slot": "Ranura vacía",
+    "No equipment assigned": "No hay equipo asignado"
 }
