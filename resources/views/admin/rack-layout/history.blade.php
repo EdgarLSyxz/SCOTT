@@ -81,7 +81,7 @@
 
         <form method="GET" action="{{ route('admin.rack-layout.history', $rack) }}" class="mb-6 p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-700/40 dark:to-gray-800/40 border border-gray-200 dark:border-gray-600 rounded-lg">
             <div class="flex items-center justify-between gap-2 mb-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 mb-2">
                     <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 flex items-center justify-center shadow-sm">
                         <i class="fa-solid fa-filter text-gray-500 dark:text-gray-400 text-sm"></i>
                     </div>
@@ -97,20 +97,24 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
-                    <label class="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">
-                        <i class="fa-solid fa-hashtag text-gray-400"></i>
+                    <x-label for="position">
+                        <i class="fa-solid fa-hashtag mr-1"></i>
                         {{ __('Position (Unit)') }}
-                    </label>
-                    <input type="number" name="position" value="{{ $filters['position'] ?? '' }}" min="1" max="{{ $rack->total_units }}"
-                           placeholder="{{ __('Any') }}"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-[#9F24A5]/30 focus:border-[#9F24A5] transition-all">
+                    </x-label>
+                    <x-input id="position" class="block mt-1 w-full" type="number" name="position"
+                        :value="$filters['position'] ?? ''" min="1" max="{{ $rack->total_units }}"
+                        placeholder="{{ __('Any') }}" autocomplete="off" />
                 </div>
                 <div>
-                    <label class="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">
-                        <i class="fa-solid fa-tag text-gray-400"></i>
+                    <x-label for="change_type">
+                        <i class="fa-solid fa-tag mr-1"></i>
                         {{ __('Change type') }}
-                    </label>
-                    <select name="change_type" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-[#9F24A5]/30 focus:border-[#9F24A5] transition-all">
+                    </x-label>
+                    <select id="change_type" name="change_type"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white truncate leading-tight
+                            {{ Auth::user()?->area === 'DTH'
+                                ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                                : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
                         <option value="">{{ __('All') }}</option>
                         <option value="created" {{ ($filters['change_type'] ?? '') === 'created' ? 'selected' : '' }}>{{ __('Created') }}</option>
                         <option value="updated" {{ ($filters['change_type'] ?? '') === 'updated' ? 'selected' : '' }}>{{ __('Updated') }}</option>
@@ -118,28 +122,28 @@
                     </select>
                 </div>
                 <div>
-                    <label class="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">
-                        <i class="fa-regular fa-calendar text-gray-400"></i>
+                    <x-label for="from">
+                        <i class="fa-regular fa-calendar mr-1"></i>
                         {{ __('From') }}
-                    </label>
-                    <input type="date" name="from" value="{{ $filters['from'] ?? '' }}"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-[#9F24A5]/30 focus:border-[#9F24A5] transition-all">
+                    </x-label>
+                    <x-input id="from" class="block mt-1 w-full" type="date" name="from"
+                        :value="$filters['from'] ?? ''" autocomplete="off" />
                 </div>
                 <div>
-                    <label class="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">
-                        <i class="fa-regular fa-calendar text-gray-400"></i>
+                    <x-label for="to">
+                        <i class="fa-regular fa-calendar mr-1"></i>
                         {{ __('To') }}
-                    </label>
-                    <input type="date" name="to" value="{{ $filters['to'] ?? '' }}"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-[#9F24A5]/30 focus:border-[#9F24A5] transition-all">
+                    </x-label>
+                    <x-input id="to" class="block mt-1 w-full" type="date" name="to"
+                        :value="$filters['to'] ?? ''" autocomplete="off" />
                 </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#9F24A5] rounded-md hover:bg-[#7a1d82] shadow-sm hover:shadow-md transition-all">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-600 hover:bg-secondary-700' : 'bg-primary-600 hover:bg-primary-700' }} shadow-sm hover:shadow-md transition-all">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         {{ __('Filter') }}
                     </button>
                     <a href="{{ route('admin.rack-layout.history', $rack) }}"
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all">
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all">
                         <i class="fa-solid fa-rotate-left text-xs"></i>
                         {{ __('Clear') }}
                     </a>
