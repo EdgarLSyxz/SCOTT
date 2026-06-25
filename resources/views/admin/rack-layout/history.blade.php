@@ -40,13 +40,12 @@
                     <i class="fa-solid fa-layer-group text-gray-700 dark:text-gray-300"></i>
                     {{ $rack->name }}
                     <span class="text-gray-400 dark:text-gray-500">/</span>
-                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full">
-                        <i class="fa-solid fa-clock-rotate-left mr-1"></i>
+                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded">
                         {{ __('History') }}
                     </span>
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ __('Every create, update, and delete is recorded with a field-level diff.') }}
+                    {{ __('Every creation, update, and deletion is recorded at the field level.') }}
                 </p>
             </div>
 

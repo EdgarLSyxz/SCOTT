@@ -124,11 +124,11 @@ $userAccent = $isDth
                     $color = $equipment && $equipment->color ? $equipment->color : null;
 
                     $indicator = match ($color) {
-                        'green' => ['dot' => 'bg-green-500', 'border' => 'border-green-400 dark:border-green-600', 'tone' => 'text-green-700 dark:text-green-300'],
-                        'red' => ['dot' => 'bg-red-500', 'border' => 'border-red-400 dark:border-red-600', 'tone' => 'text-red-700 dark:text-red-300'],
-                        'blue' => ['dot' => 'bg-blue-500', 'border' => 'border-blue-400 dark:border-blue-600', 'tone' => 'text-blue-700 dark:text-blue-300'],
-                        'yellow' => ['dot' => 'bg-amber-500', 'border' => 'border-amber-400 dark:border-amber-600', 'tone' => 'text-amber-700 dark:text-amber-300'],
-                        'orange' => ['dot' => 'bg-orange-500', 'border' => 'border-orange-400 dark:border-orange-600', 'tone' => 'text-orange-700 dark:text-orange-300'],
+                        'green' => ['dot' => 'bg-green-500', 'border' => 'border-green-400 dark:border-green-600 border-2', 'tone' => 'text-green-700 dark:text-green-300'],
+                        'red' => ['dot' => 'bg-red-500', 'border' => 'border-red-400 dark:border-red-600 border-2', 'tone' => 'text-red-700 dark:text-red-300'],
+                        'blue' => ['dot' => 'bg-blue-500', 'border' => 'border-blue-400 dark:border-blue-600 border-2', 'tone' => 'text-blue-700 dark:text-blue-300'],
+                        'yellow' => ['dot' => 'bg-amber-500', 'border' => 'border-amber-400 dark:border-amber-600 border-2', 'tone' => 'text-amber-700 dark:text-amber-300'],
+                        'orange' => ['dot' => 'bg-orange-500', 'border' => 'border-orange-400 dark:border-orange-600 border-2', 'tone' => 'text-orange-700 dark:text-orange-300'],
                         default => null,
                     };
 
@@ -136,18 +136,20 @@ $userAccent = $isDth
                         ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
                         : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200';
 
-                    $borderClass = $indicator
-                        ? $indicator['border']
-                        : 'border-gray-200 dark:border-gray-700';
+                    if ($isEmpty) {
+                        $borderClass = 'border-gray-200 dark:border-gray-700';
+                    } else {
+                        $borderClass = $indicator
+                            ? $indicator['border']
+                            : ($userAccent['border'] . ' ' . $userAccent['borderHi']);
+                    }
                 @endphp
 
                 <div class="flex items-center justify-center bg-gray-50 border border-gray-200 dark:bg-gray-700 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold rounded py-2 px-1">
                     <b>{{ $position }}</b>
                 </div>
 
-                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px]
-                        {{ $baseClasses }} {{ $borderClass }}
-                        @if($indicator) {{ $userAccent['border'] }} dark:{{ str_replace('border-', 'border-', $userAccent['borderHi']) }} @endif">
+                <div class="flex flex-col justify-center border rounded px-3 py-2 min-h-[44px] {{ $baseClasses }} {{ $borderClass }}">
                     @if($isEmpty)
                         <span class="text-xs italic">{{ __('Empty') }}</span>
                     @else
@@ -159,30 +161,68 @@ $userAccent = $isDth
                             @endif
                             <div class="font-bold text-sm leading-tight {{ $indicator['tone'] ?? '' }}">{{ $equipment->equipment_name }}</div>
                         </div>
-                        <div class="text-xs opacity-80 mt-0.5 leading-tight pl-4">
-                            {{ trim(implode(' · ', array_filter([$equipment->equipment_model, $equipment->ip_address]))) }}
-                            @if($equipment->equipment_role)
-                                <span class="font-semibold ml-1">— {{ $equipment->equipment_role }}</span>
-                            @endif
-                        </div>
+                        @if($equipment->equipment_model || $equipment->ip_address || $equipment->equipment_role || $equipment->vendor || $equipment->serial_number || $equipment->mac_address || $equipment->installation_date)
+                            <div class="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-gray-600 dark:text-gray-400 mt-2 pl-4">
+                                @if($equipment->equipment_model)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                        <span class="font-medium">{{ $equipment->equipment_model }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->vendor)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                        <span>{{ $equipment->vendor }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->ip_address)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                        <span class="font-mono">{{ $equipment->ip_address }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->mac_address)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                        <span class="font-mono">{{ $equipment->mac_address }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->serial_number)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                        <span class="font-mono">{{ $equipment->serial_number }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->equipment_role)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                        <span class="font-semibold">{{ $equipment->equipment_role }}</span>
+                                    </span>
+                                @endif
+                                @if($equipment->installation_date)
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                        <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
                     @endif
                 </div>
 
                 <div class="flex items-center justify-center gap-1">
                     <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm
-                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
-                              dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
-                              {{ $userAccent['ring'] }}"
+                       class="inline-flex items-center justify-center w-14 h-14 text-sm rounded font-medium shadow-sm
+                        bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
+                        dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500"
                        title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}" aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
                         <i class="fa-solid fa-pen"></i>
                     </a>
 
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                       class="inline-flex items-center justify-center w-12 h-12 text-sm rounded focus:ring-4 focus:outline-none font-medium shadow-sm
-                              bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
-                              dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500
-                              {{ $userAccent['ring'] }}"
+                       class="inline-flex items-center justify-center w-14 h-14 text-sm rounded font-medium shadow-sm
+                        bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400
+                        dark:bg-gray-700 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-500"
                        title="{{ __('Position history') }}" aria-label="{{ __('Position history') }}">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </a>
