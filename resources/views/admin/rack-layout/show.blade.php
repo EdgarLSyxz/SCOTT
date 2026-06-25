@@ -92,7 +92,7 @@
                     </span>
                     @if($rack->description)
                         <span class="text-gray-400 dark:text-gray-500 italic">
-                            <i class="fa-solid fa-comment-dots mr-1.5"></i>
+                            <i class="fa-solid fa-align-left mr-1.5"></i>
                             {{ $rack->description }}
                         </span>
                     @endif

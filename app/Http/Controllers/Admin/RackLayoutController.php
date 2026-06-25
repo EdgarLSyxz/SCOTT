@@ -379,7 +379,6 @@ class RackLayoutController extends Controller
     private function getColorChoices(): array
     {
         return [
-            '' => __('Default'),
             'green' => __('Green - Highlighted'),
             'red' => __('Red - Critical'),
             'blue' => __('Blue - Info'),

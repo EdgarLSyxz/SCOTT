@@ -1251,5 +1251,10 @@
     "Yes, clear it!": "¡Sí, bórralo!",
     "Clear position": "Limpiar posición",
     "Empty slot": "Ranura vacía",
-    "No equipment assigned": "No hay equipo asignado"
+    "No equipment assigned": "No hay equipo asignado",
+    "Green - Highlighted": "Verde - Correcto",
+    "Yellow - Caution": "Amarillo - Precaución",
+    "Red - Critical": "Rojo - Crítico",
+    "Blue - Information": "Azul - Información",
+    "Orange - Warning": "Naranja - Advertencia"
 }

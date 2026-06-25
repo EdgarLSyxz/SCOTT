@@ -37,7 +37,7 @@
 
         <div class="mb-6">
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-hard-drive mr-1"></i>
+                <i class="fa-solid fa-server mr-1"></i>
                 {{ $rack->name }} <span class="text-gray-400">—</span> {{ __('Position') }} U{{ $position }}
             </h1>
             <p class="text-sm font-light text-gray-500 dark:text-gray-400 mt-1">
@@ -54,7 +54,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div>
                     <x-label for="equipment_name">
-                        <i class="fa-solid fa-tag mr-1"></i>
+                        <i class="fa-solid fa-hard-drive mr-1"></i>
                         {{ __('Name') }}
                     </x-label>
                     <x-input id="equipment_name" class="block mt-1 w-full" type="text" name="equipment_name"
@@ -74,7 +74,7 @@
 
                 <div>
                     <x-label for="equipment_role">
-                        <i class="fa-solid fa-circle-nodes mr-1"></i>
+                        <i class="fa-solid fa-user-gear mr-1"></i>
                         {{ __('Function') }}
                     </x-label>
                     <x-input id="equipment_role" class="block mt-1 w-full" type="text" name="equipment_role"
@@ -103,7 +103,7 @@
 
                 <div>
                     <x-label for="mac_address">
-                        <i class="fa-solid fa-fingerprint mr-1"></i>
+                        <i class="fa-solid fa-address-card mr-1"></i>
                         {{ __('MAC Address') }}
                     </x-label>
                     <x-input id="mac_address" class="block mt-1 w-full" type="text" name="mac_address"
@@ -123,7 +123,7 @@
 
                 <div>
                     <x-label for="installation_date">
-                        <i class="fa-solid fa-calendar-day mr-1"></i>
+                        <i class="fa-solid fa-calendar-check mr-1"></i>
                         {{ __('Installation date') }}
                     </x-label>
                     <x-input id="installation_date" class="block mt-1 w-full" type="date" name="installation_date"
@@ -141,6 +141,7 @@
                                 ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
                                 : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         name="color">
+                        <option wire:click value="" disabled selected>{{ __('Select an option') }}</option>
                         @foreach($colorChoices as $value => $label)
                             <option value="{{ $value }}" {{ old('color', $equipment->color) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
