@@ -138,6 +138,24 @@
                                     <span>{{ $current->vendor }}</span>
                                 </span>
                             @endif
+                            @if($current->serial_number)
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-barcode text-gray-400 w-3.5 text-center"></i>
+                                    <span class="font-mono">{{ $current->serial_number }}</span>
+                                </span>
+                            @endif
+                            @if($current->mac_address)
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-address-card text-gray-400 w-3.5 text-center"></i>
+                                    <span class="font-mono">{{ $current->mac_address }}</span>
+                                </span>
+                            @endif
+                            @if($current->installation_date)
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-check text-gray-400 w-3.5 text-center"></i>
+                                    <span>{{ $current->installation_date->format('M d, Y') }}</span>
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -277,8 +295,20 @@
                                                 @endif
                                                 @if($entry->mac_address)
                                                     <span class="inline-flex items-center gap-1.5">
-                                                        <i class="fa-solid fa-fingerprint text-gray-400 w-3.5 text-center"></i>
+                                                        <i class="fa-solid fa-address-card text-gray-400 w-3.5 text-center"></i>
                                                         <span class="font-mono">{{ $entry->mac_address }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($entry->vendor)
+                                                    <span class="inline-flex items-center gap-1.5">
+                                                        <i class="fa-solid fa-industry text-gray-400 w-3.5 text-center"></i>
+                                                        <span>{{ $entry->vendor }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($entry->installation_date)
+                                                    <span class="inline-flex items-center gap-1.5">
+                                                        <i class="fa-solid fa-calendar-check text-gray-400 w-3.5 text-center"></i>
+                                                        <span>{{ $entry->installation_date->format('M d, Y') }}</span>
                                                     </span>
                                                 @endif
                                             </div>
