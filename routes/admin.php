@@ -93,7 +93,7 @@ Route::resource('admin/reports/sla', ReportSlaController::class)
 
 Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])->name('user.switch-area')->middleware(['auth', 'verified']);
 
-Route::prefix('rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');
     Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
     Route::post('/', [RackLayoutController::class, 'store'])->name('store');
