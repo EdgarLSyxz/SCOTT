@@ -237,7 +237,8 @@
                                 'installation_date' => __('Installed'),
                                 'notes'             => __('Notes'),
                                 'color'             => __('Color'),
-                                'is_active'         => __('Status'),
+                                    'is_active'         => __('Status'),
+                                    'size_u'            => __('Tamaño de la unidad'),
                             ];
                             $userName = $entry->user->name ?? __('System');
                             $userInitial = strtoupper(mb_substr($userName, 0, 1));
@@ -377,13 +378,13 @@
                                                 <i class="fa-solid fa-code-compare"></i>
                                                 {{ __('View changes') }}
                                                 <span class="text-[10px] font-normal opacity-75">
-                                                    ({{ count($entry->changes) }} {{ trans_choice('field|fields', count($entry->changes)) }})
+                                                    ({{ count($entry->changes) }} {{ trans_choice('Field|Fields', count($entry->changes)) }})
                                                 </span>
                                             </summary>
                                             <div class="mt-2 p-3 {{ $style['diffBg'] }} border rounded-md">
                                                 <ul class="space-y-1.5 text-xs">
                                                     @foreach($entry->changes as $field => $diff)
-                                                        <li class="grid grid-cols-[110px_1fr] gap-3 items-start">
+                                                        <li class="grid grid-cols-[120px_1fr] gap-3 items-start">
                                                             <span class="font-semibold text-gray-700 dark:text-gray-300 truncate">
                                                                 {{ $fieldLabels[$field] ?? $field }}
                                                             </span>
