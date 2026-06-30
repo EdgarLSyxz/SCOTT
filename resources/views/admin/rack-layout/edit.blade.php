@@ -122,19 +122,18 @@
                 </div>
 
                 <div>
-                    <x-label for="size_u">
+                    <x-label for="size_u" class="flex items-center">
                         <i class="fa-solid fa-arrows-up-down mr-1"></i>
-                        {{ __('Size (U)') }}
+                        {{ __('Size') }}
+                        <p class="ml-1.5 text-sm text-gray-500 dark:text-gray-400" id="size-u-preview">
+                            <span data-size-preview>
+                                U{{ $position }}@if((int) old('size_u', $equipment->size_u ?? 1) > 1) – U{{ $position + (int) old('size_u', $equipment->size_u ?? 1) - 1 }}@endif
+                            </span>
+                            <span class="ml-1 opacity-75">({{ $rack->total_units }} {{ __('Units total') }})</span>
+                        </p>
                     </x-label>
                     <x-input id="size_u" class="block mt-1 w-full" type="number" min="1" max="{{ $rack->total_units }}" name="size_u"
-                        :value="old('size_u', $equipment->size_u ?? 1)" autocomplete="off" />
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" id="size-u-preview">
-                        <i class="fa-solid fa-layer-group mr-1"></i>
-                        <span data-size-preview>
-                            U{{ $position }}@if((int) old('size_u', $equipment->size_u ?? 1) > 1)–U{{ $position + (int) old('size_u', $equipment->size_u ?? 1) - 1 }}@endif
-                        </span>
-                        <span class="ml-1 opacity-75">({{ $rack->total_units }} {{ __('Units total') }})</span>
-                    </p>
+                        :value="old('size_u', $equipment->size_u ?? 1)" autocomplete="off" placeholder="{{ __('Equipment size') }}" />
                 </div>
 
                 <div>
@@ -146,7 +145,7 @@
                         :value="old('installation_date', $equipment->installation_date ? $equipment->installation_date->format('Y-m-d') : '')" autocomplete="off" />
                 </div>
 
-                <div class="md:col-span-2">
+                <div>
                     <x-label for="color">
                         <i class="fa-solid fa-palette mr-1"></i>
                         {{ __('Highlight color') }}

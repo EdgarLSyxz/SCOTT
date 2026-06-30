@@ -1261,5 +1261,8 @@
     "Rack created successfully.": "Rack creado con éxito.",
     "No history records yet.": "Aún no hay registros de historial.",
     "Changes will appear here as they happen.": "Los cambios aparecerán aquí a medida que ocurran.",
-    "Unit": "Unidad"
+    "Unit": "Unidad",
+    "Units total": "Unidades totales",
+    "Equipment size": "Tamaño del equipo",
+    "Size": "Tamaño"
 }
