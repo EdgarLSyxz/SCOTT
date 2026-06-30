@@ -218,7 +218,7 @@
                             : 'bg-gray-400';
                     @endphp
 
-                    <div class="grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
+                    <div class="grid grid-cols-[80px_1fr_auto] sm:grid-cols-[80px_1fr_auto] gap-3 items-stretch">
                         <div class="relative flex flex-col items-center justify-center rounded-xl border-2 {{ $slotBg }} text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">
                             <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ __('Unit') }}</span>
                             <span class="text-sm font-black tracking-tight leading-none mt-0.5">U{{ $position }} - U{{ $position + $sizeU - 1 }}</span>
@@ -335,7 +335,7 @@
                             : 'bg-gray-400';
                     @endphp
 
-                    <div class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
+                    <div class="group grid grid-cols-[80px_1fr_auto] sm:grid-cols-[80px_1fr_auto] gap-3 items-stretch">
 
                         <div class="relative flex flex-col items-center justify-center rounded-xl border-2 {{ $slotBg }} text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">
                             <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ __('Unit') }}</span>
