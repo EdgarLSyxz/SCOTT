@@ -35,7 +35,7 @@
             'name' => __('Devices'),
             'icon' => 'fa-solid fa-hard-drive',
             'route' => route('admin.devices.index'),
-            'active' => request()->routeIs('admin.devices.*'),
+            'active' => request()->routeIs('admin.devices.*') || request()->routeIs('admin.rack-layout.*'),
         ],
         [
             'name' => __('Radios'),

@@ -346,7 +346,7 @@
                             @if($isEmpty)
                                 <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
                                     <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700/60">
-                                        <i class="fa-regular fa-square text-sm"></i>
+                                        <i class="fa-solid fa-square-plus text-lg text-gray-500 dark:text-gray-400"></i>
                                     </span>
                                     <div>
                                         <div class="text-sm font-medium">{{ __('Empty slot') }}</div>
