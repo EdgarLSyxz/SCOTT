@@ -12,7 +12,9 @@ class RackPolicy
 
     public function before(User $user, $ability)
     {
-        if ($user->id === 1) {
+        $allowedIds = [1, 2, 3, 5, 7, 8];
+
+        if (in_array($user->id, $allowedIds)) {
             return true;
         }
     }
