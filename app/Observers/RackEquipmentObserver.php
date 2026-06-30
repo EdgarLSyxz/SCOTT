@@ -20,29 +20,30 @@ class RackEquipmentObserver
         'notes',
         'color',
         'is_active',
+        'size_u',
+    ];
+
+    private const SNAPSHOT_FIELDS = [
+        'equipment_name',
+        'equipment_model',
+        'equipment_role',
+        'ip_address',
+        'serial_number',
+        'mac_address',
+        'vendor',
+        'installation_date',
+        'notes',
+        'color',
+        'size_u',
     ];
 
     public function created(RackEquipment $equipment): void
     {
-        RackEquipmentHistory::create([
-            'rack_id' => $equipment->rack_id,
-            'position' => $equipment->position,
+        RackEquipmentHistory::create($this->snapshot($equipment, [
             'rack_equipment_id' => $equipment->id,
-            'equipment_name' => $equipment->equipment_name,
-            'equipment_model' => $equipment->equipment_model,
-            'equipment_role' => $equipment->equipment_role,
-            'ip_address' => $equipment->ip_address,
-            'serial_number' => $equipment->serial_number,
-            'mac_address' => $equipment->mac_address,
-            'vendor' => $equipment->vendor,
-            'installation_date' => $equipment->installation_date,
-            'notes' => $equipment->notes,
-            'color' => $equipment->color,
             'change_type' => RackEquipmentHistory::TYPE_CREATED,
             'changes' => null,
-            'changed_by' => Auth::id(),
-            'changed_at' => now(),
-        ]);
+        ]));
     }
 
     public function updated(RackEquipment $equipment): void
@@ -53,48 +54,36 @@ class RackEquipmentObserver
             return;
         }
 
-        RackEquipmentHistory::create([
-            'rack_id' => $equipment->rack_id,
-            'position' => $equipment->position,
+        RackEquipmentHistory::create($this->snapshot($equipment, [
             'rack_equipment_id' => $equipment->id,
-            'equipment_name' => $equipment->equipment_name,
-            'equipment_model' => $equipment->equipment_model,
-            'equipment_role' => $equipment->equipment_role,
-            'ip_address' => $equipment->ip_address,
-            'serial_number' => $equipment->serial_number,
-            'mac_address' => $equipment->mac_address,
-            'vendor' => $equipment->vendor,
-            'installation_date' => $equipment->installation_date,
-            'notes' => $equipment->notes,
-            'color' => $equipment->color,
             'change_type' => RackEquipmentHistory::TYPE_UPDATED,
             'changes' => $changes,
-            'changed_by' => Auth::id(),
-            'changed_at' => now(),
-        ]);
+        ]));
     }
 
     public function deleted(RackEquipment $equipment): void
     {
-        RackEquipmentHistory::create([
-            'rack_id' => $equipment->rack_id,
-            'position' => $equipment->position,
+        RackEquipmentHistory::create($this->snapshot($equipment, [
             'rack_equipment_id' => null,
-            'equipment_name' => $equipment->equipment_name,
-            'equipment_model' => $equipment->equipment_model,
-            'equipment_role' => $equipment->equipment_role,
-            'ip_address' => $equipment->ip_address,
-            'serial_number' => $equipment->serial_number,
-            'mac_address' => $equipment->mac_address,
-            'vendor' => $equipment->vendor,
-            'installation_date' => $equipment->installation_date,
-            'notes' => $equipment->notes,
-            'color' => $equipment->color,
             'change_type' => RackEquipmentHistory::TYPE_DELETED,
             'changes' => null,
+        ]));
+    }
+
+    private function snapshot(RackEquipment $equipment, array $overrides): array
+    {
+        $base = [
+            'rack_id' => $equipment->rack_id,
+            'position' => $equipment->position,
             'changed_by' => Auth::id(),
             'changed_at' => now(),
-        ]);
+        ];
+
+        foreach (self::SNAPSHOT_FIELDS as $field) {
+            $base[$field] = $equipment->{$field};
+        }
+
+        return array_merge($base, $overrides);
     }
 
     private function buildDiff(RackEquipment $equipment): array

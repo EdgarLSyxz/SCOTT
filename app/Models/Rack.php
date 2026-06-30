@@ -46,9 +46,29 @@ class Rack extends Model
 
     public function getOccupiedPositionsCountAttribute(): int
     {
-        return $this->activeEquipment()
+        return (int) $this->activeEquipment()
             ->whereNotNull('equipment_name')
             ->where('equipment_name', '!=', '')
-            ->count();
+            ->sum('size_u');
+    }
+
+    public function positionsMap(): array
+    {
+        $equipment = $this->equipment()->get();
+
+        $map = [];
+        foreach ($equipment as $item) {
+            $end = (int) $item->position + (int) $item->size_u - 1;
+            for ($i = (int) $item->position; $i <= $end; $i++) {
+                $map[$i] = $item;
+            }
+        }
+
+        $positions = [];
+        for ($i = 1; $i <= $this->total_units; $i++) {
+            $positions[] = $map[$i] ?? null;
+        }
+
+        return $positions;
     }
 }

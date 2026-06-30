@@ -12,6 +12,7 @@ class RackEquipment extends Model
     protected $fillable = [
         'rack_id',
         'position',
+        'size_u',
         'equipment_name',
         'equipment_model',
         'equipment_role',
@@ -28,6 +29,7 @@ class RackEquipment extends Model
 
     protected $casts = [
         'position' => 'integer',
+        'size_u' => 'integer',
         'installation_date' => 'date',
         'is_active' => 'boolean',
     ];
@@ -45,6 +47,26 @@ class RackEquipment extends Model
     public function isEmpty(): bool
     {
         return empty($this->equipment_name);
+    }
+
+    public function getSizeUAttribute($value): int
+    {
+        $size = (int) ($value ?? 1);
+        return $size < 1 ? 1 : $size;
+    }
+
+    public function getEndPositionAttribute(): int
+    {
+        return (int) $this->position + $this->size_u - 1;
+    }
+
+    public function occupiesPositions(): array
+    {
+        $positions = [];
+        for ($i = (int) $this->position; $i <= $this->end_position; $i++) {
+            $positions[] = $i;
+        }
+        return $positions;
     }
 
     public function getDisplayLabelAttribute(): string

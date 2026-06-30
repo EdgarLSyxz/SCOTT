@@ -109,14 +109,26 @@
             </tr>
         </thead>
         <tbody>
+            @php $pdfSkip = []; @endphp
             @foreach($positions as $idx => $equipment)
                 @php
+                    if (in_array($idx, $pdfSkip, true)) {
+                        continue;
+                    }
                     $position = $idx + 1;
                     $isEmpty = ! $equipment || empty($equipment->equipment_name);
                     $colorClass = $equipment && $equipment->color ? 'bg-' . $equipment->color : '';
+                    $sizeU = $equipment ? max(1, (int) $equipment->size_u) : 1;
+                    $isSpanned = $sizeU > 1;
+                    $rangeLabel = $isSpanned ? "U{$position}–U" . ($position + $sizeU - 1) . " ({$sizeU}U)" : "U{$position}";
+                    if ($isSpanned) {
+                        for ($s = 1; $s < $sizeU; $s++) {
+                            $pdfSkip[] = $idx + $s;
+                        }
+                    }
                 @endphp
                 <tr class="{{ $isEmpty ? 'empty' : '' }} {{ $colorClass }}">
-                    <td class="pos">{{ $position }}</td>
+                    <td class="pos" @if($isSpanned) rowspan="{{ $sizeU }}" @endif>{{ $rangeLabel }}</td>
                     <td class="label">
                         {{ $equipment->equipment_name ?? '—' }}
                     </td>

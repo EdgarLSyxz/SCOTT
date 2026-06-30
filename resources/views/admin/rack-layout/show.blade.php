@@ -120,11 +120,25 @@
         </div>
 
         <div class="space-y-2.5">
+            @php
+                $skipSlots = [];
+            @endphp
             @foreach($positions as $idx => $equipment)
                 @php
+                    if (in_array($idx, $skipSlots, true)) {
+                        continue;
+                    }
+
                     $position = $idx + 1;
                     $isEmpty = !$equipment || empty($equipment->equipment_name);
                     $color = $equipment && $equipment->color ? $equipment->color : null;
+                    $sizeU = $equipment ? max(1, (int) $equipment->size_u) : 1;
+                    $isSpanned = $sizeU > 1;
+                    if ($isSpanned) {
+                        for ($s = 1; $s < $sizeU; $s++) {
+                            $skipSlots[] = $idx + $s;
+                        }
+                    }
 
                     $indicator = match ($color) {
                         'green' => [
@@ -133,6 +147,7 @@
                             'border' => 'border-green-200 dark:border-green-800',
                             'accent' => 'border-l-green-500',
                             'tone' => 'text-green-800 dark:text-green-300',
+                            'pill' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
                         ],
                         'red' => [
                             'dot' => 'bg-red-500',
@@ -140,6 +155,7 @@
                             'border' => 'border-red-200 dark:border-red-800',
                             'accent' => 'border-l-red-500',
                             'tone' => 'text-red-800 dark:text-red-300',
+                            'pill' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
                         ],
                         'blue' => [
                             'dot' => 'bg-blue-500',
@@ -147,6 +163,7 @@
                             'border' => 'border-blue-200 dark:border-blue-800',
                             'accent' => 'border-l-blue-500',
                             'tone' => 'text-blue-800 dark:text-blue-300',
+                            'pill' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
                         ],
                         'yellow' => [
                             'dot' => 'bg-amber-500',
@@ -154,6 +171,7 @@
                             'border' => 'border-amber-200 dark:border-amber-800',
                             'accent' => 'border-l-amber-500',
                             'tone' => 'text-amber-800 dark:text-amber-300',
+                            'pill' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
                         ],
                         'orange' => [
                             'dot' => 'bg-orange-500',
@@ -161,6 +179,7 @@
                             'border' => 'border-orange-200 dark:border-orange-800',
                             'accent' => 'border-l-orange-500',
                             'tone' => 'text-orange-800 dark:text-orange-300',
+                            'pill' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
                         ],
                         default => null,
                     };
@@ -170,27 +189,43 @@
                         : ($indicator
                             ? $indicator['bg'] . ' ' . $indicator['border']
                             : 'bg-white dark:bg-gray-800 ' . $userAccent['border']);
+
+                    $pillClass = $indicator['pill'] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
                 @endphp
 
-                <div class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
+                @if($isSpanned)
+                    @php
+                        $slotBg = $color
+                            ? match ($color) {
+                                'green' => 'bg-green-500/15 dark:bg-green-500/20 border-green-300 dark:border-green-700',
+                                'red' => 'bg-red-500/15 dark:bg-red-500/20 border-red-300 dark:border-red-700',
+                                'blue' => 'bg-blue-500/15 dark:bg-blue-500/20 border-blue-300 dark:border-blue-700',
+                                'yellow' => 'bg-amber-500/15 dark:bg-amber-500/20 border-amber-300 dark:border-amber-700',
+                                'orange' => 'bg-orange-500/15 dark:bg-orange-500/20 border-orange-300 dark:border-orange-700',
+                                default => 'bg-gray-100 dark:bg-gray-700/60 border-gray-200 dark:border-gray-600',
+                            }
+                            : 'bg-gray-100 dark:bg-gray-700/60 border-gray-200 dark:border-gray-600';
 
-                    <div class="flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-3 px-2 shadow-sm">
-                        <span class="text-sm font-black tracking-tight">U{{ $position }}</span>
-                    </div>
+                        $slotDot = $color
+                            ? match ($color) {
+                                'green' => 'bg-green-500',
+                                'red' => 'bg-red-500',
+                                'blue' => 'bg-blue-500',
+                                'yellow' => 'bg-amber-500',
+                                'orange' => 'bg-orange-500',
+                                default => 'bg-gray-400',
+                            }
+                            : 'bg-gray-400';
+                    @endphp
 
-                    <div class="flex flex-col justify-center rounded-xl border {{ $slotClasses }} {{ $indicator ? 'border-l-4 ' . $indicator['accent'] : '' }} px-4 py-3 shadow-sm-all duration-200 group-hover:shadow-md">
-                        @if($isEmpty)
-                            <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
-                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700/60">
-                                    <i class="fa-regular fa-square text-sm"></i>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-medium">{{ __('Empty slot') }}</div>
-                                    <div class="text-xs opacity-75">{{ __('No equipment assigned') }}</div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="flex items-start gap-3">
+                    <div class="grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
+                        <div class="relative flex flex-col items-center justify-center rounded-xl border-2 {{ $slotBg }} text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">
+                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ __('Unit') }}</span>
+                            <span class="text-sm font-black tracking-tight leading-none mt-0.5">U{{ $position }} - U{{ $position + $sizeU - 1 }}</span>
+                        </div>
+
+                        <div class="flex flex-col justify-center rounded-xl border {{ $slotClasses }} {{ $indicator ? 'border-l-4 ' . $indicator['accent'] : '' }} px-4 py-3 shadow-sm-all duration-200">
+                            <div class="flex items-center gap-3 h-full">
                                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
                                     @if($indicator)
                                         <i class="fa-solid fa-server {{ $indicator['tone'] }} text-base"></i>
@@ -236,13 +271,13 @@
                                                 </span>
                                             @endif
                                             @if($equipment->equipment_role)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Role / Function') }}">
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
                                                     <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
                                                     <span class="font-semibold">{{ $equipment->equipment_role }}</span>
                                                 </span>
                                             @endif
                                             @if($equipment->installation_date)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Installation Date') }}">
+                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
                                                     <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
                                                     <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
                                                 </span>
@@ -251,31 +286,160 @@
                                     @endif
                                 </div>
                             </div>
-                        @endif
-                    </div>
+                        </div>
 
-                    <div class="flex flex-col justify-center gap-2">
-                        <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
-                           class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
-                            bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
-                            hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
-                            dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
-                           title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}"
-                           aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
-                            <i class="fa-solid {{ $isEmpty ? 'fa-plus' : 'fa-pen' }}"></i>
-                        </a>
+                        <div class="flex flex-col justify-center gap-2">
+                            <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
+                               class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                                bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                                hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                                dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                               title="{{ __('Edit position') }}"
+                               aria-label="{{ __('Edit position') }}">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
 
-                        <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
-                           class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
-                            bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
-                            hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
-                            dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
-                           title="{{ __('Position history') }}"
-                           aria-label="{{ __('Position history') }}">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </a>
+                            <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
+                               class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                                bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                                hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                                dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                               title="{{ __('Position history') }}"
+                               aria-label="{{ __('Position history') }}">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
+                @else
+                    @php
+                        $slotBg = $color
+                            ? match ($color) {
+                                'green' => 'bg-green-500/15 dark:bg-green-500/20 border-green-300 dark:border-green-700',
+                                'red' => 'bg-red-500/15 dark:bg-red-500/20 border-red-300 dark:border-red-700',
+                                'blue' => 'bg-blue-500/15 dark:bg-blue-500/20 border-blue-300 dark:border-blue-700',
+                                'yellow' => 'bg-amber-500/15 dark:bg-amber-500/20 border-amber-300 dark:border-amber-700',
+                                'orange' => 'bg-orange-500/15 dark:bg-orange-500/20 border-orange-300 dark:border-orange-700',
+                                default => 'bg-gray-100 dark:bg-gray-700/60 border-gray-200 dark:border-gray-600',
+                            }
+                            : 'bg-gray-100 dark:bg-gray-700/60 border-gray-200 dark:border-gray-600';
+
+                        $slotDot = $color
+                            ? match ($color) {
+                                'green' => 'bg-green-500',
+                                'red' => 'bg-red-500',
+                                'blue' => 'bg-blue-500',
+                                'yellow' => 'bg-amber-500',
+                                'orange' => 'bg-orange-500',
+                                default => 'bg-gray-400',
+                            }
+                            : 'bg-gray-400';
+                    @endphp
+                    <div class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
+
+                        <div class="relative flex flex-col items-center justify-center rounded-xl border-2 {{ $slotBg }} text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">
+                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ __('Unit') }}</span>
+                            <span class="text-sm font-black tracking-tight leading-none mt-0.5">U{{ $position }}</span>
+                        </div>
+
+                        <div class="flex flex-col justify-center rounded-xl border {{ $slotClasses }} {{ $indicator ? 'border-l-4 ' . $indicator['accent'] : '' }} px-4 py-3 shadow-sm-all duration-200 group-hover:shadow-md">
+                            @if($isEmpty)
+                                <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
+                                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700/60">
+                                        <i class="fa-regular fa-square text-sm"></i>
+                                    </span>
+                                    <div>
+                                        <div class="text-sm font-medium">{{ __('Empty slot') }}</div>
+                                        <div class="text-xs opacity-75">{{ __('No equipment assigned') }}</div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="flex items-start gap-3">
+                                    <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
+                                        @if($indicator)
+                                            <i class="fa-solid fa-server {{ $indicator['tone'] }} text-base"></i>
+                                        @else
+                                            <i class="fa-solid fa-server text-gray-500 dark:text-gray-400 text-base"></i>
+                                        @endif
+                                    </span>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate {{ $indicator['tone'] ?? '' }}">
+                                            {{ $equipment->equipment_name }}
+                                        </h3>
+
+                                        @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
+                                            <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
+                                                @if($equipment->equipment_model)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
+                                                        <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                                        <span class="font-medium">{{ $equipment->equipment_model }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->vendor)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
+                                                        <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                                        <span>{{ $equipment->vendor }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->ip_address)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
+                                                        <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                                        <span class="font-mono">{{ $equipment->ip_address }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->mac_address)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
+                                                        <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                                        <span class="font-mono">{{ $equipment->mac_address }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->serial_number)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
+                                                        <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                                        <span class="font-mono">{{ $equipment->serial_number }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->equipment_role)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
+                                                        <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                                        <span class="font-semibold">{{ $equipment->equipment_role }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($equipment->installation_date)
+                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
+                                                        <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                                        <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col justify-center gap-2">
+                            <a href="{{ route('admin.rack-layout.position.edit', [$rack, $position]) }}"
+                               class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                                bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                                hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                                dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                               title="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}"
+                               aria-label="{{ $isEmpty ? __('Assign equipment') : __('Edit position') }}">
+                                <i class="fa-solid {{ $isEmpty ? 'fa-plus' : 'fa-pen' }}"></i>
+                            </a>
+
+                            <a href="{{ route('admin.rack-layout.position.history', [$rack, $position]) }}"
+                               class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium shadow-sm
+                                bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                                hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 hover:shadow
+                                dark:hover:bg-gray-600 dark:hover:text-white dark:hover:border-gray-500-all duration-200"
+                               title="{{ __('Position history') }}"
+                               aria-label="{{ __('Position history') }}">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </a>
+                        </div>
+                    </div>
+                @endif
             @endforeach
         </div>
     </div>

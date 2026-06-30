@@ -73,16 +73,7 @@ class RackLayoutController extends Controller
     {
         $this->authorize('view', $rack);
 
-        $rack->load(['equipment' => function ($q) {
-            $q->orderBy('position');
-        }]);
-
-        $positionMap = $rack->equipment->keyBy('position');
-
-        $positions = [];
-        for ($i = 1; $i <= $rack->total_units; $i++) {
-            $positions[] = $positionMap->get($i);
-        }
+        $positions = $rack->positionsMap();
 
         $colorChoices = $this->getColorChoices();
 
@@ -120,7 +111,8 @@ class RackLayoutController extends Controller
 
         $maxOccupiedPosition = (int) RackEquipment::where('rack_id', $rack->id)
             ->where('is_active', true)
-            ->max('position');
+            ->selectRaw('COALESCE(MAX(position + size_u - 1), 0) AS max_end')
+            ->value('max_end');
 
         if ($request->integer('total_units') < $maxOccupiedPosition) {
             session()->flash('swal', [
@@ -188,6 +180,7 @@ class RackLayoutController extends Controller
             'installation_date' => 'nullable|date',
             'notes' => 'nullable|string|max:2000',
             'color' => ['nullable', Rule::in(array_keys($this->getColorChoices()))],
+            'size_u' => 'required|integer|min:1|max:' . $rack->total_units,
         ], [], [
             'equipment_name' => __('equipment name'),
             'equipment_model' => __('model'),
@@ -199,13 +192,55 @@ class RackLayoutController extends Controller
             'installation_date' => __('installation date'),
             'notes' => __('notes'),
             'color' => __('highlight color'),
+            'size_u' => __('size (U)'),
         ]);
 
+        $start = (int) $position;
+        $size = (int) $request->input('size_u', 1);
+        $end = $start + $size - 1;
+
+        if ($end > (int) $rack->total_units) {
+            session()->flash('swal', [
+                'icon' => 'error',
+                'title' => __('Cannot save equipment'),
+                'text' => __('The equipment of :size U starting at U:start would end at U:end, but the rack only has :total units. Please reduce the size or move the equipment.', [
+                    ':size' => $size,
+                    ':start' => $start,
+                    ':end' => $end,
+                    ':total' => $rack->total_units,
+                ]),
+            ]);
+
+            return redirect()->back()->withInput();
+        }
+
+        $existing = RackEquipment::where('rack_id', $rack->id)
+            ->where('position', $start)
+            ->first();
+
+        $collision = $this->findCollision($rack, $start, $size, $existing?->id);
+        if ($collision !== null) {
+            session()->flash('swal', [
+                'icon' => 'error',
+                'title' => __('Position conflict'),
+                'text' => __('The range U:start-U:end overlaps with ":name" (U:cstart-U:cend). Please choose a different size or clear that equipment first.', [
+                    ':start' => $start,
+                    ':end' => $end,
+                    ':name' => $collision->equipment_name ?: __('unnamed equipment'),
+                    ':cstart' => (int) $collision->position,
+                    ':cend' => (int) $collision->end_position,
+                ]),
+            ]);
+
+            return redirect()->back()->withInput();
+        }
+
         $equipment = RackEquipment::updateOrCreate(
-            ['rack_id' => $rack->id, 'position' => (int) $position],
+            ['rack_id' => $rack->id, 'position' => $start],
             [
                 'rack_id' => $rack->id,
-                'position' => (int) $position,
+                'position' => $start,
+                'size_u' => $size,
                 'equipment_name' => $request->equipment_name,
                 'equipment_model' => $request->equipment_model,
                 'equipment_role' => $request->equipment_role,
@@ -340,15 +375,7 @@ class RackLayoutController extends Controller
     {
         $this->authorize('view', $rack);
 
-        $rack->load(['equipment' => function ($q) {
-            $q->orderBy('position');
-        }]);
-
-        $positionMap = $rack->equipment->keyBy('position');
-        $positions = [];
-        for ($i = 1; $i <= $rack->total_units; $i++) {
-            $positions[] = $positionMap->get($i);
-        }
+        $positions = $rack->positionsMap();
 
         $html = view('admin.rack-layout.pdf', [
             'rack' => $rack,
@@ -374,6 +401,18 @@ class RackLayoutController extends Controller
         if ($pos < 1 || $pos > $rack->total_units) {
             abort(404, __('Invalid rack position.'));
         }
+    }
+
+    private function findCollision(Rack $rack, int $start, int $size, ?int $ignoreId = null): ?RackEquipment
+    {
+        $end = $start + $size - 1;
+
+        return RackEquipment::where('rack_id', $rack->id)
+            ->where('is_active', true)
+            ->where('position', '<=', $end)
+            ->whereRaw('position + size_u - 1 >= ?', [$start])
+            ->when($ignoreId !== null, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->first();
     }
 
     private function getColorChoices(): array

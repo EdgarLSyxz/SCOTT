@@ -122,6 +122,22 @@
                 </div>
 
                 <div>
+                    <x-label for="size_u">
+                        <i class="fa-solid fa-arrows-up-down mr-1"></i>
+                        {{ __('Size (U)') }}
+                    </x-label>
+                    <x-input id="size_u" class="block mt-1 w-full" type="number" min="1" max="{{ $rack->total_units }}" name="size_u"
+                        :value="old('size_u', $equipment->size_u ?? 1)" autocomplete="off" />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" id="size-u-preview">
+                        <i class="fa-solid fa-layer-group mr-1"></i>
+                        <span data-size-preview>
+                            U{{ $position }}@if((int) old('size_u', $equipment->size_u ?? 1) > 1)–U{{ $position + (int) old('size_u', $equipment->size_u ?? 1) - 1 }}@endif
+                        </span>
+                        <span class="ml-1 opacity-75">({{ $rack->total_units }} {{ __('Units total') }})</span>
+                    </p>
+                </div>
+
+                <div>
                     <x-label for="installation_date">
                         <i class="fa-solid fa-calendar-check mr-1"></i>
                         {{ __('Installation date') }}
@@ -217,6 +233,26 @@
                     }
                 });
             }
+
+            (function () {
+                const sizeInput = document.getElementById('size_u');
+                const preview = document.querySelector('[data-size-preview]');
+                if (!sizeInput || !preview) return;
+                const start = {{ (int) $position }};
+                const total = {{ (int) $rack->total_units }};
+                const render = () => {
+                    let size = parseInt(sizeInput.value, 10);
+                    if (isNaN(size) || size < 1) size = 1;
+                    if (size > total) {
+                        size = total;
+                        sizeInput.value = total;
+                    }
+                    const end = start + size - 1;
+                    preview.textContent = size > 1 ? `U${start}–U${end}` : `U${start}`;
+                };
+                sizeInput.addEventListener('input', render);
+                sizeInput.addEventListener('change', render);
+            })();
         </script>
     @endpush
 </x-admin-layout>
