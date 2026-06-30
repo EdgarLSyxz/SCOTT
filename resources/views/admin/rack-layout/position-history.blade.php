@@ -41,8 +41,14 @@
                         <i class="fa-solid fa-layer-group text-gray-800 dark:text-white mr-0.5"></i>
                         {{ $rack->name }}
                         <span class="text-gray-400 dark:text-gray-500 mx-1">/</span>
+                        @php
+                            $displayPosition = 'U' . $position;
+                            if (!empty($current) && (int) ($current->size_u ?? 1) > 1) {
+                                $displayPosition = 'U' . $position . ' - U' . ($position + (int) $current->size_u - 1);
+                            }
+                        @endphp
                         <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-blue-200 dark:bg-blue-700 rounded">
-                            U{{ $position }}
+                            {{ $displayPosition }}
                         </span>
                     </span>
                 </h2>
@@ -388,13 +394,28 @@
                                                             <span class="font-semibold text-gray-700 dark:text-gray-300 truncate">
                                                                 {{ $fieldLabels[$field] ?? $field }}
                                                             </span>
+                                                            @php
+                                                                $oldRaw = $diff['old'] ?? null;
+                                                                $newRaw = $diff['new'] ?? null;
+                                                                if ($field === 'size_u') {
+                                                                    $oldDisplay = ($oldRaw !== null && $oldRaw !== '')
+                                                                        ? ('U' . $entry->position . ((int) $oldRaw > 1 ? ' - U' . ($entry->position + (int) $oldRaw - 1) : ''))
+                                                                        : '∅';
+                                                                    $newDisplay = ($newRaw !== null && $newRaw !== '')
+                                                                        ? ('U' . $entry->position . ((int) $newRaw > 1 ? ' - U' . ($entry->position + (int) $newRaw - 1) : ''))
+                                                                        : '∅';
+                                                                } else {
+                                                                    $oldDisplay = ($oldRaw !== null && $oldRaw !== '') ? $oldRaw : '∅';
+                                                                    $newDisplay = ($newRaw !== null && $newRaw !== '') ? $newRaw : '∅';
+                                                                }
+                                                            @endphp
                                                             <span class="flex items-center gap-2 flex-wrap min-w-0">
-                                                                <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded line-through decoration-red-400/60 truncate max-w-[200px]">
-                                                                    {{ $diff['old'] !== null && $diff['old'] !== '' ? $diff['old'] : '∅' }}
+                                                                <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded decoration-red-400/60 truncate max-w-[200px]">
+                                                                    {{ $oldDisplay }}
                                                                 </span>
                                                                 <i class="fa-solid fa-arrow-right text-[10px] text-gray-400"></i>
                                                                 <span class="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded truncate max-w-[200px]">
-                                                                    {{ $diff['new'] !== null && $diff['new'] !== '' ? $diff['new'] : '∅' }}
+                                                                    {{ $newDisplay }}
                                                                 </span>
                                                             </span>
                                                         </li>
