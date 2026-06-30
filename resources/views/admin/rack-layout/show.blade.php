@@ -334,6 +334,7 @@
                             }
                             : 'bg-gray-400';
                     @endphp
+
                     <div class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-3 items-stretch">
 
                         <div class="relative flex flex-col items-center justify-center rounded-xl border-2 {{ $slotBg }} text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">

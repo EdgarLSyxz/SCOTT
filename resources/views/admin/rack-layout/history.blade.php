@@ -107,7 +107,7 @@
                 </div>
                 <div>
                     <x-label for="change_type">
-                        <i class="fa-solid fa-tag mr-1"></i>
+                        <i class="fa-solid fa-exchange-alt mr-1"></i>
                         {{ __('Change type') }}
                     </x-label>
                     <select id="change_type" name="change_type"
@@ -138,12 +138,12 @@
                         :value="$filters['to'] ?? ''" autocomplete="off" />
                 </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-600 hover:bg-secondary-700' : 'bg-primary-600 hover:bg-primary-700' }} shadow-sm hover:shadow-md transition-all">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-600 hover:bg-secondary-700' : 'bg-primary-600 hover:bg-primary-700' }} shadow-sm hover:shadow-md">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         {{ __('Filter') }}
                     </button>
                     <a href="{{ route('admin.rack-layout.history', $rack) }}"
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all">
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm">
                         <i class="fa-solid fa-rotate-left text-xs"></i>
                         {{ __('Clear') }}
                     </a>
@@ -207,13 +207,14 @@
                     @endphp
 
                     <a href="{{ route('admin.rack-layout.position.history', [$rack, $entry->position]) }}"
-                        class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-5 items-stretch transition-all duration-200">
+                        class="group grid grid-cols-[64px_1fr_auto] sm:grid-cols-[72px_1fr_auto] gap-5 items-stretch">
 
-                        <div class="flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-5 px-4 shadow-sm">
+                        <div class="relative flex flex-col items-center justify-center rounded-xl border-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-1 shadow-sm overflow-hidden">
+                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ __('Unit') }}</span>
                             <span class="text-lg font-black tracking-tight">U{{ $entry->position }}</span>
                         </div>
 
-                        <div class="flex flex-col justify-center rounded-xl border border-gray-200 dark:border-gray-700 {{ $style['bg'] }} border-l-4 {{ $style['accent'] }} px-5 py-5 shadow-sm group-hover:shadow-md transition-all duration-200">
+                        <div class="flex flex-col justify-center rounded-xl border border-gray-200 dark:border-gray-700 {{ $style['bg'] }} border-l-4 {{ $style['accent'] }} px-5 py-5 shadow-sm group-hover:shadow-md">
                             <div class="flex items-start gap-3">
                                 <span class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
                                     <i class="fa-solid fa-hard-drive text-gray-500 dark:text-gray-400 text-xl"></i>
