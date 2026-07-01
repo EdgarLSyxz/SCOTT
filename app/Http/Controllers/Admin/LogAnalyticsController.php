@@ -268,7 +268,6 @@ class LogAnalyticsController extends Controller
             return array_map(fn($line) => ['raw' => (string) $line], $payload['raw_lines']);
         }
 
-        // Keep empty categories and preserve row arrays as-is.
         return array_values($payload) === $payload ? $payload : [];
     }
 
