@@ -560,6 +560,37 @@ class LogReportManager extends Component
         }));
     }
 
+    public function getAccordionRawRecords($categoryKey)
+    {
+        $user = Auth::user();
+        if (!$user || !$this->selectedUploadId) {
+            return [];
+        }
+
+        $upload = LogAnalytic::where('id', $this->selectedUploadId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$upload) {
+            return [];
+        }
+
+        $items = $upload->getCategory($categoryKey) ?? [];
+
+        $term = strtolower($this->accordionSearchTerm);
+        if ($term === '') {
+            return $items;
+        }
+
+        return array_values(array_filter($items, function ($record) use ($term) {
+            if (!is_array($record)) {
+                return strpos(strtolower((string) $record), $term) !== false;
+            }
+            $searchable = json_encode($record, JSON_UNESCAPED_UNICODE);
+            return strpos(strtolower($searchable), $term) !== false;
+        }));
+    }
+
     public function render()
     {
         return view('livewire.admin.devices.logs.log-report-manager');
