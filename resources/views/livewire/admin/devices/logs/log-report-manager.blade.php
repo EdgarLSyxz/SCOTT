@@ -224,8 +224,8 @@
                                 </div>
 
                                 <div class="flex items-center gap-3 ml-4 flex-shrink-0">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900/50 dark:text-{{ $color }}-200" title="{{ __('Unique / Total') }}">
-                                        {{ $cat['unique_count'] ?? $cat['count'] ?? 0 }}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800 dark:bg-{{ $color }}-900/50 dark:text-{{ $color }}-200" title="{{ __('Total records') }}">
+                                        {{ $cat['count'] ?? 0 }}
                                     </span>
                                     <i class="fa-solid fa-chevron-down text-{{ $color }}-500 dark:text-{{ $color }}-400 transition-transform duration-300 text-sm {{ $expandedCategoryKey === $cat['key'] ? 'rotate-180' : '' }}"></i>
                                 </div>

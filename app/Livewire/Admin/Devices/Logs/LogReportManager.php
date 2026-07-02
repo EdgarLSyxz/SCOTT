@@ -184,7 +184,7 @@ class LogReportManager extends Component
                     'name' => $this->formatCategoryName($categoryKey),
                     'items' => $categoryItems,
                     'count' => count($categoryItems),
-                    'unique_count' => count($aggForCount),
+                    'unique_count' => count($categoryItems) > 0 ? count($aggForCount) : 0,
                 ];
             }
         }
