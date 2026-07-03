@@ -5,7 +5,7 @@
     @endphp
 
     @if (!empty($uploads))
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8 mb-4">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-8 mb-4">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -46,7 +46,7 @@
             $visibleTotals = $this->getVisibleTotals();
             $isGlobalFiltered = ($globalFilter ?? 'all') !== 'all';
         @endphp
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-simple text-{{ $color }}-400"></i>
@@ -87,7 +87,7 @@
 
     @if (!empty($packages))
         <div wire:ignore x-data="packagesChart(@entangle('packages'), @entangle('globalFilter'))" x-init="init()"
-            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-8">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-{{ $color }}-400"></i>
                 <span>{{ __('Package distribution') }}</span>
@@ -100,7 +100,7 @@
         @php
             $globalFilterCounts = $this->getGlobalFilterCounts();
         @endphp
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <div class="p-8 space-y-4">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">

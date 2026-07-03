@@ -26,7 +26,7 @@
 
     <div class="w-full mx-auto space-y-6">
         <div
-            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+            class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <form id="txt-upload-form" class="p-8">
                 @csrf
                 <div class="flex items-center justify-between mb-6">
