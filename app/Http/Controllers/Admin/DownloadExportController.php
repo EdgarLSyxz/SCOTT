@@ -265,6 +265,7 @@ class DownloadExportController extends Controller
                 ['label' => 'Costo por TB Consumido', 'cols' => ['B', 'C']],
                 ['label' => 'Costo por Dispositivo', 'cols' => ['B', 'C']],
                 ['label' => 'Costo Por Usuario', 'cols' => ['B', 'C']],
+                ['label' => 'Costo por Usuarios Totales', 'cols' => ['B', 'C']],
             ];
 
             foreach ($rowDefinitions as $index => $def) {

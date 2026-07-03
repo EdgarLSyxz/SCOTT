@@ -655,7 +655,8 @@
                     'Costo de CDN BPK < 1 PB (Fijo)',
                     'Costo de CDN BPK < 1 PB (Fijo)',
                     'Costo por TB Consumido',
-                    'Costo por Dispositivo'
+                    'Costo por Dispositivo',
+                    'Costo por Usuarios Totales'
                 ];
                 $cdnGroupLabels = [
                     'Datos base' => [
@@ -680,6 +681,7 @@
                         'Costo por TB Consumido',
                         'Costo por Dispositivo',
                         'Costo Por Usuario',
+                        'Costo por Usuarios Totales',
                     ],
                 ];
                 $cdnRowGroupMap = [];
@@ -723,7 +725,8 @@
                                         'Costo de CDN BPK < 1 PB (Fijo)',
                                         'Costo por TB Consumido',
                                         'Costo por Dispositivo',
-                                        'Costo Por Usuario'
+                                        'Costo Por Usuario',
+                                        'Costo por Usuarios Totales'
                                     ];
                                     $isCurrencyRow = in_array($label, $currencyRowLabels, true) || in_array($normalizedLabel, array_map(function($s){ return str_replace(['≤','<'], '<', $s); }, $currencyRowLabels), true);
                                     $pillValue = ($isMergedRow && $isCurrencyRow && $mergedValue !== '—') ? '$' . $mergedValue : $mergedValue;
