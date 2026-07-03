@@ -5,7 +5,7 @@
     @endphp
 
     <div
-        class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700">
+        class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <form x-data="uploadForm()" @submit.prevent="submit()" class="p-8">
             @csrf
             <div class="flex items-center justify-between mb-6">
@@ -98,7 +98,7 @@
     </div>
 
     @if (!empty($uploads))
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-4 sm:p-8 mb-4">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-4 sm:p-8 mb-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="w-full">
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -129,7 +129,7 @@
     @endif
 
     @if ($totalRecords)
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-simple text-{{ $color }}-400 mr-1"></i>
@@ -171,7 +171,7 @@
     @endphp
 
     @if (!empty($categories))
-        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-{{ $color }}-200 dark:border-gray-700 p-8">
+        <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-8">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-{{ $color }}-400"></i>
