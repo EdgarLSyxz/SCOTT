@@ -261,7 +261,7 @@ class DownloadExportController extends Controller
                 ['label' => 'Consumo (GB) por Dispositivo OTT', 'cols' => ['B', 'C']],
                 ['label' => 'GiB Consumidos', 'cols' => ['B', 'C']],
                 ['label' => 'TB Consumidos', 'cols' => ['B', 'C']],
-                ['label' => 'Costo de CDN BPK ≤ 1 PB (Fijo)', 'cols' => ['B', 'C']],
+                ['label' => 'Costo de CDN BPK 1 PB (Fijo)', 'cols' => ['B', 'C']],
                 ['label' => 'Costo por TB Consumido', 'cols' => ['B', 'C']],
                 ['label' => 'Costo por Dispositivo', 'cols' => ['B', 'C']],
                 ['label' => 'Costo Por Usuario', 'cols' => ['B', 'C']],
