@@ -1271,5 +1271,10 @@
     "Total accumulated": "Total acumulado",
     "Rack locations": "Ubicaciones de racks",
     "racks with coordinates.": "racks con coordenadas.",
-    "View rack": "Ver rack"
+    "View rack": "Ver rack",
+    "Geographic location": "Ubicación geográfica",
+    "Latitude": "Latitud",
+    "Longitude": "Longitud",
+    "Rack latitude": "Latitud del rack",
+    "Rack longitude": "Longitud del rack"
 }

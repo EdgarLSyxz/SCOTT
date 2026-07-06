@@ -101,24 +101,27 @@
 
                 <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-map-location-dot text-primary-500"></i>
-                        {{ __('Geographic location (optional)') }}
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        {{ __('Geographic location') }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <x-label for="latitude" value="{{ __('Latitude') }}" />
+                            <x-label for="latitude">
+                                <i class="fa-solid fa-location-dot mr-1"></i>
+                                {{ __('Latitude') }}
+                            </x-label>
                             <x-input id="latitude" class="block mt-1 w-full" type="number" step="0.0000001" min="-90" max="90"
-                                name="latitude" :value="old('latitude')" placeholder="19.4326" />
+                                name="latitude" :value="old('latitude')" placeholder="{{ __('Rack latitude') }}" />
                         </div>
                         <div>
-                            <x-label for="longitude" value="{{ __('Longitude') }}" />
+                            <x-label for="longitude">
+                                <i class="fa-solid fa-location-dot mr-1"></i>
+                                {{ __('Longitude') }}
+                            </x-label>
                             <x-input id="longitude" class="block mt-1 w-full" type="number" step="0.0000001" min="-180" max="180"
-                                name="longitude" :value="old('longitude')" placeholder="-99.1332" />
+                                name="longitude" :value="old('longitude')" placeholder="{{ __('Rack longitude') }}" />
                         </div>
                     </div>
-                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        {{ __('Used by the rack map. Find coordinates on openstreetmap.org and paste them here.') }}
-                    </p>
                 </div>
                 <div class="flex justify-end items-center">
                     <x-button class="flex justify-center items-center mt-8 font-bold
