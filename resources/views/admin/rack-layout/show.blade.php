@@ -52,12 +52,6 @@
                 <i class="fa-solid fa-arrow-left mr-1.5"></i>
                 {{ __('Go back') }}
             </a>
-            @can('viewAny', App\Models\RackCable::class)
-                <a href="{{ route('admin.rack-layout.cables.index', $rack) }}"
-                   class="hidden sm:inline-flex items-center text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-cyan-300 font-medium rounded-lg text-sm px-4 py-2">
-                    <i class="fa-solid fa-cable-car mr-1.5"></i> {{ __('Cables') }}
-                </a>
-            @endcan
             <a href="{{ route('admin.rack-layout.history', $rack) }}"
                class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> {{ __('History') }}
@@ -66,6 +60,12 @@
                class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-file-pdf mr-1.5"></i> {{ __('Export PDF') }}
             </a>
+            @can('viewAny', App\Models\RackCable::class)
+                <a href="{{ route('admin.rack-layout.cables.index', $rack) }}"
+                   class="hidden sm:inline-flex items-center text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-cyan-300 font-medium rounded-lg text-sm px-4 py-2">
+                    <i class="fa-solid fa-cable-car mr-1.5"></i> {{ __('Cables') }}
+                </a>
+            @endcan
             <a href="{{ route('admin.rack-layout.edit-rack', $rack) }}"
                class="hidden sm:inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-pen mr-1.5"></i> {{ __('Edit rack') }}
