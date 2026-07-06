@@ -25,12 +25,6 @@
     @if ($racks->count())
         <x-slot name="action">
             <div class="flex flex-wrap gap-2">
-                @can('viewMap', App\Models\Rack::class)
-                    <button type="button" data-toggle-map
-                            class="hidden sm:inline-flex items-center text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 font-medium rounded-lg text-sm px-4 py-2">
-                        <i class="fa-solid fa-map-location-dot mr-1.5"></i> {{ __('Toggle map') }}
-                    </button>
-                @endcan
                 <a href="{{ route('admin.rack-layout.create') }}"
                     class="hidden sm:block text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
@@ -53,11 +47,11 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 pt-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                     <div>
                         <h2 class="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-map-location-dot text-emerald-500"></i>
+                            <i class="fa-solid fa-map-location-dot mr-1"></i>
                             {{ __('Rack locations') }}
                         </h2>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {{ count($racksWithCoords ?? []) }} {{ __('of') }} {{ $racks->total() }} {{ __('racks with coordinates') }}
+                            {{ count($racksWithCoords ?? []) }} {{ __('of') }} {{ $racks->total() }} {{ __('racks with coordinates.') }}
                         </p>
                     </div>
                     <div class="flex items-center gap-3 text-xs">
@@ -117,14 +111,15 @@
                                 });
 
                                 var popupHtml = '<div style="min-width:220px;font-family:system-ui,sans-serif;">' +
-                                    '<div style="font-weight:700;font-size:14px;margin-bottom:4px;color:#1f2937;">' + r.name + '</div>' +
-                                    (r.location ? '<div style="font-size:11px;color:#6b7280;margin-bottom:6px;"><i class="fa-solid fa-location-dot"></i> ' + r.location + '</div>' : '') +
-                                    '<div style="font-size:11px;color:#374151;margin-bottom:8px;padding:4px 8px;background:#f3f4f6;border-radius:4px;display:inline-block;">' +
-                                        '<strong>' + r.occupied_count + '</strong> / ' + r.total_units + ' U' +
+                                    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">' +
+                                        '<div style="font-weight:700;font-size:14px;color:#1f2937;flex:1;min-width:0;word-break:break-word;">' + r.name + '</div>' +
+                                        '<span style="flex-shrink:0;font-size:11px;font-weight:600;color:#374151;padding:3px 8px;background:#f3f4f6;border-radius:9999px;white-space:nowrap;">' +
+                                            '<strong>' + r.occupied_count + '</strong> / ' + r.total_units + ' U' +
+                                        '</span>' +
                                     '</div>' +
-                                    '<br>' +
-                                    '<a href="' + r.show_url + '" style="display:inline-block;padding:6px 12px;background:#4f46e5;color:white;border-radius:4px;font-size:12px;text-decoration:none;font-weight:600;">' +
-                                        '<i class="fa-solid fa-arrow-right"></i> ' + @json(__('View rack')) +
+                                    (r.location ? '<div style="font-size:11px;color:#6b7280;margin-bottom:8px;"><i class="fa-solid fa-location-dot"></i> ' + r.location + '</div>' : '') +
+                                    '<a href="' + r.show_url + '" style="display:inline-block;padding:6px 12px; margin-top:8px;background:#4f46e5;color:white;border-radius:4px;font-size:12px;text-decoration:none;font-weight:600;">' +
+                                        '<i class="fa-solid fa-arrow-right" style="margin-right:4px;"></i> ' + @json(__('View rack')) +
                                     '</a>' +
                                 '</div>';
 
