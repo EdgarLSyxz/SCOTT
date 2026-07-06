@@ -15,15 +15,30 @@
         ],
     ]">
 
+    @can('viewMap', App\Models\Rack::class)
+        @if(!empty($racksWithCoords))
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        @endif
+    @endcan
+
     @if ($racks->count())
         <x-slot name="action">
-            <a href="{{ route('admin.rack-layout.create') }}"
-                class="hidden sm:block text-white {{ Auth::user()?->area === 'DTH'
-                ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
-                <i class="fa-solid fa-plus mr-1"></i>
-                {{ __('Register new rack layout') }}
-            </a>
+            <div class="flex flex-wrap gap-2">
+                @can('viewMap', App\Models\Rack::class)
+                    <button type="button" data-toggle-map
+                            class="hidden sm:inline-flex items-center text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 font-medium rounded-lg text-sm px-4 py-2">
+                        <i class="fa-solid fa-map-location-dot mr-1.5"></i> {{ __('Toggle map') }}
+                    </button>
+                @endcan
+                <a href="{{ route('admin.rack-layout.create') }}"
+                    class="hidden sm:block text-white {{ Auth::user()?->area === 'DTH'
+                    ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
+                    <i class="fa-solid fa-plus mr-1"></i>
+                    {{ __('Register new rack layout') }}
+                </a>
+            </div>
         </x-slot>
         <a href="{{ route('admin.rack-layout.create') }}"
             class="mb-4 sm:hidden block text-center text-white {{ Auth::user()?->area === 'DTH'
@@ -32,6 +47,110 @@
             <i class="fa-solid fa-plus mr-1"></i>
             {{ __('Register new rack layout') }}
         </a>
+
+        @can('viewMap', App\Models\Rack::class)
+            <div data-map-wrapper class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700" style="overflow: visible;">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 pt-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-emerald-500"></i>
+                            {{ __('Rack locations') }}
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {{ count($racksWithCoords ?? []) }} {{ __('of') }} {{ $racks->total() }} {{ __('racks with coordinates') }}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>{{ __('Active') }}
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>{{ __('Inactive') }}
+                        </span>
+                    </div>
+                </div>
+                @if(empty($racksWithCoords))
+                    <div class="p-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <i class="fa-solid fa-map text-2xl mb-2 block"></i>
+                        {{ __('No racks have coordinates yet. Edit each rack to set latitude and longitude.') }}
+                    </div>
+                @else
+                    <div id="rack-map-index" style="width: 100%; height: 500px; min-height: 400px; position: relative; background: #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; z-index: 1;"></div>
+                    <script>
+                        (function () {
+                            var racksData = @json($racksWithCoords);
+                            var mapEl = document.getElementById('rack-map-index');
+                            if (!mapEl || typeof L === 'undefined') return;
+
+                            // Prevent double init
+                            if (mapEl._leaflet_id) return;
+
+                            var map = L.map(mapEl, {
+                                scrollWheelZoom: false,
+                                zoomControl: true
+                            });
+
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                maxZoom: 19,
+                                attribution: '&copy; OpenStreetMap'
+                            }).addTo(map);
+
+                            var activeIcon = L.divIcon({
+                                className: 'rack-marker-active',
+                                html: '<div style="width:22px;height:22px;border-radius:50%;background:#22c55e;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+                                iconSize: [22, 22],
+                                iconAnchor: [11, 11]
+                            });
+                            var inactiveIcon = L.divIcon({
+                                className: 'rack-marker-inactive',
+                                html: '<div style="width:22px;height:22px;border-radius:50%;background:#ef4444;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+                                iconSize: [22, 22],
+                                iconAnchor: [11, 11]
+                            });
+
+                            var markers = [];
+                            racksData.forEach(function (r) {
+                                if (r.latitude == null || r.longitude == null) return;
+                                var m = L.marker([r.latitude, r.longitude], {
+                                    icon: r.is_active ? activeIcon : inactiveIcon,
+                                    title: r.name
+                                });
+
+                                var popupHtml = '<div style="min-width:220px;font-family:system-ui,sans-serif;">' +
+                                    '<div style="font-weight:700;font-size:14px;margin-bottom:4px;color:#1f2937;">' + r.name + '</div>' +
+                                    (r.location ? '<div style="font-size:11px;color:#6b7280;margin-bottom:6px;"><i class="fa-solid fa-location-dot"></i> ' + r.location + '</div>' : '') +
+                                    '<div style="font-size:11px;color:#374151;margin-bottom:8px;padding:4px 8px;background:#f3f4f6;border-radius:4px;display:inline-block;">' +
+                                        '<strong>' + r.occupied_count + '</strong> / ' + r.total_units + ' U' +
+                                    '</div>' +
+                                    '<br>' +
+                                    '<a href="' + r.show_url + '" style="display:inline-block;padding:6px 12px;background:#4f46e5;color:white;border-radius:4px;font-size:12px;text-decoration:none;font-weight:600;">' +
+                                        '<i class="fa-solid fa-arrow-right"></i> ' + @json(__('View rack')) +
+                                    '</a>' +
+                                '</div>';
+
+                                m.bindPopup(popupHtml, { maxWidth: 280 });
+                                m.addTo(map);
+                                markers.push(m);
+                            });
+
+                            if (markers.length === 1) {
+                                map.setView(markers[0].getLatLng(), 10);
+                            } else if (markers.length > 1) {
+                                var group = L.featureGroup(markers);
+                                map.fitBounds(group.getBounds().pad(0.3));
+                            } else {
+                                map.setView([23.6345, -102.5528], 5);
+                            }
+
+                            setTimeout(function () { map.invalidateSize(); }, 200);
+
+                            mapEl.addEventListener('click', function () { map.scrollWheelZoom.enable(); });
+                            mapEl.addEventListener('mouseleave', function () { map.scrollWheelZoom.disable(); });
+                        })();
+                    </script>
+                @endif
+            </div>
+        @endcan
 
         <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
@@ -125,4 +244,5 @@
             </div>
         </div>
     @endif
+
 </x-admin-layout>

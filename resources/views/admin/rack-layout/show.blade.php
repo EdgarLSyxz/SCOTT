@@ -52,6 +52,12 @@
                 <i class="fa-solid fa-arrow-left mr-1.5"></i>
                 {{ __('Go back') }}
             </a>
+            @can('viewAny', App\Models\RackCable::class)
+                <a href="{{ route('admin.rack-layout.cables.index', $rack) }}"
+                   class="hidden sm:inline-flex items-center text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-cyan-300 font-medium rounded-lg text-sm px-4 py-2">
+                    <i class="fa-solid fa-cable-car mr-1.5"></i> {{ __('Cables') }}
+                </a>
+            @endcan
             <a href="{{ route('admin.rack-layout.history', $rack) }}"
                class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2">
                 <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> {{ __('History') }}
@@ -444,6 +450,64 @@
             @endforeach
         </div>
     </div>
+
+    @can('viewAny', App\Models\RackCable::class)
+        <div class="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cable-car text-cyan-500"></i>
+                    {{ __('Recent cables (top :n)', ['n' => 10]) }}
+                </h2>
+                <a href="{{ route('admin.rack-layout.cables.index', $rack) }}"
+                   class="inline-flex items-center text-cyan-600 hover:text-cyan-700 text-sm font-medium">
+                    {{ __('View all') }} <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            @if(($cables ?? collect())->isEmpty())
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('No cables registered yet.') }}
+                </p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+                            <tr>
+                                <th class="px-3 py-2">{{ __('Origin') }}</th>
+                                <th class="px-3 py-2">{{ __('Destination') }}</th>
+                                <th class="px-3 py-2">{{ __('VLAN') }}</th>
+                                <th class="px-3 py-2">{{ __('Type') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($cables as $cable)
+                                <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+                                    <td class="px-3 py-2 font-mono">
+                                        U{{ $cable->source_position }}@if($cable->source_port) <span class="text-xs text-gray-500">· {{ $cable->source_port }}</span>@endif
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-900 dark:text-white font-medium">{{ $cable->destination_label }}</span>
+                                            @if($cable->destination_ip)
+                                                <span class="text-xs text-gray-500 font-mono">{{ $cable->destination_ip }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        @if($cable->vlan)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">VLAN {{ $cable->vlan }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-xs">{{ \App\Models\RackCable::CABLE_TYPES[$cable->cable_type] ?? '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    @endcan
 
     <form action="{{ route('admin.rack-layout.destroy-rack', $rack) }}" method="POST" id="delete-rack-form">
         @csrf

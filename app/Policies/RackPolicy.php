@@ -49,6 +49,11 @@ class RackPolicy
         return $this->userHasPermission($user, 'rack-layout.delete');
     }
 
+    public function viewMap(User $user): bool
+    {
+        return $this->userHasPermission($user, 'rack-map.view');
+    }
+
     private function userHasPermission(User $user, string $permission): bool
     {
         try {

@@ -13,6 +13,8 @@ class Rack extends Model
         'location',
         'total_units',
         'description',
+        'latitude',
+        'longitude',
         'is_active',
         'created_by',
     ];
@@ -20,6 +22,8 @@ class Rack extends Model
     protected $casts = [
         'total_units' => 'integer',
         'is_active' => 'boolean',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     public function equipment(): HasMany
@@ -37,6 +41,29 @@ class Rack extends Model
     public function history(): HasMany
     {
         return $this->hasMany(RackEquipmentHistory::class, 'rack_id')->orderByDesc('changed_at');
+    }
+
+    public function cables(): HasMany
+    {
+        return $this->hasMany(RackCable::class, 'rack_id')->orderBy('source_position');
+    }
+
+    public function activeCables(): HasMany
+    {
+        return $this->hasMany(RackCable::class, 'rack_id')
+            ->where('is_active', true)
+            ->orderBy('source_position');
+    }
+
+    public function scopeWithCoordinates($query)
+    {
+        return $query->whereNotNull('latitude')
+            ->whereNotNull('longitude');
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
     }
 
     public function creator(): BelongsTo

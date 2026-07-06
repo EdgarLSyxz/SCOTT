@@ -23,7 +23,30 @@ class RackLayoutController extends Controller
             ->orderBy('name')
             ->paginate(15);
 
-        return view('admin.rack-layout.index', compact('racks'));
+        $racksWithCoords = Rack::withCoordinates()
+            ->orderBy('is_active', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Rack $r) {
+                return [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'location' => $r->location,
+                    'is_active' => (bool) $r->is_active,
+                    'total_units' => (int) $r->total_units,
+                    'occupied_count' => (int) $r->occupied_positions_count,
+                    'latitude' => (float) $r->latitude,
+                    'longitude' => (float) $r->longitude,
+                    'show_url' => route('admin.rack-layout.show', $r),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return view('admin.rack-layout.index', [
+            'racks' => $racks,
+            'racksWithCoords' => $racksWithCoords,
+        ]);
     }
 
     public function create()
@@ -42,12 +65,16 @@ class RackLayoutController extends Controller
             'location' => 'nullable|string|max:160',
             'total_units' => 'required|integer|min:1|max:100',
             'description' => 'nullable|string|max:1000',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'nullable|boolean',
         ], [], [
             'name' => __('rack name'),
             'location' => __('rack location'),
             'total_units' => __('total units'),
             'description' => __('description'),
+            'latitude' => __('latitude'),
+            'longitude' => __('longitude'),
             'is_active' => __('status'),
         ]);
 
@@ -56,6 +83,8 @@ class RackLayoutController extends Controller
             'location' => $request->location,
             'total_units' => $request->total_units,
             'description' => $request->description,
+            'latitude' => $request->latitude !== null && $request->latitude !== '' ? (float) $request->latitude : null,
+            'longitude' => $request->longitude !== null && $request->longitude !== '' ? (float) $request->longitude : null,
             'is_active' => $request->boolean('is_active', true),
             'created_by' => Auth::id(),
         ]);
@@ -74,12 +103,14 @@ class RackLayoutController extends Controller
         $this->authorize('view', $rack);
 
         $positions = $rack->positionsMap();
+        $cables = $rack->activeCables()->with('sourceEquipment')->limit(10)->get();
 
         $colorChoices = $this->getColorChoices();
 
         return view('admin.rack-layout.show', [
             'rack' => $rack,
             'positions' => $positions,
+            'cables' => $cables,
             'colorChoices' => $colorChoices,
         ]);
     }
@@ -100,12 +131,16 @@ class RackLayoutController extends Controller
             'location' => 'nullable|string|max:160',
             'total_units' => 'required|integer|min:1|max:100',
             'description' => 'nullable|string|max:1000',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'nullable|boolean',
         ], [], [
             'name' => __('rack name'),
             'location' => __('rack location'),
             'total_units' => __('total units'),
             'description' => __('description'),
+            'latitude' => __('latitude'),
+            'longitude' => __('longitude'),
             'is_active' => __('status'),
         ]);
 
@@ -132,6 +167,8 @@ class RackLayoutController extends Controller
             'location' => $request->location,
             'total_units' => $request->total_units,
             'description' => $request->description,
+            'latitude' => $request->latitude !== null && $request->latitude !== '' ? (float) $request->latitude : null,
+            'longitude' => $request->longitude !== null && $request->longitude !== '' ? (float) $request->longitude : null,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
@@ -392,6 +429,43 @@ class RackLayoutController extends Controller
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function map()
+    {
+        $this->authorize('viewMap', Rack::class);
+
+        $racks = Rack::withCoordinates()
+            ->orderBy('is_active', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Rack $r) {
+                return [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'location' => $r->location,
+                    'description' => $r->description,
+                    'is_active' => (bool) $r->is_active,
+                    'total_units' => (int) $r->total_units,
+                    'occupied_count' => (int) $r->occupied_positions_count,
+                    'latitude' => (float) $r->latitude,
+                    'longitude' => (float) $r->longitude,
+                    'show_url' => route('admin.rack-layout.show', $r),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $racksWithoutCoords = Rack::where(function ($q) {
+            $q->whereNull('latitude')->orWhereNull('longitude');
+        })
+            ->orderBy('name')
+            ->get(['id', 'name', 'location', 'latitude', 'longitude']);
+
+        return view('admin.rack-layout.map', [
+            'racks' => $racks,
+            'racksWithoutCoords' => $racksWithoutCoords,
         ]);
     }
 

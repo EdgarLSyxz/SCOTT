@@ -113,6 +113,28 @@
                         : 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                     placeholder="{{ __('Rack description') }}">{{ old('description', $rack->description) }}</textarea>
             </div>
+
+            <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-primary-500"></i>
+                    {{ __('Geographic location (optional)') }}
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <x-label for="latitude" value="{{ __('Latitude') }}" />
+                        <x-input id="latitude" class="block mt-1 w-full" type="number" step="0.0000001" min="-90" max="90"
+                            name="latitude" :value="old('latitude', $rack->latitude)" placeholder="19.4326" />
+                    </div>
+                    <div>
+                        <x-label for="longitude" value="{{ __('Longitude') }}" />
+                        <x-input id="longitude" class="block mt-1 w-full" type="number" step="0.0000001" min="-180" max="180"
+                            name="longitude" :value="old('longitude', $rack->longitude)" placeholder="-99.1332" />
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Used by the rack map. Find coordinates on openstreetmap.org and paste them here.') }}
+                </p>
+            </div>
             <div class="flex flex-col sm:flex-row gap-3 sm:justify-end mt-6 mb-1">
                 <a href="{{ route('admin.rack-layout.show', $rack) }}"
                     class="inline-flex justify-center items-center text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600 font-medium rounded-lg px-5 py-2 transition">

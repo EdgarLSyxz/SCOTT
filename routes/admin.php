@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
+use App\Http\Controllers\Admin\RackCableController;
 use App\Http\Controllers\Admin\RackLayoutController;
 use App\Http\Controllers\Admin\ReportSlaController;
 use App\Http\Controllers\Admin\StageController;
@@ -97,6 +98,7 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');
     Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
     Route::post('/', [RackLayoutController::class, 'store'])->name('store');
+    Route::get('/map', [RackLayoutController::class, 'map'])->name('map');
     Route::get('/{rack}/edit', [RackLayoutController::class, 'editRack'])->name('edit-rack');
     Route::put('/{rack}', [RackLayoutController::class, 'updateRack'])->name('update-rack');
     Route::get('/{rack}', [RackLayoutController::class, 'show'])->name('show');
@@ -107,4 +109,13 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
     Route::put('/{rack}/position/{position}', [RackLayoutController::class, 'update'])->name('position.update');
     Route::delete('/{rack}/position/{position}', [RackLayoutController::class, 'destroy'])->name('position.destroy');
     Route::get('/{rack}/position/{position}/history', [RackLayoutController::class, 'positionHistory'])->name('position.history');
+
+    Route::prefix('{rack}/cables')->name('cables.')->group(function () {
+        Route::get('/', [RackCableController::class, 'index'])->name('index');
+        Route::get('/create', [RackCableController::class, 'create'])->name('create');
+        Route::post('/', [RackCableController::class, 'store'])->name('store');
+        Route::get('/{cable}/edit', [RackCableController::class, 'edit'])->name('edit');
+        Route::put('/{cable}', [RackCableController::class, 'update'])->name('update');
+        Route::delete('/{cable}', [RackCableController::class, 'destroy'])->name('destroy');
+    });
 });
