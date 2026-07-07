@@ -103,14 +103,14 @@ class RackLayoutController extends Controller
         $this->authorize('view', $rack);
 
         $positions = $rack->positionsMap();
-        $cables = $rack->activeCables()->with('sourceEquipment')->limit(10)->get();
+        $ipRanges = $rack->activeIpRanges()->limit(10)->get();
 
         $colorChoices = $this->getColorChoices();
 
         return view('admin.rack-layout.show', [
             'rack' => $rack,
             'positions' => $positions,
-            'cables' => $cables,
+            'ipRanges' => $ipRanges,
             'colorChoices' => $colorChoices,
         ]);
     }

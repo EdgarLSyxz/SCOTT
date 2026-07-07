@@ -54,6 +54,11 @@ class RackPolicy
         return $this->userHasPermission($user, 'rack-map.view');
     }
 
+    public function manageIpAddressing(User $user, Rack $rack): bool
+    {
+        return $this->userHasPermission($user, 'rack-ip-addressing.view');
+    }
+
     private function userHasPermission(User $user, string $permission): bool
     {
         try {

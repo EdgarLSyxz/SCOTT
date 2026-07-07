@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\RackCable;
+use App\Models\RackIpRange;
 use App\Models\User;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
-class RackCablePolicy
+class RackIpRangePolicy
 {
     public function before(User $user, $ability): ?bool
     {
@@ -19,27 +19,27 @@ class RackCablePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->hasPerm($user, 'rack-cables.view');
+        return $this->hasPerm($user, 'rack-networking.view');
     }
 
-    public function view(User $user, RackCable $cable): bool
+    public function view(User $user, RackIpRange $ipRange): bool
     {
-        return $this->hasPerm($user, 'rack-cables.view');
+        return $this->viewAny($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->hasPerm($user, 'rack-cables.create');
+        return $this->hasPerm($user, 'rack-networking.create');
     }
 
-    public function update(User $user, RackCable $cable): bool
+    public function update(User $user, RackIpRange $ipRange): bool
     {
-        return $this->hasPerm($user, 'rack-cables.edit');
+        return $this->hasPerm($user, 'rack-networking.edit');
     }
 
-    public function delete(User $user, RackCable $cable): bool
+    public function delete(User $user, RackIpRange $ipRange): bool
     {
-        return $this->hasPerm($user, 'rack-cables.delete');
+        return $this->hasPerm($user, 'rack-networking.delete');
     }
 
     private function hasPerm(User $user, string $perm): bool

@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\RadioController;
-use App\Http\Controllers\Admin\RackCableController;
+use App\Http\Controllers\Admin\RackIpRangeController;
 use App\Http\Controllers\Admin\RackLayoutController;
 use App\Http\Controllers\Admin\ReportSlaController;
 use App\Http\Controllers\Admin\StageController;
@@ -110,12 +110,12 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
     Route::delete('/{rack}/position/{position}', [RackLayoutController::class, 'destroy'])->name('position.destroy');
     Route::get('/{rack}/position/{position}/history', [RackLayoutController::class, 'positionHistory'])->name('position.history');
 
-    Route::prefix('{rack}/cables')->name('cables.')->group(function () {
-        Route::get('/', [RackCableController::class, 'index'])->name('index');
-        Route::get('/create', [RackCableController::class, 'create'])->name('create');
-        Route::post('/', [RackCableController::class, 'store'])->name('store');
-        Route::get('/{cable}/edit', [RackCableController::class, 'edit'])->name('edit');
-        Route::put('/{cable}', [RackCableController::class, 'update'])->name('update');
-        Route::delete('/{cable}', [RackCableController::class, 'destroy'])->name('destroy');
+    Route::prefix('{rack}/ip-addressing')->name('ip-addressing.')->group(function () {
+        Route::get('/', [RackIpRangeController::class, 'index'])->name('index');
+        Route::get('/create', [RackIpRangeController::class, 'create'])->name('create');
+        Route::post('/', [RackIpRangeController::class, 'store'])->name('store');
+        Route::get('/{ipRange}/edit', [RackIpRangeController::class, 'edit'])->name('edit');
+        Route::put('/{ipRange}', [RackIpRangeController::class, 'update'])->name('update');
+        Route::delete('/{ipRange}', [RackIpRangeController::class, 'destroy'])->name('destroy');
     });
 });

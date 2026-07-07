@@ -43,16 +43,16 @@ class Rack extends Model
         return $this->hasMany(RackEquipmentHistory::class, 'rack_id')->orderByDesc('changed_at');
     }
 
-    public function cables(): HasMany
+    public function ipRanges(): HasMany
     {
-        return $this->hasMany(RackCable::class, 'rack_id')->orderBy('source_position');
+        return $this->hasMany(RackIpRange::class, 'rack_id')->orderBy('vlan');
     }
 
-    public function activeCables(): HasMany
+    public function activeIpRanges(): HasMany
     {
-        return $this->hasMany(RackCable::class, 'rack_id')
+        return $this->hasMany(RackIpRange::class, 'rack_id')
             ->where('is_active', true)
-            ->orderBy('source_position');
+            ->orderBy('vlan');
     }
 
     public function scopeWithCoordinates($query)
