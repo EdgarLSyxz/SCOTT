@@ -77,6 +77,55 @@
         </div>
     </x-slot>
 
+    @can('manageIpAddressing', App\Models\Rack::class)
+        <div class="mt-2 mb-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-globe text-purple-500"></i>
+                    {{ __('IP Addressing (top :n)', ['n' => 10]) }}
+                </h2>
+                <a href="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}"
+                   class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium">
+                    {{ __('View all') }} <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            @if(($ipRanges ?? collect())->isEmpty())
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('No IP ranges registered yet.') }}
+                </p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+                            <tr>
+                                <th class="px-3 py-2">{{ __('CIDR range') }}</th>
+                                <th class="px-3 py-2">{{ __('Mask') }}</th>
+                                <th class="px-3 py-2">{{ __('VLAN') }}</th>
+                                <th class="px-3 py-2">{{ __('Description') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($ipRanges as $range)
+                                <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+                                    <td class="px-3 py-2 font-mono font-semibold text-gray-900 dark:text-white">{{ $range->cidr_range }}</td>
+                                    <td class="px-3 py-2 font-mono text-gray-700 dark:text-gray-300">{{ $range->mask }}</td>
+                                    <td class="px-3 py-2">
+                                        @if($range->vlan)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">VLAN {{ $range->vlan }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $range->description ?: '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    @endcan
+
     <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
 
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -450,55 +499,6 @@
             @endforeach
         </div>
     </div>
-
-    @can('manageIpAddressing', App\Models\Rack::class)
-        <div class="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-globe text-purple-500"></i>
-                    {{ __('IP Addressing (top :n)', ['n' => 10]) }}
-                </h2>
-                <a href="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}"
-                   class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium">
-                    {{ __('View all') }} <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
-                </a>
-            </div>
-            @if(($ipRanges ?? collect())->isEmpty())
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ __('No IP ranges registered yet.') }}
-                </p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
-                            <tr>
-                                <th class="px-3 py-2">{{ __('CIDR range') }}</th>
-                                <th class="px-3 py-2">{{ __('Mask') }}</th>
-                                <th class="px-3 py-2">{{ __('VLAN') }}</th>
-                                <th class="px-3 py-2">{{ __('Description') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($ipRanges as $range)
-                                <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-                                    <td class="px-3 py-2 font-mono font-semibold text-gray-900 dark:text-white">{{ $range->cidr_range }}</td>
-                                    <td class="px-3 py-2 font-mono text-gray-700 dark:text-gray-300">{{ $range->mask }}</td>
-                                    <td class="px-3 py-2">
-                                        @if($range->vlan)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">VLAN {{ $range->vlan }}</span>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $range->description ?: '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    @endcan
 
     <form action="{{ route('admin.rack-layout.destroy-rack', $rack) }}" method="POST" id="delete-rack-form">
         @csrf

@@ -155,7 +155,7 @@
                 </thead>
                 <tbody>
                     @forelse($ipRanges as $range)
-                        <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 transition-colors">
                             <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400"># {{ $range->id }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
