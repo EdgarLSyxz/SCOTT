@@ -1287,5 +1287,13 @@
     "All VLANs": "Todas las VLANs",
     "Add IP": "Agregar IP",
     "IP Range": "Rango IP",
-    "Mask": "Máscara"
+    "Mask": "Máscara",
+    "Edit IP Addressing": "Editar direccionamiento IP",
+    "Add IP Addressing": "Agregar direccionamiento IP",
+    "Define a IP Range, Mask, VLAN and Description for this rack.": "Define un rango IP, Máscara, VLAN y Descripción para este rack.",
+    "Example: 192.168.1.0/24, 10.0.0.0/16, etc.": "Ejemplo: 192.168.1.0/24, 10.0.0.0/16, etc.",
+    "Rack IP Range": "Rango IP del rack",
+    "Rack Mask": "Máscara del rack",
+    "Rack VLAN": "VLAN del rack",
+    "IP Addressing description": "Descripción del direccionamiento IP"
 }

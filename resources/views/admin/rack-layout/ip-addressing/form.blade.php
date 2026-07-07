@@ -14,13 +14,13 @@
         </a>
     </x-slot>
 
-    <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-6">
+    <div class="w-full max-w-auto mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-6">
         <h1 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-1">
-            <i class="fa-solid fa-globe text-primary-500"></i>
-            {{ $mode === 'edit' ? __('Edit IP range — :rack', ['rack' => $rack->name]) : __('Add IP range — :rack', ['rack' => $rack->name]) }}
+            <i class="fa-solid fa-globe"></i>
+            {{ $mode === 'edit' ? __('Edit IP Addressing') . ' — ' . $rack->name : __('Add IP Addressing') . ' — ' . $rack->name }}
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
-            {{ __('Define a CIDR range, mask, VLAN and description for this rack.') }}
+            {{ __('Define a IP Range, Mask, VLAN and Description for this rack.') }}
         </p>
 
         <form action="{{ $mode === 'edit' ? route('admin.rack-layout.ip-addressing.update', [$rack, $ipRange]) : route('admin.rack-layout.ip-addressing.store', $rack) }}" method="POST">
