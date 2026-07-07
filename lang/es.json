@@ -1298,5 +1298,7 @@
     "IP Addressing description": "Descripción del direccionamiento IP",
     "IP Range added successfully.": "Rango IP agregado con éxito.",
     "IP Range updated successfully.": "Rango IP actualizado con éxito.",
-    "IP Range deleted successfully.": "Rango IP eliminado con éxito."
+    "IP Range deleted successfully.": "Rango IP eliminado con éxito.",
+    "No IP ranges registered yet.": "Aún no hay rangos IP registrados.",
+    "Delete this IP range?": "¿Eliminar este rango IP?"
 }

@@ -81,42 +81,86 @@
         <div class="mt-2 mb-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-globe text-purple-500"></i>
-                    {{ __('IP Addressing (top :n)', ['n' => 10]) }}
+                    <i class="fa-solid fa-globe"></i>
+                    {{ __('IP Addressing') }}
                 </h2>
-                <a href="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}"
-                   class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium">
-                    {{ __('View all') }} <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
-                </a>
             </div>
             @if(($ipRanges ?? collect())->isEmpty())
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                     {{ __('No IP ranges registered yet.') }}
                 </p>
             @else
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                             <tr>
-                                <th class="px-3 py-2">{{ __('CIDR range') }}</th>
-                                <th class="px-3 py-2">{{ __('Mask') }}</th>
-                                <th class="px-3 py-2">{{ __('VLAN') }}</th>
-                                <th class="px-3 py-2">{{ __('Description') }}</th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-hashtag mr-1"></i>
+                                    {{ __('ID') }}
+                                </th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-globe mr-1"></i>
+                                    {{ __('IP Range') }}
+                                </th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-mask mr-1"></i>
+                                    {{ __('Mask') }}
+                                </th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-tag mr-1"></i>
+                                    {{ __('VLAN') }}
+                                </th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-align-left mr-1"></i>
+                                    {{ __('Description') }}
+                                </th>
+                                <th class="px-4 py-3">
+                                    <i class="fa-solid fa-toggle-on mr-1"></i>
+                                    {{ __('Status') }}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($ipRanges as $range)
-                                <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-                                    <td class="px-3 py-2 font-mono font-semibold text-gray-900 dark:text-white">{{ $range->cidr_range }}</td>
-                                    <td class="px-3 py-2 font-mono text-gray-700 dark:text-gray-300">{{ $range->mask }}</td>
-                                    <td class="px-3 py-2">
+                                <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 transition-colors">
+                                    <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400"># {{ $range->id }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-globe text-cyan-500 text-xs"></i>
+                                            <span class="font-mono font-semibold text-gray-900 dark:text-white">{{ $range->cidr_range }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <i class="fa-solid fa-mask text-yellow-500 text-xs mr-1.5"></i>
+                                        <span class="font-mono text-gray-700 dark:text-gray-300 text-xs">{{ $range->mask }}</span>
+                                    </td>
+                                    <td class="px-4 py-3">
                                         @if($range->vlan)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">VLAN {{ $range->vlan }}</span>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+                                                VLAN {{ $range->vlan }}
+                                            </span>
                                         @else
                                             <span class="text-gray-400">—</span>
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $range->description ?: '—' }}</td>
+                                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-md">
+                                        @if($range->description)
+                                            <span class="line-clamp-2" title="{{ $range->description }}">{{ $range->description }}</span>
+                                        @else
+                                            <span class="text-gray-400 italic text-xs">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        @if($range->is_active)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>{{ __('Active') }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5"></span>{{ __('Inactive') }}
+                                            </span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

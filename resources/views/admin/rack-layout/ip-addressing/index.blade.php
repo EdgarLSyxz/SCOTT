@@ -170,7 +170,6 @@
                             <td class="px-4 py-3">
                                 @if($range->vlan)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
-                                        <i class="fa-solid fa-tag text-purple-500 text-xs mr-1.5"></i>
                                         VLAN {{ $range->vlan }}
                                     </span>
                                 @else
