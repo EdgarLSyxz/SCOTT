@@ -35,7 +35,7 @@
                     {{ __('IP Addressing') . ' - ' . $rack->name }}
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-13">
-                    {{ __('IP Ranges, masks and VLANs assigned to this rack.') }}
+                    {{ __('IP Ranges, Masks and VLANs assigned to this rack.') }}
                 </p>
             </div>
         </div>
