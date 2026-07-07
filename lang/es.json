@@ -1300,5 +1300,16 @@
     "IP Range updated successfully.": "Rango IP actualizado con éxito.",
     "IP Range deleted successfully.": "Rango IP eliminado con éxito.",
     "No IP ranges registered yet.": "Aún no hay rangos IP registrados.",
-    "Delete this IP range?": "¿Eliminar este rango IP?"
+    "Delete this IP range?": "¿Eliminar este rango IP?",
+    "Equipment image": "Imagen del equipo",
+    "Drop a new image to replace, or click to choose.": "Suelta una nueva imagen para reemplazar, o haz clic para elegir.",
+    "Accepted formats: PNG, JPG, WebP, SVG.": "Formatos aceptados: PNG, JPG, WebP, SVG.",
+    "No image": "Sin imagen",
+    "New image preview": "Vista previa de nueva imagen",
+    "NEW": "NUEVO",
+    "CURRENT": "ACTUAL",
+    "Current image — no new file selected": "Imagen actual — no se seleccionó un nuevo archivo",
+    "Remove current image": "Eliminar imagen actual",
+    "The image will be permanently deleted when you save.": "La imagen se eliminará permanentemente cuando guardes.",
+    "Select file": "Seleccionar archivo"
 }

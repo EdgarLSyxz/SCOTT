@@ -45,7 +45,7 @@
             </p>
         </div>
 
-        <form action="{{ route('admin.rack-layout.position.update', [$rack, $position]) }}" method="POST">
+        <form action="{{ route('admin.rack-layout.position.update', [$rack, $position]) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -153,8 +153,8 @@
                     <select id="color"
                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
                             {{ Auth::user()?->area === 'DTH'
-                                ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
-                                : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                            ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                            : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         name="color">
                         <option wire:click value="" disabled selected>{{ __('Select an option') }}</option>
                         @foreach($colorChoices as $value => $label)
@@ -164,14 +164,150 @@
                 </div>
 
                 <div class="md:col-span-2">
+                    <x-label class="mb-2 block">
+                        <i class="fa-solid fa-image mr-1"></i>
+                        {{ __('Equipment image') }}
+                    </x-label>
+
+                    @php
+                        $hasCurrentImage = !empty($equipment->image_url);
+                    @endphp
+
+                    <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 items-start"
+                         x-data="{
+                             newFile: null,
+                             newPreview: null,
+                             removed: {{ old('remove_image') ? 'true' : 'false' }},
+                             handleFile(e) {
+                                 const file = e.target.files[0] || (e.dataTransfer && e.dataTransfer.files[0]);
+                                 if (!file) return;
+                                 if (!file.type.startsWith('image/')) return;
+                                 this.newFile = file;
+                                 this.removed = false;
+                                 if (this.newPreview) URL.revokeObjectURL(this.newPreview);
+                                 this.newPreview = URL.createObjectURL(file);
+                             },
+                             clearNew() {
+                                 if (this.newPreview) URL.revokeObjectURL(this.newPreview);
+                                 this.newFile = null;
+                                 this.newPreview = null;
+                                 $refs.fileInput.value = '';
+                             },
+                             toggleRemove() {
+                                 this.removed = !this.removed;
+                             }
+                         }"
+                         x-init="$watch('newFile', () => {})">
+
+                        <div class="flex flex-col items-center">
+                            <div class="relative w-44 h-44 rounded-full transition-colors mt-2">
+
+                                <template x-if="!newPreview && {{ $hasCurrentImage ? 'true' : 'false' }} && !removed">
+                                    <img src="{{ $hasCurrentImage ? asset('storage/' . $equipment->image_url) : '' }}"
+                                         alt="{{ $equipment->equipment_name ?: __('Current image') }}"
+                                         class="w-full h-full object-contain object-center rounded-xl">
+                                </template>
+
+                                <template x-if="newPreview">
+                                    <img :src="newPreview"
+                                         alt="{{ __('New image preview') }}"
+                                         class="w-full h-full object-contain object-center rounded-lg">
+                                </template>
+
+                                <template x-if="!newPreview && (!{{ $hasCurrentImage ? 'true' : 'false' }} || removed)">
+                                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+                                        <i class="fa-solid fa-image text-3xl mb-1.5"></i>
+                                        <span class="text-xs">{{ __('No image') }}</span>
+                                    </div>
+                                </template>
+
+                                <template x-if="newPreview">
+                                    <span class="absolute -top-1.5 -left-1.5 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary-500 text-white shadow z-50">
+                                        <i class="fa-solid fa-sparkles mr-1 mb-[1px]"></i>{{ __('NEW') }}
+                                    </span>
+                                </template>
+                                <template x-if="!newPreview && {{ $hasCurrentImage ? 'true' : 'false' }} && !removed">
+                                    <span class="absolute -top-1.5 -left-1.5 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-500 text-white shadow z-50">
+                                        <i class="fa-solid fa-check mr-1 mb-[1px]"></i>{{ __('CURRENT') }}
+                                    </span>
+                                </template>
+                            </div>
+
+                            <p class="mt-4 text-[11px] text-gray-500 dark:text-gray-400 text-center leading-tight">
+                                @if($hasCurrentImage)
+                                    {{ __('Drop a new image to replace, or click to choose.') }}
+                                @else
+                                    {{ __('Click below or drop an image here.') }}
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-stretch w-full">
+                                <label for="image_url"
+                                       class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-l-lg border border-1 cursor-pointer transition
+                                           {{ Auth::user()?->area === 'DTH'
+                                               ? 'bg-secondary-50 text-secondary-800 border-secondary-300 hover:bg-secondary-100 dark:bg-secondary-900/40 dark:text-secondary-200 dark:border-secondary-700'
+                                               : 'bg-primary-50 text-primary-800 border-primary-300 hover:bg-primary-100 dark:bg-primary-900/40 dark:text-primary-200 dark:border-primary-700' }}">
+                                    <i class="fa-solid fa-upload mr-2"></i>{{ __('Select file') }}
+                                </label>
+                                <span class="flex-1 inline-flex items-center px-3 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg truncate"
+                                      x-text="newFile ? newFile.name : '{{ $hasCurrentImage && !old('remove_image') ? __('Current image — no new file selected') : __('No file selected') }}'">
+                                </span>
+                                <input x-ref="fileInput"
+                                       id="image_url"
+                                       name="image_url"
+                                       type="file"
+                                       accept="image/*"
+                                       @change="handleFile($event)"
+                                       class="sr-only">
+                            </div>
+
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-circle-info mr-1"></i>
+                                {{ __('Accepted formats: PNG, JPG, WebP, SVG.') }}
+                            </p>
+
+                            <div class="flex flex-wrap items-center gap-2" x-show="newPreview" x-transition.opacity>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">
+                                    <i class="fa-solid fa-file-image mr-1.5"></i>
+                                    <span x-text="newFile ? (newFile.name + ' · ' + Math.round(newFile.size/1024) + ' KB') : ''"></span>
+                                </span>
+                                <button type="button" @click="clearNew()"
+                                        class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                                    <i class="fa-solid fa-rotate-left mr-1"></i>{{ __('Discard') }}
+                                </button>
+                            </div>
+
+                            @if($hasCurrentImage)
+                                <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <label class="inline-flex items-start gap-2 text-sm text-red-600 dark:text-red-400 cursor-pointer select-none">
+                                        <input type="hidden" name="remove_image" value="0" />
+                                        <input type="checkbox"
+                                               name="remove_image"
+                                               value="1"
+                                               x-model="removed"
+                                               class="mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600">
+                                        <span>
+                                            <span class="font-semibold block">{{ __('Remove current image') }}</span>
+                                            <span class="text-xs text-red-500/80 dark:text-red-400/80 block">{{ __('The image will be permanently deleted when you save.') }}</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
                     <x-label for="notes">
                         <i class="fa-solid fa-align-left mr-1"></i>
                         {{ __('Notes') }}
                     </x-label>
                     <textarea id="notes" name="notes" rows="4" maxlength="2000"
                         class="block p-2.5 w-full text-sm {{ Auth::user()?->area === 'DTH'
-                            ? 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-secondary-500 focus:border-secondary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
-                            : 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
+                        ? 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-secondary-500 focus:border-secondary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                        : 'bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' }}"
                         placeholder="{{ __('Additional notes about this equipment...') }}">{{ old('notes', $equipment->notes) }}</textarea>
                 </div>
             </div>
@@ -195,8 +331,8 @@
                     </a>
                     <x-button class="inline-flex justify-center items-center font-bold
                         {{ Auth::user()?->area === 'DTH'
-                            ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
-                            : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }}
+                        ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                        : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }}
                         text-white rounded-lg px-5 py-2 focus:outline-none shadow-xl">
                         <i class="fa-solid fa-floppy-disk mr-2"></i>
                         {{ __('Save changes') }}

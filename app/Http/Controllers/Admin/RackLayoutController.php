@@ -218,6 +218,8 @@ class RackLayoutController extends Controller
             'notes' => 'nullable|string|max:2000',
             'color' => ['nullable', Rule::in(array_keys($this->getColorChoices()))],
             'size_u' => 'required|integer|min:1|max:' . $rack->total_units,
+            'image_url' => 'nullable|image',
+            'remove_image' => 'nullable|boolean',
         ], [], [
             'equipment_name' => __('equipment name'),
             'equipment_model' => __('model'),
@@ -230,6 +232,8 @@ class RackLayoutController extends Controller
             'notes' => __('notes'),
             'color' => __('highlight color'),
             'size_u' => __('size (U)'),
+            'image_url' => __('equipment image'),
+            'remove_image' => __('remove image'),
         ]);
 
         $start = (int) $position;
@@ -293,6 +297,28 @@ class RackLayoutController extends Controller
             ]
         );
 
+        $finalImagePath = $equipment->image_url;
+
+        if ($request->boolean('remove_image') && $equipment->image_url) {
+            if (Storage::disk('public')->exists($equipment->image_url)) {
+                Storage::disk('public')->delete($equipment->image_url);
+            }
+            $finalImagePath = null;
+        } elseif ($request->hasFile('image_url')) {
+            $file = $request->file('image_url');
+            $imageName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            if ($equipment->image_url && Storage::disk('public')->exists($equipment->image_url)) {
+                Storage::disk('public')->delete($equipment->image_url);
+            }
+            $file->storeAs('rack_equipment', $imageName, 'public');
+            $finalImagePath = 'rack_equipment/' . $imageName;
+        }
+
+        if ($finalImagePath !== $equipment->image_url) {
+            $equipment->image_url = $finalImagePath;
+            $equipment->save();
+        }
+
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
@@ -312,6 +338,9 @@ class RackLayoutController extends Controller
             ->first();
 
         if ($equipment) {
+            if ($equipment->image_url && Storage::disk('public')->exists($equipment->image_url)) {
+                Storage::disk('public')->delete($equipment->image_url);
+            }
             $equipment->delete();
         }
 

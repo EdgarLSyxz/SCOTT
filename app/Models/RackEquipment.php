@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class RackEquipment extends Model
 {
@@ -23,6 +25,7 @@ class RackEquipment extends Model
         'installation_date',
         'notes',
         'color',
+        'image_url',
         'is_active',
         'updated_by',
     ];
@@ -47,6 +50,13 @@ class RackEquipment extends Model
     public function isEmpty(): bool
     {
         return empty($this->equipment_name);
+    }
+
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->image_url ? Storage::url($this->image_url) : null,
+        );
     }
 
     public function getSizeUAttribute($value): int

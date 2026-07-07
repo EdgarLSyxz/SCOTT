@@ -324,67 +324,54 @@
                         </div>
 
                         <div class="flex flex-col justify-center rounded-xl border {{ $slotClasses }} {{ $indicator ? 'border-l-4 ' . $indicator['accent'] : '' }} px-4 py-3 shadow-sm-all duration-200">
-                            <div class="flex items-center gap-3 h-full">
-                                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
-                                    @if($indicator)
-                                        <i class="fa-solid fa-server {{ $indicator['tone'] }} text-base"></i>
-                                    @else
-                                        <i class="fa-solid fa-server text-gray-500 dark:text-gray-400 text-base"></i>
-                                    @endif
-                                </span>
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate {{ $indicator['tone'] ?? '' }}">
-                                        {{ $equipment->equipment_name }}
-                                    </h3>
+                            @include('admin.rack-layout._equipment-header', ['equipment' => $equipment, 'indicator' => $indicator])
 
-                                    @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
-                                        <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
-                                            @if($equipment->equipment_model)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
-                                                    <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
-                                                    <span class="font-medium">{{ $equipment->equipment_model }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->vendor)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
-                                                    <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
-                                                    <span>{{ $equipment->vendor }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->ip_address)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
-                                                    <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
-                                                    <span class="font-mono">{{ $equipment->ip_address }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->mac_address)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
-                                                    <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
-                                                    <span class="font-mono">{{ $equipment->mac_address }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->serial_number)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
-                                                    <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
-                                                    <span class="font-mono">{{ $equipment->serial_number }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->equipment_role)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
-                                                    <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
-                                                    <span class="font-semibold">{{ $equipment->equipment_role }}</span>
-                                                </span>
-                                            @endif
-                                            @if($equipment->installation_date)
-                                                <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
-                                                    <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
-                                                    <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
-                                                </span>
-                                            @endif
-                                        </div>
+                            @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
+                                <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
+                                    @if($equipment->equipment_model)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
+                                            <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                            <span class="font-medium">{{ $equipment->equipment_model }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->vendor)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
+                                            <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                            <span>{{ $equipment->vendor }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->ip_address)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
+                                            <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                            <span class="font-mono">{{ $equipment->ip_address }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->mac_address)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
+                                            <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                            <span class="font-mono">{{ $equipment->mac_address }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->serial_number)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
+                                            <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                            <span class="font-mono">{{ $equipment->serial_number }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->equipment_role)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
+                                            <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                            <span class="font-semibold">{{ $equipment->equipment_role }}</span>
+                                        </span>
+                                    @endif
+                                    @if($equipment->installation_date)
+                                        <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
+                                            <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                            <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
+                                        </span>
                                     @endif
                                 </div>
-                            </div>
+                            @endif
                         </div>
 
                         <div class="flex flex-col justify-center gap-2">
@@ -453,67 +440,54 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="flex items-start gap-3">
-                                    <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm">
-                                        @if($indicator)
-                                            <i class="fa-solid fa-server {{ $indicator['tone'] }} text-base"></i>
-                                        @else
-                                            <i class="fa-solid fa-server text-gray-500 dark:text-gray-400 text-base"></i>
-                                        @endif
-                                    </span>
-                                    <div class="flex-1 min-w-0">
-                                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate {{ $indicator['tone'] ?? '' }}">
-                                            {{ $equipment->equipment_name }}
-                                        </h3>
+                                @include('admin.rack-layout._equipment-header', ['equipment' => $equipment, 'indicator' => $indicator ?? null])
 
-                                        @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
-                                            <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
-                                                @if($equipment->equipment_model)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
-                                                        <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
-                                                        <span class="font-medium">{{ $equipment->equipment_model }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->vendor)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
-                                                        <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
-                                                        <span>{{ $equipment->vendor }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->ip_address)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
-                                                        <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
-                                                        <span class="font-mono">{{ $equipment->ip_address }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->mac_address)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
-                                                        <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
-                                                        <span class="font-mono">{{ $equipment->mac_address }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->serial_number)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
-                                                        <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
-                                                        <span class="font-mono">{{ $equipment->serial_number }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->equipment_role)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
-                                                        <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
-                                                        <span class="font-semibold">{{ $equipment->equipment_role }}</span>
-                                                    </span>
-                                                @endif
-                                                @if($equipment->installation_date)
-                                                    <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
-                                                        <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
-                                                        <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
-                                                    </span>
-                                                @endif
-                                            </div>
+                                @if($equipment->equipment_model || $equipment->vendor || $equipment->ip_address || $equipment->mac_address || $equipment->serial_number || $equipment->equipment_role || $equipment->installation_date)
+                                    <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-600 dark:text-gray-400 mt-1.5">
+                                        @if($equipment->equipment_model)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Model') }}">
+                                                <i class="fa-solid fa-microchip text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-medium">{{ $equipment->equipment_model }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->vendor)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Vendor') }}">
+                                                <i class="fa-solid fa-industry text-gray-400 dark:text-gray-500"></i>
+                                                <span>{{ $equipment->vendor }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->ip_address)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('IP Address') }}">
+                                                <i class="fa-solid fa-network-wired text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $equipment->ip_address }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->mac_address)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('MAC Address') }}">
+                                                <i class="fa-solid fa-address-card text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $equipment->mac_address }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->serial_number)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Serial Number') }}">
+                                                <i class="fa-solid fa-barcode text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-mono">{{ $equipment->serial_number }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->equipment_role)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Function') }}">
+                                                <i class="fa-solid fa-user-gear text-gray-400 dark:text-gray-500"></i>
+                                                <span class="font-semibold">{{ $equipment->equipment_role }}</span>
+                                            </span>
+                                        @endif
+                                        @if($equipment->installation_date)
+                                            <span class="inline-flex items-center gap-1.5" title="{{ __('Installation date') }}">
+                                                <i class="fa-solid fa-calendar-check text-gray-400 dark:text-gray-500"></i>
+                                                <span>{{ $equipment->installation_date->format('M d, Y') }}</span>
+                                            </span>
                                         @endif
                                     </div>
-                                </div>
+                                @endif
                             @endif
                         </div>
 
