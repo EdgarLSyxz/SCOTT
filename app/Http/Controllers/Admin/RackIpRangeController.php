@@ -83,7 +83,7 @@ class RackIpRangeController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('IP range added successfully.'),
+            'text' => __('IP Range added successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.ip-addressing.index', $rack);
@@ -118,7 +118,7 @@ class RackIpRangeController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('IP range updated successfully.'),
+            'text' => __('IP Range updated successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.ip-addressing.index', $rack);
@@ -137,7 +137,7 @@ class RackIpRangeController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('IP range removed successfully.'),
+            'text' => __('IP Range deleted successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.ip-addressing.index', $rack);

@@ -29,13 +29,13 @@
             <x-validation-errors class="mb-4" />
             @include('admin.rack-layout.ip-addressing._form-fields')
 
-            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-end gap-3 mt-6 pt-4">
                 <a href="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}"
                    class="inline-flex items-center text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm px-5 py-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                     <i class="fa-solid fa-xmark mr-1.5"></i> {{ __('Cancel') }}
                 </a>
                 <x-button class="inline-flex items-center text-white bg-primary-700 hover:bg-primary-800 rounded-lg text-sm px-5 py-2 shadow-sm">
-                    <i class="fa-solid fa-floppy-disk mr-2"></i> {{ $mode === 'edit' ? __('Update IP range') : __('Save IP range') }}
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> {{ $mode === 'edit' ? __('Update') : __('Save') }}
                 </x-button>
             </div>
         </form>

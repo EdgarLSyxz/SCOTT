@@ -135,7 +135,7 @@
                             {{ __('IP Range') }}
                         </th>
                         <th class="px-4 py-3">
-                            <i class="fa-solid fa-network-wired mr-1"></i>
+                            <i class="fa-solid fa-mask mr-1"></i>
                             {{ __('Mask') }}
                         </th>
                         <th class="px-4 py-3">
@@ -156,7 +156,7 @@
                 <tbody>
                     @forelse($ipRanges as $range)
                         <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">#{{ $range->id }}</td>
+                            <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400"># {{ $range->id }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-globe text-cyan-500 text-xs"></i>
@@ -164,11 +164,13 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
+                                <i class="fa-solid fa-mask text-yellow-500 text-xs mr-1.5"></i>
                                 <span class="font-mono text-gray-700 dark:text-gray-300 text-xs">{{ $range->mask }}</span>
                             </td>
                             <td class="px-4 py-3">
                                 @if($range->vlan)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+                                        <i class="fa-solid fa-tag text-purple-500 text-xs mr-1.5"></i>
                                         VLAN {{ $range->vlan }}
                                     </span>
                                 @else
@@ -194,7 +196,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <div class="inline-flex items-center gap-1">
+                                <div class="inline-flex items-center gap-2">
                                     @can('update', $range)
                                         <a href="{{ route('admin.rack-layout.ip-addressing.edit', [$rack, $range]) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
@@ -207,7 +209,7 @@
                                               onsubmit="return confirm('{{ __('Delete this IP range?') }}')">
                                             @csrf @method('DELETE')
                                             <button type="submit"
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-md text-red-600 dark:text-red-300 bg-white dark:bg-gray-700 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"
                                                     title="{{ __('Delete') }}">
                                                 <i class="fa-solid fa-trash-can text-xs"></i>
                                             </button>

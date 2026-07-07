@@ -1295,5 +1295,8 @@
     "Rack IP Range": "Rango IP del rack",
     "Rack Mask": "Máscara del rack",
     "Rack VLAN": "VLAN del rack",
-    "IP Addressing description": "Descripción del direccionamiento IP"
+    "IP Addressing description": "Descripción del direccionamiento IP",
+    "IP Range added successfully.": "Rango IP agregado con éxito.",
+    "IP Range updated successfully.": "Rango IP actualizado con éxito.",
+    "IP Range deleted successfully.": "Rango IP eliminado con éxito."
 }
