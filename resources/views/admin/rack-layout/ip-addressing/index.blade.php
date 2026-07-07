@@ -14,8 +14,11 @@
             </a>
             @can('create', App\Models\RackIpRange::class)
                 <a href="{{ route('admin.rack-layout.ip-addressing.create', $rack) }}"
-                   class="inline-flex items-center text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 shadow-sm">
-                    <i class="fa-solid fa-plus mr-1.5"></i> {{ __('Add IP range') }}
+                   class="{{ Auth::user()?->area === 'DTH'
+                    ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
+                    : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }}
+                    font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl text-white">
+                    <i class="fa-solid fa-plus mr-1.5"></i> {{ __('Add IP') }}
                 </a>
             @endcan
         </div>
@@ -26,29 +29,38 @@
         <div class="mb-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300">
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg {{ Auth::user()?->area === "DTH" ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-300' : 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' }}">
                         <i class="fa-solid fa-globe text-lg"></i>
                     </span>
-                    {{ __('IP Addressing — :rack', ['rack' => $rack->name]) }}
+                    {{ __('IP Addressing') . ' - ' . $rack->name }}
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-13">
-                    {{ __('CIDR ranges, masks and VLANs assigned to this rack.') }}
+                    {{ __('IP Ranges, masks and VLANs assigned to this rack.') }}
                 </p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ Auth::user()?->area === "DTH" ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-300' : 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' }}">
                     <i class="fa-solid fa-globe"></i>
                 </span>
                 <div>
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Total ranges') }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Total IP Ranges') }}</div>
                 </div>
             </div>
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ Auth::user()?->area === "DTH" ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-300' : 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' }}">
+                    <i class="fa-solid fa-tag"></i>
+                </span>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['vlans'] }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('VLANs') }}</div>
+                </div>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ Auth::user()?->area === "DTH" ? 'bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-300' : 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' }}">
                     <i class="fa-solid fa-circle-check"></i>
                 </span>
                 <div>
@@ -56,27 +68,27 @@
                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Active') }}</div>
                 </div>
             </div>
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300">
-                    <i class="fa-solid fa-tag"></i>
-                </span>
-                <div>
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['vlans'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Distinct VLANs') }}</div>
-                </div>
-            </div>
         </div>
 
         <form method="GET" action="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <div class="md:col-span-2">
-                <x-label for="search" value="{{ __('Search') }}" />
+                <x-label for="search">
+                    <i class="fa-solid fa-magnifying-glass mr-1"></i>
+                    {{ __('Search') }}
+                </x-label>
                 <x-input id="search" name="search" type="text"
-                    :value="request('search')" placeholder="{{ __('CIDR, mask, VLAN, description…') }}" />
+                    :value="request('search')" placeholder="{{ __('IP, Mask, VLAN, Description…') }}" />
             </div>
             <div>
-                <x-label for="vlan" value="{{ __('VLAN') }}" />
+                <x-label for="vlan">
+                    <i class="fa-solid fa-tag mr-1"></i>
+                    {{ __('VLAN') }}
+                </x-label>
                 <select id="vlan" name="vlan"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full px-2.5 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+                    {{ Auth::user()?->area === 'DTH'
+                    ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                    : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
                     <option value="">{{ __('All VLANs') }}</option>
                     @foreach($vlans as $v)
                         <option value="{{ $v }}" {{ (string) request('vlan') === (string) $v ? 'selected' : '' }}>VLAN {{ $v }}</option>
@@ -84,9 +96,15 @@
                 </select>
             </div>
             <div>
-                <x-label for="status" value="{{ __('Status') }}" />
+                <x-label for="status">
+                    <i class="fa-solid fa-toggle-on mr-1"></i>
+                    {{ __('Status') }}
+                </x-label>
                 <select id="status" name="status"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full px-2.5 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+                    {{ Auth::user()?->area === 'DTH'
+                    ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500'
+                    : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
                     <option value="">{{ __('All') }}</option>
                     <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
                     <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
@@ -98,7 +116,7 @@
                     <i class="fa-solid fa-times mr-1.5"></i>{{ __('Clear') }}
                 </a>
                 <button type="submit"
-                        class="inline-flex items-center text-white bg-primary-700 hover:bg-primary-800 rounded-lg text-sm px-4 py-2 shadow-sm">
+                    class="inline-flex items-center text-white {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800' : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} rounded-lg text-sm px-4 py-2 shadow-sm">
                     <i class="fa-solid fa-magnifying-glass mr-1.5"></i>{{ __('Filter') }}
                 </button>
             </div>
@@ -108,13 +126,31 @@
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
-                        <th class="px-4 py-3 w-12">#</th>
-                        <th class="px-4 py-3">{{ __('CIDR range') }}</th>
-                        <th class="px-4 py-3">{{ __('Mask') }}</th>
-                        <th class="px-4 py-3">{{ __('VLAN') }}</th>
-                        <th class="px-4 py-3">{{ __('Description') }}</th>
-                        <th class="px-4 py-3">{{ __('Status') }}</th>
-                        <th class="px-4 py-3 text-right w-32">{{ __('Actions') }}</th>
+                        <th class="px-4 py-3 w-24">
+                            <i class="fa-solid fa-hashtag mr-1"></i>
+                            {{ __('ID') }}
+                        </th>
+                        <th class="px-4 py-3">
+                            <i class="fa-solid fa-globe mr-1"></i>
+                            {{ __('IP Range') }}
+                        </th>
+                        <th class="px-4 py-3">
+                            <i class="fa-solid fa-network-wired mr-1"></i>
+                            {{ __('Mask') }}
+                        </th>
+                        <th class="px-4 py-3">
+                            <i class="fa-solid fa-tag mr-1"></i>
+                            {{ __('VLAN') }}
+                        </th>
+                        <th class="px-4 py-3">
+                            <i class="fa-solid fa-align-left mr-1"></i>
+                            {{ __('Description') }}
+                        </th>
+                        <th class="px-4 py-3">
+                            <i class="fa-solid fa-toggle-on mr-1"></i>
+                            {{ __('Status') }}
+                        </th>
+                        <th class="px-4 py-3 text-right w-16"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,7 +159,7 @@
                             <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">#{{ $range->id }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-globe text-primary-500 text-xs"></i>
+                                    <i class="fa-solid fa-globe text-cyan-500 text-xs"></i>
                                     <span class="font-mono font-semibold text-gray-900 dark:text-white">{{ $range->cidr_range }}</span>
                                 </div>
                             </td>
@@ -182,12 +218,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
-                                <i class="fa-solid fa-globe text-4xl mb-3 block text-gray-300 dark:text-gray-600"></i>
+                            <td colspan="7" class="px-4 py-12 text-center text-white">
+                                <i class="fa-solid fa-globe text-4xl mb-3 block"></i>
                                 <p class="text-sm">{{ __('No IP ranges registered yet for this rack.') }}</p>
                                 @can('create', App\Models\RackIpRange::class)
                                     <a href="{{ route('admin.rack-layout.ip-addressing.create', $rack) }}"
-                                       class="inline-flex items-center mt-3 text-white bg-primary-700 hover:bg-primary-800 rounded-lg text-xs px-3 py-1.5">
+                                       class="inline-flex items-center mt-3 {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800' : 'bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' }} rounded-lg text-xs px-3 py-1.5">
                                         <i class="fa-solid fa-plus mr-1.5"></i>{{ __('Add the first one') }}
                                     </a>
                                 @endcan

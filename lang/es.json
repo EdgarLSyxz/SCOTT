@@ -1276,5 +1276,16 @@
     "Latitude": "Latitud",
     "Longitude": "Longitud",
     "Rack latitude": "Latitud del rack",
-    "Rack longitude": "Longitud del rack"
+    "Rack longitude": "Longitud del rack",
+    "IP Addressing": "Direccionamiento IP",
+    "IP Ranges, masks and VLANs assigned to this rack.": "Rangos IP, máscaras y VLANs asignadas a este rack.",
+    "Total IP Ranges": "Total de Rangos IP",
+    "VLANs": "VLANs",
+    "No IP ranges registered yet for this rack.": "Aún no hay rangos IP registrados para este rack.",
+    "Add the first one": "Agrega el primero",
+    "IP, Mask, VLAN, Description…": "IP, Máscara, VLAN, Descripción…",
+    "All VLANs": "Todas las VLANs",
+    "Add IP": "Agregar IP",
+    "IP Range": "Rango IP",
+    "Mask": "Máscara"
 }

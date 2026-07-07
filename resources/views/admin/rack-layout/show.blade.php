@@ -62,7 +62,7 @@
             </a>
             @can('manageIpAddressing', App\Models\Rack::class)
                 <a href="{{ route('admin.rack-layout.ip-addressing.index', $rack) }}"
-                   class="hidden sm:inline-flex items-center text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-4 py-2">
+                   class="hidden sm:inline-flex items-center text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-cyan-300 font-medium rounded-lg text-sm px-4 py-2">
                     <i class="fa-solid fa-globe mr-1.5"></i> {{ __('IP Addressing') }}
                 </a>
             @endcan
