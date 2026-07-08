@@ -111,7 +111,7 @@
                     placeholder="{{ __('Rack description') }}">{{ old('description', $rack->description) }}</textarea>
             </div>
 
-            <div class="mt-4 pt-4">
+            <div class="pt-4">
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
                     <i class="fa-solid fa-map-location-dot"></i>
                     {{ __('Geographic location') }}
