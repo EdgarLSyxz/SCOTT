@@ -232,14 +232,6 @@
                                     </span>
                                 </template>
                             </div>
-
-                            <p class="mt-4 text-[11px] text-gray-500 dark:text-gray-400 text-center leading-tight">
-                                @if($hasCurrentImage)
-                                    {{ __('Drop a new image to replace, or click to choose.') }}
-                                @else
-                                    {{ __('Click below or drop an image here.') }}
-                                @endif
-                            </p>
                         </div>
 
                         <div class="space-y-3">
