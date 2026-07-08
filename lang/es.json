@@ -1311,5 +1311,6 @@
     "Current image — no new file selected": "Imagen actual — no se seleccionó un nuevo archivo",
     "Remove current image": "Eliminar imagen actual",
     "The image will be permanently deleted when you save.": "La imagen se eliminará permanentemente cuando guardes.",
-    "Select file": "Seleccionar archivo"
+    "Select file": "Seleccionar archivo",
+    "No racks have coordinates yet. Edit each rack to set latitude and longitude.": "Aún no hay racks con coordenadas. Edita cada rack para establecer la latitud y longitud."
 }

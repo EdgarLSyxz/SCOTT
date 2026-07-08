@@ -65,7 +65,7 @@
                 </div>
                 @if(empty($racksWithCoords))
                     <div class="p-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                        <i class="fa-solid fa-map text-2xl mb-2 block"></i>
+                        <i class="fa-solid fa-map text-2xl mr-1.5 block"></i>
                         {{ __('No racks have coordinates yet. Edit each rack to set latitude and longitude.') }}
                     </div>
                 @else
