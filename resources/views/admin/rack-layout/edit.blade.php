@@ -237,10 +237,10 @@
                         <div class="space-y-3">
                             <div class="flex items-stretch w-full">
                                 <label for="image_url"
-                                       class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-l-lg border border-1 cursor-pointer transition
-                                           {{ Auth::user()?->area === 'DTH'
-                                               ? 'bg-secondary-50 text-secondary-800 border-secondary-300 hover:bg-secondary-100 dark:bg-secondary-900/40 dark:text-secondary-200 dark:border-secondary-700'
-                                               : 'bg-primary-50 text-primary-800 border-primary-300 hover:bg-primary-100 dark:bg-primary-900/40 dark:text-primary-200 dark:border-primary-700' }}">
+                                    class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-l-lg border border-1 cursor-pointer transition
+                                        {{ Auth::user()?->area === 'DTH'
+                                            ? 'bg-secondary-50 text-secondary-800 border-secondary-300 hover:bg-secondary-100 dark:bg-secondary-900/40 dark:text-secondary-200 dark:border-secondary-700'
+                                            : 'bg-primary-50 text-primary-800 border-primary-300 hover:bg-primary-100 dark:bg-primary-900/40 dark:text-primary-200 dark:border-primary-700' }}">
                                     <i class="fa-solid fa-upload mr-2"></i>{{ __('Select file') }}
                                 </label>
                                 <span class="flex-1 inline-flex items-center px-3 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg truncate"
