@@ -80,9 +80,6 @@
                     <x-input id="total_units" class="block mt-1 w-full" type="number" name="total_units"
                         :value="old('total_units', $rack->total_units)" required min="1" max="100" autocomplete="total_units"
                         placeholder="{{ __('Rack units') }}" />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {{ __('Note: You can only reduce units down to the highest occupied position.') }}
-                    </p>
                 </div>
 
                 <div>
@@ -114,7 +111,7 @@
                     placeholder="{{ __('Rack description') }}">{{ old('description', $rack->description) }}</textarea>
             </div>
 
-            <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="mt-4 pt-4">
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
                     <i class="fa-solid fa-map-location-dot"></i>
                     {{ __('Geographic location') }}
