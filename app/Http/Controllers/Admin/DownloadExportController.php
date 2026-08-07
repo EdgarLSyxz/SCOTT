@@ -229,6 +229,50 @@ class DownloadExportController extends Controller
         return $summary;
     }
 
+    private function deviceHasRecords(array $devices, string $deviceName): bool
+    {
+        foreach ($devices as $d) {
+            if (mb_strtolower(trim((string) ($d['name'] ?? ''))) === mb_strtolower($deviceName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function buildLgNoRecordsEntry(int $monthsCount = 0, ?string $protocol = null): array
+    {
+        return [
+            'id' => null,
+            'name' => 'LG',
+            'protocol' => $protocol,
+            'image' => null,
+            'counts' => array_fill(0, $monthsCount, 0),
+            'total' => 0,
+            'average' => 0,
+            'top_month_label' => null,
+            'top_month_value' => 0,
+            'sparkline' => '',
+            'no_aplica' => true,
+            'no_records' => true,
+            'no_records_message' => __('No downloads were reported for the month of JULY 2026 on this device'),
+        ];
+    }
+
+    private function shouldShowLgNoRecordsCard(): bool
+    {
+        return true;
+    }
+
+    private function lgHasAnyRecords(array $devices): bool
+    {
+        foreach ($devices as $d) {
+            if (mb_strtolower(trim((string) ($d['name'] ?? ''))) === mb_strtolower('LG')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function getCdnConsumptionStats(): array
     {
         $file = base_path('documents/Calculo de Consumo por CDN.xlsx');
@@ -912,11 +956,7 @@ class DownloadExportController extends Controller
                         'has_period_labels' => !empty($data['period_labels']),
                     ]);
                     if (empty($deviceId)) {
-                        $hasWeb = false;
-                        foreach ($data['devices'] as $d) {
-                            if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
-                        }
-                        if (! $hasWeb) {
+                        if (!$this->deviceHasRecords($data['devices'], 'Web Client')) {
                             $monthsCount = count($data['period_labels'] ?? []);
                             $data['devices'][] = [
                                 'id' => null,
@@ -931,6 +971,14 @@ class DownloadExportController extends Controller
                                 'sparkline' => '',
                                 'no_aplica' => true,
                             ];
+                        }
+
+                        $reportYear = $allYearsMode ? null : ($data['year'] ?? null);
+                        $reportMonth = $data['month'] ?? null;
+                        if ($this->shouldShowLgNoRecordsCard()
+                            && !$this->lgHasAnyRecords($data['devices'])) {
+                            $monthsCount = count($data['period_labels'] ?? []);
+                            $data['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
                         }
                     } else {
                         $data['devices'] = array_values(array_filter($data['devices'] ?? [], function ($d) {
@@ -1141,6 +1189,10 @@ class DownloadExportController extends Controller
                             'no_aplica' => true,
                         ];
                     }
+
+                    if ($this->shouldShowLgNoRecordsCard() && !$this->lgHasAnyRecords($orderedDevices)) {
+                        $orderedDevices[] = $this->buildLgNoRecordsEntry(0);
+                    }
                 }
 
                 $devicesList = $orderedDevices;
@@ -1276,11 +1328,7 @@ class DownloadExportController extends Controller
 
         $deviceIdParam = $request->input('device_id') ?? $pd['device_id'] ?? null;
         if (empty($deviceIdParam)) {
-            $hasWeb = false;
-            foreach ($pd['devices'] ?? [] as $d) {
-                if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
-            }
-            if (! $hasWeb) {
+            if (!$this->deviceHasRecords($pd['devices'] ?? [], 'Web Client')) {
                 $monthsCount = count($pd['period_labels'] ?? []);
                 $pd['devices'][] = [
                     'id' => null,
@@ -1295,6 +1343,11 @@ class DownloadExportController extends Controller
                     'sparkline' => '',
                     'no_aplica' => true,
                 ];
+            }
+
+            if ($this->shouldShowLgNoRecordsCard() && !$this->lgHasAnyRecords($pd['devices'] ?? [])) {
+                $monthsCount = count($pd['period_labels'] ?? []);
+                $pd['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
             }
         } else {
             $pd['devices'] = array_values(array_filter($pd['devices'] ?? [], function ($d) {

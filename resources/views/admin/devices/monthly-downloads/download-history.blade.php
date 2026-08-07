@@ -917,6 +917,10 @@
                         <div class="device-name">Web Client</div>
                         <div class="device-meta">{{ __('Not applicable') }}</div>
                     </div>
+                    <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
+                        <div class="device-name">LG</div>
+                        <div class="device-meta">{{ __('No downloads were reported for the month of JULY 2026 on this device') }}</div>
+                    </div>
                 @endif
             @elseif(!empty($devices) && count($devices))
                 <div class="device-grid">
@@ -924,7 +928,9 @@
                         <div class="card" style="display:flex;flex-direction:column;margin-bottom:24px;">
                             <div class="card-header">
                                 <div class="device-name-inline">{{ $d['name'] }}</div>
-                                @if(!empty($d['no_aplica']))
+                                @if(!empty($d['no_records']))
+                                    <div class="device-total-inline">{{ __('Total') }}: 0</div>
+                                @elseif(!empty($d['no_aplica']))
                                     <div class="device-total-inline">{{ __('Total') }}: {{ __('Not applicable') }}</div>
                                 @else
                                     <div class="device-total-inline">{{ __('Total') }}: {{ $d['total'] }}</div>
@@ -933,7 +939,9 @@
 
                             <div style="width:100%">{!! $d['sparkline'] ?? '' !!}</div>
 
-                            @if(!empty($d['no_aplica']))
+                            @if(!empty($d['no_records']))
+                                <div class="note">{{ __('No downloads were reported for this device') }}</div>
+                            @elseif(!empty($d['no_aplica']))
                                 <div class="note">{{ __('No aplica') }}</div>
                             @else
                                 <div style="font-size:11px;color:var(--muted);margin-top:12px;">
