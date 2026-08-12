@@ -177,6 +177,9 @@
                         @php
                             $payload = $weatherBySite[$siteKey] ?? null;
                             $siteName = $payload['label'] ?? __($siteKey);
+                            $summary = $payload['rainfall_summary'] ?? null;
+                            $isRainingNow = $payload && (($payload['current']['precipitation'] ?? 0) > 0 || ($payload['current']['rain'] ?? 0) > 0);
+                            $timelineHours = $payload['hourly_timeline']['hours'] ?? [];
                         @endphp
                         <div class="rounded-lg border border-sky-200 bg-white dark:bg-gray-800 dark:border-sky-800 p-4 shadow-sm">
                             <div class="flex items-center justify-between gap-3">
@@ -200,6 +203,24 @@
                                             </span>
                                         @endif
                                     </div>
+                                    @if($payload)
+                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                                            @if($isRainingNow)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 font-semibold">
+                                                    <i class="fa-solid fa-cloud-showers-heavy"></i>
+                                                    {{ __('modulators.weather_rain_now') }}
+                                                </span>
+                                            @endif
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                <i class="fa-solid fa-wind"></i>
+                                                {{ $payload['current']['wind_speed'] !== null ? number_format((float) $payload['current']['wind_speed'], 1) . ' km/h' : '—' }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                <i class="fa-solid fa-droplet"></i>
+                                                {{ $payload['current']['humidity'] !== null ? (int) $payload['current']['humidity'] . '%' : '—' }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="text-right">
                                     <div class="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -220,7 +241,149 @@
                                     {{ __('modulators.weather_unavailable') }}
                                 </div>
                             @else
-                                <div class="mt-3 grid grid-cols-3 gap-2">
+                                @php
+                                    $maxTimelineMm = 0.0;
+                                    foreach ($timelineHours as $h) {
+                                        if (($h['precipitation'] ?? 0) > $maxTimelineMm) {
+                                            $maxTimelineMm = (float) $h['precipitation'];
+                                        }
+                                    }
+                                    $hasTimelineRain = $maxTimelineMm > 0;
+                                @endphp
+
+                                <div class="mt-4 rounded-md border border-indigo-200 dark:border-indigo-900 bg-indigo-50/40 dark:bg-indigo-900/20 p-3">
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <div class="text-[11px] uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-semibold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-timeline"></i>
+                                            {{ __('modulators.weather_timeline_title') }}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-gray-200 dark:bg-gray-700"></span>{{ __('modulators.weather_timeline_legend_dry') }}</span>
+                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-sky-300 dark:bg-sky-700"></span>{{ __('modulators.weather_timeline_legend_light') }}</span>
+                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400 dark:bg-blue-600"></span>{{ __('modulators.weather_timeline_legend_moderate') }}</span>
+                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-700 dark:bg-blue-400"></span>{{ __('modulators.weather_timeline_legend_heavy') }}</span>
+                                        </div>
+                                    </div>
+
+                                    @if(! $hasTimelineRain)
+                                        <div class="text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 py-2">
+                                            <i class="fa-solid fa-sun"></i>
+                                            {{ __('modulators.weather_timeline_no_rain') }}
+                                        </div>
+                                    @else
+                                        <div class="relative">
+                                            <div class="flex items-end gap-[2px] h-16">
+                                                @foreach($timelineHours as $h)
+                                                    @php
+                                                        $mm = (float) ($h['precipitation'] ?? 0);
+                                                        $ratio = $maxTimelineMm > 0 ? ($mm / $maxTimelineMm) : 0;
+                                                        $barHeight = $mm > 0 ? max(8, (int) round($ratio * 64)) : 3;
+                                                        $intensity = $h['rain_intensity'] ?? 'none';
+                                                        $barColors = [
+                                                            'none' => 'bg-gray-200 dark:bg-gray-700',
+                                                            'light' => 'bg-sky-300 dark:bg-sky-700',
+                                                            'moderate' => 'bg-blue-400 dark:bg-blue-600',
+                                                            'heavy' => 'bg-blue-700 dark:bg-blue-400',
+                                                        ];
+                                                        $barColor = $barColors[$intensity] ?? $barColors['none'];
+                                                        $hourLabel = substr((string) $h['hour'], 0, 2);
+                                                        $probText = $h['probability'] !== null ? (int) $h['probability'] . '%' : '';
+                                                        $tooltipParts = [$hourLabel . ':00'];
+                                                        if ($mm > 0) {
+                                                            $tooltipParts[] = number_format($mm, 1) . ' mm';
+                                                        }
+                                                        if ($probText) {
+                                                            $tooltipParts[] = $probText;
+                                                        }
+                                                        if (! empty($h['label'])) {
+                                                            $tooltipParts[] = $h['label'];
+                                                        }
+                                                        $tooltip = implode(' · ', $tooltipParts);
+                                                    @endphp
+                                                    <div class="flex-1 flex flex-col items-center justify-end group relative" title="{{ $tooltip }}">
+                                                        <div class="w-full rounded-sm {{ $barColor }} transition-all hover:opacity-80" style="height: {{ $barHeight }}px"></div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+
+                                            <div class="flex items-center mt-1 text-[9px] text-gray-400 dark:text-gray-500 font-mono">
+                                                @php
+                                                    $hourCount = count($timelineHours);
+                                                    $showEvery = max(1, (int) ceil($hourCount / 8));
+                                                @endphp
+                                                @for($i = 0; $i < $hourCount; $i++)
+                                                    @if($i % $showEvery === 0)
+                                                        <span class="flex-1 text-left">{{ substr((string) ($timelineHours[$i]['hour'] ?? ''), 0, 2) }}</span>
+                                                    @else
+                                                        <span class="flex-1"></span>
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                @if($summary)
+                                    @php
+                                        $probLevel = $summary['max_probability_level'] ?? 'unknown';
+                                        $probColors = [
+                                            'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+                                            'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+                                            'high' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
+                                            'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                                        ];
+                                        $probLabels = [
+                                            'low' => 'modulators.weather_rain_prob_low',
+                                            'moderate' => 'modulators.weather_rain_prob_moderate',
+                                            'high' => 'modulators.weather_rain_prob_high',
+                                            'unknown' => 'modulators.weather_rain_prob_unknown',
+                                        ];
+                                        $probLabel = __($probLabels[$probLevel] ?? 'modulators.weather_rain_prob_unknown');
+                                        $probColor = $probColors[$probLevel] ?? $probColors['unknown'];
+                                        $rainBarWidth = min(100, (int) ($summary['max_probability'] ?? 0));
+                                    @endphp
+                                    <div class="mt-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-900/20 p-3">
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <div class="text-[11px] uppercase tracking-wider text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1.5">
+                                                <i class="fa-solid fa-cloud-rain"></i>
+                                                {{ __('modulators.weather_rain_summary') }}
+                                            </div>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $probColor }}">
+                                                {{ $probLabel }}
+                                            </span>
+                                        </div>
+
+                                        <div class="h-1.5 w-full bg-blue-100 dark:bg-blue-900/40 rounded-full overflow-hidden">
+                                            <div class="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all" style="width: {{ $rainBarWidth }}%"></div>
+                                        </div>
+                                        <div class="mt-1 text-[10px] text-blue-700/80 dark:text-blue-300/80 text-right font-mono">
+                                            {{ $summary['max_probability'] !== null ? (int) $summary['max_probability'] . '%' : '—' }}
+                                        </div>
+
+                                        <div class="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_rain_total_mm') }}</span>
+                                                <span class="font-mono font-bold text-blue-800 dark:text-blue-200">
+                                                    {{ number_format((float) $summary['total_precipitation_mm'], 1) }} mm
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_rain_total_hours') }}</span>
+                                                <span class="font-mono font-bold text-blue-800 dark:text-blue-200">
+                                                    {{ number_format((float) $summary['total_precipitation_hours'], 1) }} h
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_rainy_days') }}</span>
+                                                <span class="font-mono font-bold text-blue-800 dark:text-blue-200">
+                                                    {{ $summary['rainy_days'] }} / {{ count($payload['daily']) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     @foreach($payload['daily'] as $idx => $day)
                                         @php
                                             $dayLabels = [
@@ -229,24 +392,121 @@
                                                 __('modulators.weather_day_after'),
                                             ];
                                             $dayLabel = $dayLabels[$idx] ?? '';
+                                            $intensity = $day['rain_intensity'] ?? 'none';
+                                            $intensityColors = [
+                                                'none' => 'border-sky-200 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-900/20',
+                                                'light' => 'border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/30',
+                                                'moderate' => 'border-blue-300 dark:border-blue-800 bg-blue-100 dark:bg-blue-900/40',
+                                                'heavy' => 'border-blue-500 dark:border-blue-700 bg-blue-200 dark:bg-blue-900/60',
+                                            ];
+                                            $intensityColor = $intensityColors[$intensity] ?? $intensityColors['none'];
+                                            $intensityLabels = [
+                                                'none' => 'modulators.weather_rain_intensity_none',
+                                                'light' => 'modulators.weather_rain_intensity_light',
+                                                'moderate' => 'modulators.weather_rain_intensity_moderate',
+                                                'heavy' => 'modulators.weather_rain_intensity_heavy',
+                                            ];
+                                            $intensityLabel = __($intensityLabels[$intensity] ?? 'modulators.weather_rain_intensity_none');
+                                            $dayProb = $day['precipitation_probability_max'] ?? null;
+                                            $dayPrecip = $day['precipitation_sum'] ?? null;
+                                            $dayHours = $day['precipitation_hours'] ?? null;
+                                            $peak = $day['peak_hour'] ?? null;
+                                            $windows = $day['rain_windows'] ?? [];
                                         @endphp
-                                        <div class="rounded-md border border-sky-100 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-900/20 p-2 text-center">
-                                            <div class="text-[11px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold">
-                                                {{ $dayLabel }}
+                                        <div class="rounded-md border p-2.5 {{ $intensityColor }}">
+                                            <div class="flex items-center justify-between">
+                                                <div class="text-[11px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold">
+                                                    {{ $dayLabel }}
+                                                </div>
+                                                <i class="fa-solid {{ $day['icon'] }} text-sky-500 text-base"></i>
                                             </div>
-                                            <div class="text-sky-500 text-lg my-1">
-                                                <i class="fa-solid {{ $day['icon'] }}"></i>
-                                            </div>
-                                            <div class="text-xs text-gray-700 dark:text-gray-200 font-mono">
+                                            <div class="text-xs text-gray-700 dark:text-gray-200 font-mono mt-1">
                                                 <span class="text-red-600 dark:text-red-300">{{ __('modulators.weather_max') }} {{ $day['temp_max'] !== null ? number_format((float) $day['temp_max'], 0) : '—' }}°</span>
                                                 <span class="mx-1 text-gray-400">/</span>
                                                 <span class="text-blue-600 dark:text-blue-300">{{ __('modulators.weather_min') }} {{ $day['temp_min'] !== null ? number_format((float) $day['temp_min'], 0) : '—' }}°</span>
                                             </div>
-                                            @if(! is_null($day['precipitation_probability_max']))
-                                                <div class="text-[10px] text-sky-700 dark:text-sky-300 mt-1">
-                                                    <i class="fa-solid fa-droplet mr-0.5"></i>{{ (int) $day['precipitation_probability_max'] }}%
+
+                                            <div class="mt-2 pt-2 border-t border-current/10 space-y-1.5">
+                                                <div class="flex items-center justify-between text-[10px]">
+                                                    <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                        <i class="fa-solid fa-droplet text-blue-500"></i>
+                                                        {{ __('modulators.weather_rain_probability') }}
+                                                    </span>
+                                                    <span class="font-mono font-semibold
+                                                        @if(($dayProb ?? 0) >= 60) text-blue-700 dark:text-blue-300
+                                                        @elseif(($dayProb ?? 0) >= 20) text-amber-700 dark:text-amber-300
+                                                        @else text-gray-600 dark:text-gray-400
+                                                        @endif">
+                                                        {{ $dayProb !== null ? (int) $dayProb . '%' : '—' }}
+                                                    </span>
                                                 </div>
-                                            @endif
+                                                <div class="flex items-center justify-between text-[10px]">
+                                                    <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                        <i class="fa-solid fa-raindrops text-blue-500"></i>
+                                                        {{ __('modulators.weather_rain_amount') }}
+                                                    </span>
+                                                    <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
+                                                        {{ $dayPrecip !== null ? number_format((float) $dayPrecip, 1) . ' mm' : '—' }}
+                                                    </span>
+                                                </div>
+                                                @if($dayHours !== null && $dayHours > 0)
+                                                    <div class="flex items-center justify-between text-[10px]">
+                                                        <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                            <i class="fa-solid fa-clock text-blue-500"></i>
+                                                            {{ __('modulators.weather_rain_hours') }}
+                                                        </span>
+                                                        <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
+                                                            {{ number_format((float) $dayHours, 1) }} h
+                                                        </span>
+                                                    </div>
+                                                @endif
+
+                                                @if($peak)
+                                                    @php
+                                                        $peakHour = substr((string) ($peak['hour'] ?? ''), 0, 2);
+                                                        $peakProb = $peak['probability'] !== null ? (int) $peak['probability'] : null;
+                                                    @endphp
+                                                    <div class="flex items-center justify-between text-[10px]">
+                                                        <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                            <i class="fa-solid fa-arrow-up text-blue-600"></i>
+                                                            {{ __('modulators.weather_peak_label') }}
+                                                        </span>
+                                                        <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
+                                                            {{ $peakHour }}:00 · {{ number_format((float) $peak['precipitation'], 1) }} mm
+                                                            @if($peakProb !== null) · {{ $peakProb }}% @endif
+                                                        </span>
+                                                    </div>
+                                                @endif
+
+                                                @if(count($windows) > 0)
+                                                    <div class="pt-1">
+                                                        <div class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                                                            {{ __('modulators.weather_windows_label') }}
+                                                        </div>
+                                                        <div class="space-y-0.5">
+                                                            @foreach($windows as $win)
+                                                                <div class="text-[10px] font-mono text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 mr-2">
+                                                                    <i class="fa-solid {{ $win['icon'] }}"></i>
+                                                                    {{ $win['start_hour'] }}–{{ $win['end_hour'] }}
+                                                                    · {{ number_format((float) $win['precipitation_sum'], 1) }} mm
+                                                                    @if(! empty($win['probability_max']))
+                                                                        · {{ (int) $win['probability_max'] }}%
+                                                                    @endif
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if($intensity !== 'none')
+                                                    <div class="text-center mt-1">
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider">
+                                                            <i class="fa-solid {{ $windows[0]['icon'] ?? 'fa-cloud-rain' }}"></i>
+                                                            {{ $intensityLabel }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>

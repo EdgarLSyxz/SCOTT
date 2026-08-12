@@ -98,10 +98,12 @@ class WeatherService
                 ->get('https://api.open-meteo.com/v1/forecast', [
                     'latitude' => $location['latitude'],
                     'longitude' => $location['longitude'],
-                    'current' => 'temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m',
-                    'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+                    'current' => 'temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,precipitation,rain',
+                    'hourly' => 'temperature_2m,precipitation,precipitation_probability,weather_code',
+                    'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,rain_sum,showers_sum,precipitation_hours,wind_speed_10m_max',
                     'timezone' => 'America/Mexico_City',
                     'forecast_days' => 3,
+                    'past_hours' => 0,
                     'language' => 'es',
                 ]);
 
@@ -161,11 +163,26 @@ class WeatherService
         $condition = self::WEATHER_CODE_MAP[(int) ($current['weather_code'] ?? 0)]
             ?? ['label' => 'Sin datos', 'icon' => 'fa-cloud'];
 
+        $hourly = $this->buildHourly($data['hourly'] ?? []);
+
         $days = [];
         $count = count($daily['time'] ?? []);
         for ($i = 0; $i < $count; $i++) {
             $dayCode = (int) ($daily['weather_code'][$i] ?? 0);
             $dayCondition = self::WEATHER_CODE_MAP[$dayCode] ?? ['label' => 'Sin datos', 'icon' => 'fa-cloud'];
+
+            $probability = $daily['precipitation_probability_max'][$i] ?? null;
+            $precipSum = $daily['precipitation_sum'][$i] ?? null;
+            $rainSum = $daily['rain_sum'][$i] ?? null;
+            $showersSum = $daily['showers_sum'][$i] ?? null;
+            $precipHours = $daily['precipitation_hours'][$i] ?? null;
+            $windMax = $daily['wind_speed_10m_max'][$i] ?? null;
+
+            $dateKey = substr((string) ($daily['time'][$i] ?? ''), 0, 10);
+            $dayHourly = $hourly['by_date'][$dateKey] ?? [];
+
+            $peakHour = $this->findPeakRainHour($dayHourly);
+            $rainWindows = $this->buildRainWindows($dayHourly);
 
             $days[] = [
                 'date' => $daily['time'][$i] ?? null,
@@ -174,9 +191,24 @@ class WeatherService
                 'icon' => $dayCondition['icon'],
                 'temp_max' => $daily['temperature_2m_max'][$i] ?? null,
                 'temp_min' => $daily['temperature_2m_min'][$i] ?? null,
-                'precipitation_probability_max' => $daily['precipitation_probability_max'][$i] ?? null,
+                'precipitation_probability_max' => $probability,
+                'precipitation_sum' => $precipSum,
+                'rain_sum' => $rainSum,
+                'showers_sum' => $showersSum,
+                'precipitation_hours' => $precipHours,
+                'wind_speed_10m_max' => $windMax,
+                'rain_intensity' => $this->rainIntensity($precipSum),
+                'rain_probability_level' => $this->rainProbabilityLevel($probability),
+                'peak_hour' => $peakHour,
+                'rain_windows' => $rainWindows,
             ];
         }
+
+        $summary = $this->summarizeRainfall($days);
+
+        $timeline = $hourly['timeline'] ?? [];
+        $timelineStart = $hourly['start_date'] ?? null;
+        $timelineEnd = $hourly['end_date'] ?? null;
 
         return [
             'site' => $site,
@@ -192,8 +224,200 @@ class WeatherService
                 'icon' => $condition['icon'],
                 'wind_speed' => $current['wind_speed_10m'] ?? null,
                 'humidity' => $current['relative_humidity_2m'] ?? null,
+                'precipitation' => $current['precipitation'] ?? null,
+                'rain' => $current['rain'] ?? null,
             ],
             'daily' => $days,
+            'rainfall_summary' => $summary,
+            'hourly_timeline' => [
+                'start_date' => $timelineStart,
+                'end_date' => $timelineEnd,
+                'hours' => $timeline,
+            ],
+        ];
+    }
+
+    private function buildHourly(array $hourly): array
+    {
+        $times = $hourly['time'] ?? [];
+        $temps = $hourly['temperature_2m'] ?? [];
+        $precips = $hourly['precipitation'] ?? [];
+        $probs = $hourly['precipitation_probability'] ?? [];
+        $codes = $hourly['weather_code'] ?? [];
+
+        $timeline = [];
+        $byDate = [];
+        $maxTimelineHours = 72;
+
+        foreach ($times as $i => $iso) {
+            if (count($timeline) >= $maxTimelineHours) {
+                break;
+            }
+            $dateKey = substr((string) $iso, 0, 10);
+            $hourKey = substr((string) $iso, 11, 5);
+            $precip = isset($precips[$i]) ? (float) $precips[$i] : 0.0;
+            $prob = isset($probs[$i]) ? (int) $probs[$i] : null;
+            $temp = isset($temps[$i]) ? (float) $temps[$i] : null;
+            $code = isset($codes[$i]) ? (int) $codes[$i] : null;
+            $condition = self::WEATHER_CODE_MAP[$code] ?? ['label' => 'Sin datos', 'icon' => 'fa-cloud'];
+
+            $entry = [
+                'iso' => $iso,
+                'date' => $dateKey,
+                'hour' => $hourKey,
+                'precipitation' => $precip,
+                'probability' => $prob,
+                'temperature' => $temp,
+                'weather_code' => $code,
+                'label' => $condition['label'],
+                'icon' => $condition['icon'],
+                'rain_intensity' => $this->rainIntensity($precip),
+            ];
+
+            $timeline[] = $entry;
+            $byDate[$dateKey][] = $entry;
+        }
+
+        $startDate = $timeline ? substr((string) $timeline[0]['iso'], 0, 10) : null;
+        $endDate = $timeline ? substr((string) $timeline[count($timeline) - 1]['iso'], 0, 10) : null;
+
+        return [
+            'timeline' => $timeline,
+            'by_date' => $byDate,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ];
+    }
+
+    private function findPeakRainHour(array $dayHourly): ?array
+    {
+        if (empty($dayHourly)) {
+            return null;
+        }
+
+        $peak = null;
+        foreach ($dayHourly as $entry) {
+            if (($entry['precipitation'] ?? 0) <= 0) {
+                continue;
+            }
+            if ($peak === null || $entry['precipitation'] > $peak['precipitation']) {
+                $peak = $entry;
+            }
+        }
+
+        return $peak;
+    }
+
+    private function buildRainWindows(array $dayHourly): array
+    {
+        if (empty($dayHourly)) {
+            return [];
+        }
+
+        $windows = [];
+        $current = null;
+
+        foreach ($dayHourly as $entry) {
+            $hasRain = ($entry['precipitation'] ?? 0) > 0;
+            if ($hasRain) {
+                if ($current === null) {
+                    $current = [
+                        'start_hour' => $entry['hour'],
+                        'end_hour' => $entry['hour'],
+                        'precipitation_sum' => 0.0,
+                        'probability_max' => $entry['probability'] ?? 0,
+                        'icon' => $entry['icon'],
+                    ];
+                } else {
+                    $current['end_hour'] = $entry['hour'];
+                    if (($entry['probability'] ?? 0) > $current['probability_max']) {
+                        $current['probability_max'] = $entry['probability'];
+                    }
+                    if ($entry['icon'] === 'fa-cloud-showers-heavy') {
+                        $current['icon'] = 'fa-cloud-showers-heavy';
+                    }
+                }
+                $current['precipitation_sum'] += (float) $entry['precipitation'];
+            } else {
+                if ($current !== null) {
+                    $current['precipitation_sum'] = round($current['precipitation_sum'], 2);
+                    $windows[] = $current;
+                    $current = null;
+                }
+            }
+        }
+
+        if ($current !== null) {
+            $current['precipitation_sum'] = round($current['precipitation_sum'], 2);
+            $windows[] = $current;
+        }
+
+        return $windows;
+    }
+
+    private function rainIntensity(?float $precipSum): string
+    {
+        if ($precipSum === null) {
+            return 'none';
+        }
+        if ($precipSum <= 0.1) {
+            return 'none';
+        }
+        if ($precipSum < 2.0) {
+            return 'light';
+        }
+        if ($precipSum < 10.0) {
+            return 'moderate';
+        }
+        return 'heavy';
+    }
+
+    private function rainProbabilityLevel(?int $probability): string
+    {
+        if ($probability === null) {
+            return 'unknown';
+        }
+        if ($probability < 20) {
+            return 'low';
+        }
+        if ($probability < 60) {
+            return 'moderate';
+        }
+        return 'high';
+    }
+
+    private function summarizeRainfall(array $days): array
+    {
+        $totalPrecip = 0.0;
+        $totalHours = 0.0;
+        $hasRain = false;
+        $maxProbability = null;
+        $rainyDays = 0;
+
+        foreach ($days as $day) {
+            $sum = $day['precipitation_sum'] ?? null;
+            if ($sum !== null && $sum > 0.1) {
+                $hasRain = true;
+                $rainyDays++;
+                $totalPrecip += (float) $sum;
+            }
+            $hours = $day['precipitation_hours'] ?? null;
+            if ($hours !== null) {
+                $totalHours += (float) $hours;
+            }
+            $prob = $day['precipitation_probability_max'] ?? null;
+            if ($prob !== null && ($maxProbability === null || $prob > $maxProbability)) {
+                $maxProbability = (int) $prob;
+            }
+        }
+
+        return [
+            'has_rain' => $hasRain,
+            'total_precipitation_mm' => round($totalPrecip, 2),
+            'total_precipitation_hours' => round($totalHours, 1),
+            'rainy_days' => $rainyDays,
+            'max_probability' => $maxProbability,
+            'max_probability_level' => $this->rainProbabilityLevel($maxProbability),
         ];
     }
 }
