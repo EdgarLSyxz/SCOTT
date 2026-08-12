@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             ChannelsSeeder::class,
             StagesSeeder::class,
+            TransponderSeeder::class,
         ]);
 
         User::flushEventListeners();

@@ -119,3 +119,7 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
         Route::delete('/{ipRange}', [RackIpRangeController::class, 'destroy'])->name('destroy');
     });
 });
+
+Route::view('/modulators', 'admin.modulators.index')
+    ->name('modulators.index')
+    ->middleware(['auth', 'verified']);

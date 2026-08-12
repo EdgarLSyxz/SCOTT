@@ -44,6 +44,12 @@
             'active' => request()->routeIs('admin.radios.*'),
         ],
         [
+            'name' => __('modulators.modulators'),
+            'icon' => 'fa-solid fa-tower-broadcast',
+            'route' => route('admin.modulators.index'),
+            'active' => request()->routeIs('admin.modulators.*'),
+        ],
+        [
             'name' => __('Grafana'),
             'icon' => 'fa-solid fa-chart-pie',
             'route' => route('admin.grafana.index'),
@@ -88,6 +94,17 @@
                 return !isset($l['icon']) || $l['icon'] !== 'fa-brands fa-apple';
             }));
         }
+    }
+
+    $canAccessModulators = $currentUser && (
+        (int) $currentUser->id === 1
+        || strtolower(trim((string) ($currentUser->area ?? ''))) === 'dth'
+    );
+
+    if (! $canAccessModulators) {
+        $links = array_values(array_filter($links, function ($l) {
+            return !isset($l['route']) || $l['route'] !== route('admin.modulators.index');
+        }));
     }
 @endphp
 
