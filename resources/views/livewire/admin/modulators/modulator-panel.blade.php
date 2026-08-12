@@ -128,25 +128,6 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-800">
-                    <div class="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold">
-                        {{ __('modulators.current_uplink_site') }}
-                    </div>
-                    <div class="mt-1 text-2xl font-bold text-amber-800 dark:text-amber-200">
-                        {{ __($siteZacatecas) }}
-                    </div>
-                </div>
-                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-800">
-                    <div class="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold">
-                        {{ __('modulators.backup_site') }}
-                    </div>
-                    <div class="mt-1 text-2xl font-bold text-amber-800 dark:text-amber-200">
-                        {{ __($siteToluca) }}
-                    </div>
-                </div>
-            </div>
-
             <div class="rounded-xl border border-sky-200 bg-sky-50/60 dark:bg-sky-900/10 dark:border-sky-800 p-4 sm:p-5">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
@@ -192,9 +173,10 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    @foreach([$siteZacatecas => 'Zacatecas', $siteToluca => 'Toluca'] as $siteKey => $siteName)
+                    @foreach([$siteZacatecas, $siteToluca] as $siteKey)
                         @php
                             $payload = $weatherBySite[$siteKey] ?? null;
+                            $siteName = $payload['label'] ?? __($siteKey);
                         @endphp
                         <div class="rounded-lg border border-sky-200 bg-white dark:bg-gray-800 dark:border-sky-800 p-4 shadow-sm">
                             <div class="flex items-center justify-between gap-3">

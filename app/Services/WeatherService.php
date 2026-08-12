@@ -13,12 +13,12 @@ class WeatherService
 
     private const LOCATIONS = [
         'Zacatecas' => [
-            'label' => 'Zacatecas',
-            'latitude' => 22.7709,
-            'longitude' => -102.5832,
+            'label' => 'Guadalupe, Zacatecas',
+            'latitude' => 22.7475,
+            'longitude' => -102.5117,
         ],
         'Toluca' => [
-            'label' => 'Toluca',
+            'label' => 'Toluca, Estado de México',
             'latitude' => 19.2826,
             'longitude' => -99.6557,
         ],
