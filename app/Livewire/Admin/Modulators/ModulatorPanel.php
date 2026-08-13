@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Modulators;
 use App\Models\Transponder;
 use App\Models\TransponderStateEvent;
 use App\Models\User;
+use App\Services\RainEventDetector;
 use App\Services\WeatherService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
@@ -163,6 +164,24 @@ class ModulatorPanel extends Component
         }
 
         $this->weatherLastUpdatedAt = $mostRecent?->toIso8601String();
+
+        $this->processRainNotifications($fresh);
+    }
+
+    private function processRainNotifications(array $payloadBySite): void
+    {
+        if (! Schema::hasTable('weather_rain_events')) {
+            return;
+        }
+
+        try {
+            $detector = app(RainEventDetector::class);
+            $detector->processAllSites($payloadBySite);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Rain notifications skipped', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     #[On('confirmSwitchNow')]
