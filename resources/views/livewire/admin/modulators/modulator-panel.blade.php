@@ -257,12 +257,6 @@
                                             <i class="fa-solid fa-timeline"></i>
                                             {{ __('modulators.weather_timeline_title') }}
                                         </div>
-                                        <div class="flex items-center gap-2 text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-gray-200 dark:bg-gray-700"></span>{{ __('modulators.weather_timeline_legend_dry') }}</span>
-                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-sky-300 dark:bg-sky-700"></span>{{ __('modulators.weather_timeline_legend_light') }}</span>
-                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400 dark:bg-blue-600"></span>{{ __('modulators.weather_timeline_legend_moderate') }}</span>
-                                            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-700 dark:bg-blue-400"></span>{{ __('modulators.weather_timeline_legend_heavy') }}</span>
-                                        </div>
                                     </div>
 
                                     @if(! $hasTimelineRain)
@@ -321,6 +315,13 @@
                                             </div>
                                         </div>
                                     @endif
+
+                                    <div class="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-indigo-200 dark:border-indigo-900 text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-gray-200 dark:bg-gray-700"></span>{{ __('modulators.weather_timeline_legend_dry') }}</span>
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-sky-300 dark:bg-sky-700"></span>{{ __('modulators.weather_timeline_legend_light') }}</span>
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400 dark:bg-blue-600"></span>{{ __('modulators.weather_timeline_legend_moderate') }}</span>
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-700 dark:bg-blue-400"></span>{{ __('modulators.weather_timeline_legend_heavy') }}</span>
+                                    </div>
                                 </div>
 
                                 @if($summary)
@@ -413,7 +414,7 @@
                                             $peak = $day['peak_hour'] ?? null;
                                             $windows = $day['rain_windows'] ?? [];
                                         @endphp
-                                        <div class="rounded-md border p-2.5 {{ $intensityColor }}">
+                                        <div class="rounded-md border p-2.5 flex flex-col h-[340px] {{ $intensityColor }}">
                                             <div class="flex items-center justify-between">
                                                 <div class="text-[11px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold">
                                                     {{ $dayLabel }}
@@ -426,7 +427,7 @@
                                                 <span class="text-blue-600 dark:text-blue-300">{{ __('modulators.weather_min') }} {{ $day['temp_min'] !== null ? number_format((float) $day['temp_min'], 0) : '—' }}°</span>
                                             </div>
 
-                                            <div class="mt-2 pt-2 border-t border-current/10 space-y-1.5">
+                                            <div class="mt-2 mb-2 pt-2 border-t border-current/10 space-y-1.5 flex-1 min-h-0 flex flex-col">
                                                 <div class="flex items-center justify-between text-[10px]">
                                                     <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
                                                         <i class="fa-solid fa-droplet text-blue-500"></i>
@@ -479,11 +480,11 @@
                                                 @endif
 
                                                 @if(count($windows) > 0)
-                                                    <div class="pt-1">
+                                                    <div class="pt-1 flex-1 min-h-0 flex flex-col">
                                                         <div class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
                                                             {{ __('modulators.weather_windows_label') }}
                                                         </div>
-                                                        <div class="space-y-0.5">
+                                                        <div class="space-y-0.5 overflow-y-auto min-h-0 flex-1 pr-1">
                                                             @foreach($windows as $win)
                                                                 <div class="text-[10px] font-mono text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 mr-2">
                                                                     <i class="fa-solid {{ $win['icon'] }}"></i>
@@ -497,16 +498,16 @@
                                                         </div>
                                                     </div>
                                                 @endif
-
-                                                @if($intensity !== 'none')
-                                                    <div class="text-center mt-1">
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider">
-                                                            <i class="fa-solid {{ $windows[0]['icon'] ?? 'fa-cloud-rain' }}"></i>
-                                                            {{ $intensityLabel }}
-                                                        </span>
-                                                    </div>
-                                                @endif
                                             </div>
+
+                                            @if($intensity !== 'none')
+                                                <div class="mt-auto pt-2 text-center">
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider">
+                                                        <i class="fa-solid {{ $windows[0]['icon'] ?? 'fa-cloud-rain' }}"></i>
+                                                        {{ $intensityLabel }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
