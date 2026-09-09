@@ -919,7 +919,7 @@
                     </div>
                     <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
                         <div class="device-name">LG</div>
-                        <div class="device-meta">{{ __('No downloads were reported for the month of JULY 2026 on this device') }}</div>
+                        <div class="device-meta">{{ __('No downloads were reported for the month of JULY and AUGUST 2026 on this device') }}</div>
                     </div>
                 @endif
             @elseif(!empty($devices) && count($devices))

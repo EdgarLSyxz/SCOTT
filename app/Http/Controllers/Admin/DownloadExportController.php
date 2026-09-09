@@ -254,7 +254,7 @@ class DownloadExportController extends Controller
             'sparkline' => '',
             'no_aplica' => true,
             'no_records' => true,
-            'no_records_message' => __('No downloads were reported for the month of JULY 2026 on this device'),
+            'no_records_message' => __('No downloads were reported for the month of JULY and AUGUST 2026 on this device'),
         ];
     }
 
