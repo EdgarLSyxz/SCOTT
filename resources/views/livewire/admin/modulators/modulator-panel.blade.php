@@ -1,11 +1,4 @@
 <div>
-    <x-slot name="action">
-        <span class="text-sm text-gray-500 dark:text-gray-400">
-            <i class="fa-solid fa-satellite-dish mr-1.5"></i>
-            {{ __('modulators.transponder_control_demo') }}
-        </span>
-    </x-slot>
-
     <script>
         function scottFormatDuration(totalSeconds) {
             if (totalSeconds < 0) totalSeconds = 0;
@@ -93,13 +86,13 @@
         });
     </script>
 
-    <div class="w-full bg-white rounded-lg shadow-2xl dark:border md:mt-0 xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+    <div class="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <div class="p-6 space-y-6 sm:p-8">
 
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    <i class="fa-solid fa-right-left mr-1.5 text-amber-500"></i>
-                    {{ __('modulators.modulators_panel') }}
+                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-right-left mr-1.5"></i>
+                    {{ __('modulators.modulators') }}
                 </h1>
                 <p class="text-sm font-light leading-tight text-gray-500 dark:text-gray-400">
                     {{ __('modulators.modulators_subtitle') }}
@@ -110,7 +103,7 @@
                 </p>
             </div>
 
-            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-3">
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span class="inline-flex items-center gap-2">
                         <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
@@ -144,21 +137,6 @@
                                 @endif
                             </span>
                         </span>
-                    </span>
-                </div>
-
-                <div class="flex flex-col gap-1 text-[11px] text-gray-500 dark:text-gray-400 lg:text-right">
-                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
-                        <i class="fa-solid fa-hashtag text-gray-400"></i>
-                        {{ __('modulators.timezone_format_sample') }}
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
-                        <i class="fa-solid fa-circle-info text-gray-400"></i>
-                        {{ __('modulators.timezone_all_times_in') }} <strong class="font-semibold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }}</strong>
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
-                        <i class="fa-solid fa-stopwatch text-gray-400"></i>
-                        {{ __('modulators.timezone_live_counters') }}
                     </span>
                 </div>
             </div>
@@ -239,6 +217,27 @@
                                         @endif
                                     </div>
                                     @if($payload)
+                                        @php
+                                            $uvNow = $payload['current']['uv_index'] ?? null;
+                                            $uvNowLevel = \App\Services\WeatherService::uvLevelStatic($uvNow);
+                                            $uvNowColors = [
+                                                'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+                                                'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+                                                'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
+                                                'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+                                                'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
+                                                'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                                            ];
+                                            $uvNowLabels = [
+                                                'low' => 'modulators.weather_sun_uv_low',
+                                                'moderate' => 'modulators.weather_sun_uv_moderate',
+                                                'high' => 'modulators.weather_sun_uv_high',
+                                                'very_high' => 'modulators.weather_sun_uv_very_high',
+                                                'extreme' => 'modulators.weather_sun_uv_extreme',
+                                                'unknown' => 'modulators.weather_sun_uv_unknown',
+                                            ];
+                                            $radNow = $payload['current']['shortwave_radiation'] ?? null;
+                                        @endphp
                                         <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                                             @if($isRainingNow)
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 font-semibold">
@@ -253,6 +252,15 @@
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                                                 <i class="fa-solid fa-droplet"></i>
                                                 {{ $payload['current']['humidity'] !== null ? (int) $payload['current']['humidity'] . '%' : '—' }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full {{ $uvNowColors[$uvNowLevel] ?? $uvNowColors['unknown'] }}">
+                                                <i class="fa-solid fa-sun"></i>
+                                                {{ __('modulators.weather_sun_uv_index') }}: {{ $uvNow !== null ? number_format((float) $uvNow, 1) : '—' }}
+                                                <span class="font-semibold">· {{ __($uvNowLabels[$uvNowLevel] ?? 'modulators.weather_sun_uv_unknown') }}</span>
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                                                <i class="fa-solid fa-solar-panel"></i>
+                                                {{ __('modulators.weather_sun_now') }}: {{ $radNow !== null ? number_format((float) $radNow, 0) . ' W/m²' : '—' }}
                                             </span>
                                         </div>
                                     @endif
@@ -270,7 +278,7 @@
                                 </div>
                             </div>
 
-                            @if(! $payload)
+                            @if(!$payload)
                                 <div class="mt-3 text-xs text-amber-700 dark:text-amber-300">
                                     <i class="fa-solid fa-triangle-exclamation mr-1"></i>
                                     {{ __('modulators.weather_unavailable') }}
@@ -294,7 +302,7 @@
                                         </div>
                                     </div>
 
-                                    @if(! $hasTimelineRain)
+                                    @if(!$hasTimelineRain)
                                         <div class="text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 py-2">
                                             <i class="fa-solid fa-sun"></i>
                                             {{ __('modulators.weather_timeline_no_rain') }}
@@ -324,7 +332,7 @@
                                                         if ($probText) {
                                                             $tooltipParts[] = $probText;
                                                         }
-                                                        if (! empty($h['label'])) {
+                                                        if (!empty($h['label'])) {
                                                             $tooltipParts[] = $h['label'];
                                                         }
                                                         $tooltip = implode(' · ', $tooltipParts);
@@ -419,6 +427,79 @@
                                     </div>
                                 @endif
 
+                                @php
+                                    $sunSummary = $payload['sun_summary'] ?? null;
+                                @endphp
+                                @if($sunSummary)
+                                    @php
+                                        $sunUvLevel = $sunSummary['max_uv_level'] ?? 'unknown';
+                                        $sunUvColors = [
+                                            'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+                                            'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+                                            'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
+                                            'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+                                            'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
+                                            'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                                        ];
+                                        $sunUvLabels = [
+                                            'low' => 'modulators.weather_sun_uv_low',
+                                            'moderate' => 'modulators.weather_sun_uv_moderate',
+                                            'high' => 'modulators.weather_sun_uv_high',
+                                            'very_high' => 'modulators.weather_sun_uv_very_high',
+                                            'extreme' => 'modulators.weather_sun_uv_extreme',
+                                            'unknown' => 'modulators.weather_sun_uv_unknown',
+                                        ];
+                                        $sunUvLabel = __($sunUvLabels[$sunUvLevel] ?? 'modulators.weather_sun_uv_unknown');
+                                        $sunUvColor = $sunUvColors[$sunUvLevel] ?? $sunUvColors['unknown'];
+                                        $sunUvValue = $sunSummary['max_uv_index'] !== null ? number_format((float) $sunSummary['max_uv_index'], 1) : '—';
+                                        $sunUvBarWidth = $sunSummary['max_uv_index'] !== null
+                                            ? min(100, (int) round(((float) $sunSummary['max_uv_index'] / 11.0) * 100))
+                                            : 0;
+                                        $sunRadiation = $sunSummary['total_radiation_mj'] !== null ? number_format((float) $sunSummary['total_radiation_mj'], 1) . ' MJ/m²' : '—';
+                                        $sunSeconds = (int) ($sunSummary['total_sunshine_seconds'] ?? 0);
+                                        $sunHours = $sunSeconds > 0 ? number_format($sunSeconds / 3600, 1) . ' h' : '—';
+                                        $sunFirst = $sunSummary['first_sunrise'] ? \Carbon\Carbon::parse($sunSummary['first_sunrise'])->format('H:i') : '—';
+                                        $sunLast = $sunSummary['last_sunset'] ? \Carbon\Carbon::parse($sunSummary['last_sunset'])->format('H:i') : '—';
+                                    @endphp
+                                    <div class="mt-3 rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-900/20 p-3">
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <div class="text-[11px] uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1.5">
+                                                <i class="fa-solid fa-sun"></i>
+                                                {{ __('modulators.weather_sun_summary') }}
+                                            </div>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $sunUvColor }}">
+                                                {{ $sunUvLabel }}
+                                            </span>
+                                        </div>
+
+                                        <div class="h-1.5 w-full bg-amber-100 dark:bg-amber-900/40 rounded-full overflow-hidden">
+                                            <div class="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all" style="width: {{ $sunUvBarWidth }}%"></div>
+                                        </div>
+                                        <div class="mt-1 text-[10px] text-amber-700/80 dark:text-amber-300/80 text-right font-mono">
+                                            {{ __('modulators.weather_sun_uv_index') }}: {{ $sunUvValue }}
+                                        </div>
+
+                                        <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_sun_radiation') }}</span>
+                                                <span class="font-mono font-bold text-amber-800 dark:text-amber-200">{{ $sunRadiation }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_sun_sunshine') }}</span>
+                                                <span class="font-mono font-bold text-amber-800 dark:text-amber-200">{{ $sunHours }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_sun_sunrise') }}</span>
+                                                <span class="font-mono font-bold text-amber-800 dark:text-amber-200">{{ $sunFirst }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('modulators.weather_sun_sunset') }}</span>
+                                                <span class="font-mono font-bold text-amber-800 dark:text-amber-200">{{ $sunLast }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
                                 <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     @foreach($payload['daily'] as $idx => $day)
                                         @php
@@ -448,13 +529,21 @@
                                             $dayHours = $day['precipitation_hours'] ?? null;
                                             $peak = $day['peak_hour'] ?? null;
                                             $windows = $day['rain_windows'] ?? [];
+                                            $daySun = $day['sun'] ?? [];
+                                            $dayUv = $daySun['uv_index_max'] ?? null;
+                                            $dayUvLevel = \App\Services\WeatherService::uvLevelStatic($dayUv !== null ? (float) $dayUv : null);
+                                            $dayRad = $daySun['shortwave_radiation_sum'] ?? null;
+                                            $daySunshineSec = $daySun['sunshine_duration_seconds'] ?? null;
+                                            $dayDaylightSec = $daySun['daylight_duration_seconds'] ?? null;
+                                            $daySunrise = $daySun['sunrise'] ?? null;
+                                            $daySunset = $daySun['sunset'] ?? null;
                                         @endphp
                                         <div class="rounded-md border p-2.5 flex flex-col h-[340px] {{ $intensityColor }}">
                                             <div class="flex items-center justify-between">
                                                 <div class="text-[11px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold">
                                                     {{ $dayLabel }}
                                                 </div>
-                                                <i class="fa-solid {{ $day['icon'] }} text-sky-500 text-base"></i>
+                                                <i class="fa-solid {{ $day['icon'] }} text-sky-500 w-4 h-4 text-[14px] leading-none inline-flex items-center justify-center shrink-0"></i>
                                             </div>
                                             <div class="text-xs text-gray-700 dark:text-gray-200 font-mono mt-1">
                                                 <span class="text-red-600 dark:text-red-300">{{ __('modulators.weather_max') }} {{ $day['temp_max'] !== null ? number_format((float) $day['temp_max'], 0) : '—' }}°</span>
@@ -463,9 +552,13 @@
                                             </div>
 
                                             <div class="mt-2 mb-2 pt-2 border-t border-current/10 space-y-1.5 flex-1 min-h-0 flex flex-col">
+                                                <div class="text-[9px] uppercase tracking-wider text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-cloud-rain w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                    {{ __('modulators.weather_rain_section_title') }}
+                                                </div>
                                                 <div class="flex items-center justify-between text-[10px]">
-                                                    <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                                        <i class="fa-solid fa-droplet text-blue-500"></i>
+                                                    <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                        <i class="fa-solid fa-droplet text-blue-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
                                                         {{ __('modulators.weather_rain_probability') }}
                                                     </span>
                                                     <span class="font-mono font-semibold
@@ -477,8 +570,8 @@
                                                     </span>
                                                 </div>
                                                 <div class="flex items-center justify-between text-[10px]">
-                                                    <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                                        <i class="fa-solid fa-raindrops text-blue-500"></i>
+                                                    <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                        <i class="fa-solid fa-droplet text-blue-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
                                                         {{ __('modulators.weather_rain_amount') }}
                                                     </span>
                                                     <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
@@ -487,8 +580,8 @@
                                                 </div>
                                                 @if($dayHours !== null && $dayHours > 0)
                                                     <div class="flex items-center justify-between text-[10px]">
-                                                        <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                                            <i class="fa-solid fa-clock text-blue-500"></i>
+                                                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                            <i class="fa-solid fa-clock text-blue-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
                                                             {{ __('modulators.weather_rain_hours') }}
                                                         </span>
                                                         <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
@@ -499,12 +592,12 @@
 
                                                 @if($peak)
                                                     @php
-                                                        $peakHour = substr((string) ($peak['hour'] ?? ''), 0, 2);
-                                                        $peakProb = $peak['probability'] !== null ? (int) $peak['probability'] : null;
+                $peakHour = substr((string) ($peak['hour'] ?? ''), 0, 2);
+                $peakProb = $peak['probability'] !== null ? (int) $peak['probability'] : null;
                                                     @endphp
                                                     <div class="flex items-center justify-between text-[10px]">
-                                                        <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                                            <i class="fa-solid fa-arrow-up text-blue-600"></i>
+                                                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                            <i class="fa-solid fa-arrow-up text-blue-600 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
                                                             {{ __('modulators.weather_peak_label') }}
                                                         </span>
                                                         <span class="font-mono font-semibold text-blue-800 dark:text-blue-200">
@@ -515,22 +608,82 @@
                                                 @endif
 
                                                 @if(count($windows) > 0)
-                                                    <div class="pt-1 flex-1 min-h-0 flex flex-col">
-                                                        <div class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
-                                                            {{ __('modulators.weather_windows_label') }}
+                                                    <div class="space-y-0.5 overflow-y-auto min-h-0 flex-1 pr-1">
+                                                        @foreach($windows as $win)
+                                                            <div class="text-[10px] font-mono text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 mr-2">
+                                                                <i class="fa-solid {{ $win['icon'] }} w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                {{ $win['start_hour'] }}–{{ $win['end_hour'] }}
+                                                                · {{ number_format((float) $win['precipitation_sum'], 1) }} mm
+                                                                @if(!empty($win['probability_max']))
+                                                                    · {{ (int) $win['probability_max'] }}%
+                                                                @endif
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+
+                                                @php
+                                                    $daySunriseStr = $daySunrise ? \Carbon\Carbon::parse($daySunrise)->format('H:i') : null;
+                                                    $daySunsetStr = $daySunset ? \Carbon\Carbon::parse($daySunset)->format('H:i') : null;
+                                                    $dayDaylightStr = $dayDaylightSec !== null ? sprintf('%dh %02dm', intdiv((int) $dayDaylightSec, 3600), (intdiv((int) $dayDaylightSec, 60) % 60)) : null;
+                                                    $daySunshineStr = $daySunshineSec !== null ? sprintf('%dh %02dm', intdiv((int) $daySunshineSec, 3600), (intdiv((int) $daySunshineSec, 60) % 60)) : null;
+                                                    $dayRadMj = $dayRad !== null ? number_format(((float) $dayRad) / 1000, 1) . ' MJ/m²' : null;
+                                                @endphp
+                                                @if($dayUv !== null || $dayRadMj || $daySunriseStr || $dayDaylightStr)
+                                                    <div class="mt-2 pt-2 border-t border-current/10 space-y-1">
+                                                        <div class="text-[9px] uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1.5">
+                                                            <i class="fa-solid fa-sun w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                            {{ __('modulators.weather_sun_section_title') }}
                                                         </div>
-                                                        <div class="space-y-0.5 overflow-y-auto min-h-0 flex-1 pr-1">
-                                                            @foreach($windows as $win)
-                                                                <div class="text-[10px] font-mono text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 mr-2">
-                                                                    <i class="fa-solid {{ $win['icon'] }}"></i>
-                                                                    {{ $win['start_hour'] }}–{{ $win['end_hour'] }}
-                                                                    · {{ number_format((float) $win['precipitation_sum'], 1) }} mm
-                                                                    @if(! empty($win['probability_max']))
-                                                                        · {{ (int) $win['probability_max'] }}%
-                                                                    @endif
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
+                                                        @if($dayUv !== null)
+                                                            <div class="flex items-center justify-between text-[10px]">
+                                                                <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                                    <i class="fa-solid fa-sun text-amber-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                    {{ __('modulators.weather_sun_uv_index') }}
+                                                                </span>
+                                                                <span class="font-mono font-semibold text-amber-800 dark:text-amber-200">
+                                                                    {{ number_format((float) $dayUv, 1) }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                        @if($dayRadMj)
+                                                            <div class="flex items-center justify-between text-[10px]">
+                                                                <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                                    <i class="fa-solid fa-solar-panel text-amber-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                    {{ __('modulators.weather_sun_radiation') }}
+                                                                </span>
+                                                                <span class="font-mono font-semibold text-amber-800 dark:text-amber-200">{{ $dayRadMj }}</span>
+                                                            </div>
+                                                        @endif
+                                                        @if($daySunriseStr || $daySunsetStr)
+                                                            <div class="flex items-center justify-between text-[10px]">
+                                                                <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                                    <i class="fa-solid fa-cloud-sun text-amber-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                    {{ __('modulators.weather_sun_sunrise') }} / {{ __('modulators.weather_sun_sunset') }}
+                                                                </span>
+                                                                <span class="font-mono font-semibold text-amber-800 dark:text-amber-200">
+                                                                    {{ $daySunriseStr ?? '—' }} · {{ $daySunsetStr ?? '—' }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                        @if($dayDaylightStr)
+                                                            <div class="flex items-center justify-between text-[10px]">
+                                                                <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                                    <i class="fa-solid fa-clock text-amber-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                    {{ __('modulators.weather_sun_daylight') }}
+                                                                </span>
+                                                                <span class="font-mono font-semibold text-amber-800 dark:text-amber-200">{{ $dayDaylightStr }}</span>
+                                                            </div>
+                                                        @endif
+                                                        @if($daySunshineStr)
+                                                            <div class="flex items-center justify-between text-[10px]">
+                                                                <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                                                    <i class="fa-solid fa-sun text-amber-500 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                                                                    {{ __('modulators.weather_sun_sunshine_duration') }}
+                                                                </span>
+                                                                <span class="font-mono font-semibold text-amber-800 dark:text-amber-200">{{ $daySunshineStr }}</span>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             </div>

@@ -98,9 +98,9 @@ class WeatherService
                 ->get('https://api.open-meteo.com/v1/forecast', [
                     'latitude' => $location['latitude'],
                     'longitude' => $location['longitude'],
-                    'current' => 'temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,precipitation,rain',
-                    'hourly' => 'temperature_2m,precipitation,precipitation_probability,weather_code',
-                    'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,rain_sum,showers_sum,precipitation_hours,wind_speed_10m_max',
+                    'current' => 'temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,precipitation,rain,uv_index,shortwave_radiation',
+                    'hourly' => 'temperature_2m,precipitation,precipitation_probability,weather_code,shortwave_radiation,uv_index',
+                    'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,rain_sum,showers_sum,precipitation_hours,wind_speed_10m_max,uv_index_max,shortwave_radiation_sum,sunrise,sunset,daylight_duration,sunshine_duration',
                     'timezone' => 'America/Mexico_City',
                     'forecast_days' => 3,
                     'past_hours' => 0,
@@ -201,10 +201,19 @@ class WeatherService
                 'rain_probability_level' => $this->rainProbabilityLevel($probability),
                 'peak_hour' => $peakHour,
                 'rain_windows' => $rainWindows,
+                'sun' => [
+                    'sunrise' => $daily['sunrise'][$i] ?? null,
+                    'sunset' => $daily['sunset'][$i] ?? null,
+                    'daylight_duration_seconds' => $daily['daylight_duration'][$i] ?? null,
+                    'sunshine_duration_seconds' => $daily['sunshine_duration'][$i] ?? null,
+                    'uv_index_max' => $daily['uv_index_max'][$i] ?? null,
+                    'shortwave_radiation_sum' => $daily['shortwave_radiation_sum'][$i] ?? null,
+                ],
             ];
         }
 
         $summary = $this->summarizeRainfall($days);
+        $sunSummary = $this->summarizeSun($days, $daily);
 
         $timeline = $hourly['timeline'] ?? [];
         $timelineStart = $hourly['start_date'] ?? null;
@@ -226,9 +235,12 @@ class WeatherService
                 'humidity' => $current['relative_humidity_2m'] ?? null,
                 'precipitation' => $current['precipitation'] ?? null,
                 'rain' => $current['rain'] ?? null,
+                'uv_index' => $current['uv_index'] ?? null,
+                'shortwave_radiation' => $current['shortwave_radiation'] ?? null,
             ],
             'daily' => $days,
             'rainfall_summary' => $summary,
+            'sun_summary' => $sunSummary,
             'hourly_timeline' => [
                 'start_date' => $timelineStart,
                 'end_date' => $timelineEnd,
@@ -244,6 +256,8 @@ class WeatherService
         $precips = $hourly['precipitation'] ?? [];
         $probs = $hourly['precipitation_probability'] ?? [];
         $codes = $hourly['weather_code'] ?? [];
+        $radiations = $hourly['shortwave_radiation'] ?? [];
+        $uvs = $hourly['uv_index'] ?? [];
 
         $timeline = [];
         $byDate = [];
@@ -259,6 +273,8 @@ class WeatherService
             $prob = isset($probs[$i]) ? (int) $probs[$i] : null;
             $temp = isset($temps[$i]) ? (float) $temps[$i] : null;
             $code = isset($codes[$i]) ? (int) $codes[$i] : null;
+            $radiation = isset($radiations[$i]) ? (float) $radiations[$i] : null;
+            $uv = isset($uvs[$i]) ? (float) $uvs[$i] : null;
             $condition = self::WEATHER_CODE_MAP[$code] ?? ['label' => 'Sin datos', 'icon' => 'fa-cloud'];
 
             $entry = [
@@ -272,6 +288,9 @@ class WeatherService
                 'label' => $condition['label'],
                 'icon' => $condition['icon'],
                 'rain_intensity' => $this->rainIntensity($precip),
+                'shortwave_radiation' => $radiation,
+                'uv_index' => $uv,
+                'sun_intensity' => $this->sunIntensity($radiation),
             ];
 
             $timeline[] = $entry;
@@ -418,6 +437,117 @@ class WeatherService
             'rainy_days' => $rainyDays,
             'max_probability' => $maxProbability,
             'max_probability_level' => $this->rainProbabilityLevel($maxProbability),
+        ];
+    }
+
+    private function sunIntensity(?float $radiation): string
+    {
+        if ($radiation === null) {
+            return 'unknown';
+        }
+        if ($radiation <= 0) {
+            return 'night';
+        }
+        if ($radiation < 150) {
+            return 'low';
+        }
+        if ($radiation < 500) {
+            return 'moderate';
+        }
+        return 'high';
+    }
+
+    public function uvLevel(?float $uv): string
+    {
+        if ($uv === null) {
+            return 'unknown';
+        }
+        if ($uv < 3) {
+            return 'low';
+        }
+        if ($uv < 6) {
+            return 'moderate';
+        }
+        if ($uv < 8) {
+            return 'high';
+        }
+        if ($uv < 11) {
+            return 'very_high';
+        }
+        return 'extreme';
+    }
+
+    public static function uvLevelStatic(?float $uv): string
+    {
+        if ($uv === null) {
+            return 'unknown';
+        }
+        if ($uv < 3) {
+            return 'low';
+        }
+        if ($uv < 6) {
+            return 'moderate';
+        }
+        if ($uv < 8) {
+            return 'high';
+        }
+        if ($uv < 11) {
+            return 'very_high';
+        }
+        return 'extreme';
+    }
+
+    private function summarizeSun(array $days, array $daily): array
+    {
+        $maxUv = null;
+        $totalRadiation = 0.0;
+        $totalSunshine = 0.0;
+        $hasRadiation = false;
+        $hasSunshine = false;
+        $firstSunrise = null;
+        $lastSunset = null;
+
+        foreach ($days as $idx => $day) {
+            $uv = $daily['uv_index_max'][$idx] ?? null;
+            if ($uv !== null && ($maxUv === null || $uv > $maxUv)) {
+                $maxUv = (float) $uv;
+            }
+
+            $rad = $daily['shortwave_radiation_sum'][$idx] ?? null;
+            if ($rad !== null) {
+                $totalRadiation += (float) $rad;
+                $hasRadiation = true;
+            }
+
+            $sun = $daily['sunshine_duration'][$idx] ?? null;
+            if ($sun !== null) {
+                $totalSunshine += (float) $sun;
+                $hasSunshine = true;
+            }
+
+            $sunrise = $daily['sunrise'][$idx] ?? null;
+            $sunset = $daily['sunset'][$idx] ?? null;
+
+            if ($idx === 0) {
+                $firstSunrise = $sunrise;
+                $lastSunset = $sunset;
+            } else {
+                if ($sunrise !== null && ($firstSunrise === null || $sunrise < $firstSunrise)) {
+                    $firstSunrise = $sunrise;
+                }
+                if ($sunset !== null && ($lastSunset === null || $sunset > $lastSunset)) {
+                    $lastSunset = $sunset;
+                }
+            }
+        }
+
+        return [
+            'max_uv_index' => $maxUv,
+            'max_uv_level' => $this->uvLevel($maxUv),
+            'total_radiation_mj' => $hasRadiation ? round($totalRadiation / 1000, 2) : null,
+            'total_sunshine_seconds' => $hasSunshine ? (int) round($totalSunshine) : null,
+            'first_sunrise' => $firstSunrise,
+            'last_sunset' => $lastSunset,
         ];
     }
 }
