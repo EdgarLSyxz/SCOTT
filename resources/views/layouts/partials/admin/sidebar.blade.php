@@ -45,7 +45,7 @@
         ],
         [
             'name' => __('modulators.modulators'),
-            'icon' => 'fa-solid fa-tower-broadcast',
+            'icon' => 'fa-solid fa-right-left',
             'route' => route('admin.modulators.index'),
             'active' => request()->routeIs('admin.modulators.*'),
         ],
@@ -96,10 +96,7 @@
         }
     }
 
-    $canAccessModulators = $currentUser && (
-        (int) $currentUser->id === 1
-        || strtolower(trim((string) ($currentUser->area ?? ''))) === 'dth'
-    );
+    $canAccessModulators = $currentUser && (int) $currentUser->id === 1;
 
     if (! $canAccessModulators) {
         $links = array_values(array_filter($links, function ($l) {

@@ -30,66 +30,41 @@ class ModulatorPanel extends Component
         return __('modulators.modulators_panel');
     }
 
-    public function requestSwitch(int $transponderId): void
+    public function confirmSwitch(?int $transponderId, ?string $password = null): array
     {
         $this->authorizeAccess();
 
+        if ($transponderId === null) {
+            return [
+                'ok' => false,
+                'error' => __('modulators.transponder_not_found'),
+                'title' => __('modulators.transponder_not_found'),
+            ];
+        }
+
+        if (! $this->verifySwitchPassword($password)) {
+            return [
+                'ok' => false,
+                'error' => __('modulators.password_invalid_text'),
+                'title' => __('modulators.password_invalid'),
+            ];
+        }
+
         if (! Schema::hasTable('transponders')) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
+            return [
+                'ok' => false,
+                'error' => __('modulators.module_not_ready_text'),
                 'title' => __('modulators.module_not_ready'),
-                'text' => __('modulators.module_not_ready_text'),
-            ]);
-            return;
+            ];
         }
 
         $transponder = Transponder::find($transponderId);
         if (! $transponder) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
+            return [
+                'ok' => false,
+                'error' => __('modulators.transponder_not_found'),
                 'title' => __('modulators.transponder_not_found'),
-            ]);
-            return;
-        }
-
-        $fromSite = $transponder->active_site;
-        $toSite = $transponder->oppositeSite();
-
-        $this->dispatch('swal-confirm', [
-            'transponderId' => $transponder->id,
-            'transponderCode' => $transponder->code,
-            'from' => $fromSite,
-            'to' => $toSite,
-            'title' => __('modulators.confirm_title', ['code' => $transponder->code]),
-            'text' => __('modulators.confirm_text', [
-                'from' => __($fromSite),
-                'to' => __($toSite),
-            ]),
-            'confirmButtonText' => __('modulators.confirm_yes'),
-            'cancelButtonText' => __('modulators.confirm_no'),
-        ]);
-    }
-
-    public function confirmSwitch(int $transponderId): void
-    {
-        $this->authorizeAccess();
-
-        if (! Schema::hasTable('transponders')) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
-                'title' => __('modulators.module_not_ready'),
-                'text' => __('modulators.module_not_ready_text'),
-            ]);
-            return;
-        }
-
-        $transponder = Transponder::find($transponderId);
-        if (! $transponder) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
-                'title' => __('modulators.transponder_not_found'),
-            ]);
-            return;
+            ];
         }
 
         $previousDuration = $this->secondsSinceLastEvent($transponder);
@@ -121,18 +96,27 @@ class ModulatorPanel extends Component
             ]);
         });
 
-        $this->dispatch('switch-completed', [
-            'transponderCode' => $transponderCode,
+        return [
+            'ok' => true,
+            'code' => $transponderCode,
             'from' => $fromSite,
             'to' => $toSite,
-            'commands' => $commandsOutput,
-        ]);
-
-        $this->dispatch('swal', [
-            'icon' => 'success',
             'title' => __('modulators.switch_completed'),
-            'text' => __('modulators.transponder_switched_text'),
-        ]);
+            'message' => __('modulators.transponder_switched_text'),
+            'commands' => $commandsOutput,
+        ];
+    }
+
+    private function verifySwitchPassword(?string $password): bool
+    {
+        $expected = (string) config('modulators.switch_password', '');
+        $provided = is_string($password) ? $password : '';
+
+        if ($expected === '') {
+            return false;
+        }
+
+        return hash_equals($expected, $provided);
     }
 
     #[On('modulator-refresh')]
@@ -182,12 +166,6 @@ class ModulatorPanel extends Component
                 'error' => $e->getMessage(),
             ]);
         }
-    }
-
-    #[On('confirmSwitchNow')]
-    public function onConfirmSwitchFromClient(int $transponderId): void
-    {
-        $this->confirmSwitch($transponderId);
     }
 
     public function render()
@@ -251,7 +229,37 @@ class ModulatorPanel extends Component
             'siteToluca' => Transponder::SITE_TOLUCA,
             'weatherBySite' => $this->weatherBySite,
             'weatherLastUpdatedAt' => $this->weatherLastUpdatedAt,
+            'timezone' => $this->timezoneInfo(),
+            'countZacatecas' => $transpondersWithTimers->where('active_site', Transponder::SITE_ZACATECAS)->count(),
+            'countToluca' => $transpondersWithTimers->where('active_site', Transponder::SITE_TOLUCA)->count(),
+            'zacatecasTransponders' => $transpondersWithTimers->where('active_site', Transponder::SITE_ZACATECAS)->values(),
+            'tolucaTransponders' => $transpondersWithTimers->where('active_site', Transponder::SITE_TOLUCA)->values(),
         ]);
+    }
+
+    private function timezoneInfo(): array
+    {
+        $name = (string) config('app.timezone', 'UTC');
+        $now = \Carbon\Carbon::now($name);
+        $offset = $now->getOffset();
+
+        $sign = $offset < 0 ? '-' : '+';
+        $abs = abs($offset);
+        $hours = intdiv($abs, 3600);
+        $minutes = intdiv($abs % 3600, 60);
+
+        $gmt = sprintf('GMT%s%02d:%02d', $sign, $hours, $minutes);
+        $abbr = $now->format('T');
+
+        return [
+            'name' => $name,
+            'gmt' => $gmt,
+            'abbr' => $abbr,
+            'label' => sprintf('%s (%s)', $gmt, $name),
+            'now' => $now->format('Y-m-d H:i:s'),
+            'now_ms' => (int) ($now->getTimestamp() * 1000),
+            'format' => __('modulators.timezone_format_sample'),
+        ];
     }
 
     private function authorizeAccess(): void

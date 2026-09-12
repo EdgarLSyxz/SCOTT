@@ -6,7 +6,7 @@
         ],
         [
             'name' => __('modulators.modulators'),
-            'icon' => 'fa-solid fa-tower-broadcast',
+            'icon' => 'fa-solid fa-right-left',
         ],
     ]">
 

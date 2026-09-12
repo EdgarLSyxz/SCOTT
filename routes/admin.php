@@ -122,4 +122,5 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
 
 Route::view('/modulators', 'admin.modulators.index')
     ->name('modulators.index')
-    ->middleware(['auth', 'verified']);
+    ->middleware(['auth', 'verified'])
+    ->middleware(\App\Http\Middleware\EnsureUserIsIdOne::class);

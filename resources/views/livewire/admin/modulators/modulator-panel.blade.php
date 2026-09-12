@@ -57,57 +57,39 @@
             legend.textContent = '{{ __('modulators.weather_last_updated') }}: ' + text;
         }
 
+        function scottUpdateLocalClock() {
+            document.querySelectorAll('[data-clock-ms]').forEach(function (el) {
+                const baseMs = parseInt(el.getAttribute('data-clock-ms'), 10);
+                if (isNaN(baseMs)) return;
+                if (!el.hasAttribute('data-clock-loaded-at')) {
+                    el.setAttribute('data-clock-loaded-at', String(Date.now()));
+                }
+                const loadedAt = parseInt(el.getAttribute('data-clock-loaded-at'), 10);
+                const current = baseMs + (Date.now() - loadedAt);
+                const tz = el.getAttribute('data-clock-tz') || 'UTC';
+                const d = new Date(current);
+                const pad = (n) => String(n).padStart(2, '0');
+                try {
+                    el.textContent = new Intl.DateTimeFormat('sv-SE', {
+                        timeZone: tz,
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit',
+                        hour12: false,
+                    }).format(d).replace(',', '');
+                } catch (e) {
+                    el.textContent = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+                        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+                }
+            });
+        }
+
         document.addEventListener('livewire:init', () => {
             scottUpdateLiveCounters();
             setInterval(scottUpdateLiveCounters, 1000);
             scottUpdateWeatherLegend();
             setInterval(scottUpdateWeatherLegend, 30000);
-
-            Livewire.on('swal-confirm', (data) => {
-                const payload = Array.isArray(data) ? data[0] : data;
-                const transponderId = payload.transponderId;
-
-                const ts = new Date().toISOString();
-                const offCmd = `[${ts}] TX ${payload.transponderCode || ''} POWER OFF @ ${payload.from}`;
-                const onCmd  = `[${ts}] TX ${payload.transponderCode || ''} POWER ON  @ ${payload.to}`;
-
-                console.groupCollapsed('%c[modulators] Switch requested for ' + (payload.transponderCode || 'transponder'), 'color:#d97706;font-weight:bold;');
-                console.log('%cOFF command → ' + offCmd, 'color:#dc2626;font-weight:bold;');
-                console.log('%cON  command → ' + onCmd,  'color:#16a34a;font-weight:bold;');
-                console.groupEnd();
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: payload.title,
-                    text: payload.text,
-                    showCancelButton: true,
-                    confirmButtonColor: '#d97706',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: payload.confirmButtonText,
-                    cancelButtonText: payload.cancelButtonText,
-                    reverseButtons: true,
-                    focusCancel: true,
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const ts2 = new Date().toISOString();
-                        console.log('%c[modulators] Switch CONFIRMED for ' + (payload.transponderCode || 'transponder') + ' at ' + ts2, 'color:#d97706;font-weight:bold;');
-                        Livewire.dispatch('confirmSwitchNow', { transponderId });
-                    } else {
-                        console.log('%c[modulators] Switch CANCELLED for ' + (payload.transponderCode || 'transponder'), 'color:#6b7280;');
-                    }
-                });
-            });
-
-            Livewire.on('switch-completed', (data) => {
-                const payload = Array.isArray(data) ? data[0] : data;
-                const ts = new Date().toISOString();
-                console.log('%c[modulators] Switch EXECUTED for ' + payload.transponderCode + ' (' + payload.from + ' → ' + payload.to + ') at ' + ts, 'color:#16a34a;font-weight:bold;');
-                if (payload.commands) {
-                    payload.commands.split('\n').forEach(function (line) {
-                        if (line.trim()) console.log('  ' + line);
-                    });
-                }
-            });
+            scottUpdateLocalClock();
+            setInterval(scottUpdateLocalClock, 1000);
         });
     </script>
 
@@ -116,7 +98,7 @@
 
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    <i class="fa-solid fa-tower-broadcast mr-1.5 text-amber-500"></i>
+                    <i class="fa-solid fa-right-left mr-1.5 text-amber-500"></i>
                     {{ __('modulators.modulators_panel') }}
                 </h1>
                 <p class="text-sm font-light leading-tight text-gray-500 dark:text-gray-400">
@@ -126,6 +108,59 @@
                     <span class="font-semibold text-amber-600">{{ __($siteToluca) }}</span>.
                     {{ __('modulators.golden_rule') }}
                 </p>
+            </div>
+
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span class="inline-flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                            <i class="fa-solid fa-clock"></i>
+                        </span>
+                        <span>
+                            <span class="block text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ __('modulators.timezone_local_time') }}
+                            </span>
+                            <span class="block font-mono text-base font-bold text-gray-900 dark:text-white leading-tight"
+                                  data-clock-ms="{{ $timezone['now_ms'] }}"
+                                  data-clock-tz="{{ $timezone['name'] }}">{{ $timezone['now'] }}</span>
+                        </span>
+                    </span>
+
+                    <span class="hidden lg:block h-8 w-px bg-gray-300 dark:bg-gray-600"></span>
+
+                    <span class="inline-flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                            <i class="fa-solid fa-earth-americas"></i>
+                        </span>
+                        <span>
+                            <span class="block text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ __('modulators.timezone_label') }}
+                            </span>
+                            <span class="block text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                                {{ $timezone['gmt'] }}
+                                <span class="font-normal text-gray-500 dark:text-gray-400">· {{ $timezone['name'] }}</span>
+                                @if($timezone['abbr'])
+                                    <span class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">{{ $timezone['abbr'] }}</span>
+                                @endif
+                            </span>
+                        </span>
+                    </span>
+                </div>
+
+                <div class="flex flex-col gap-1 text-[11px] text-gray-500 dark:text-gray-400 lg:text-right">
+                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
+                        <i class="fa-solid fa-hashtag text-gray-400"></i>
+                        {{ __('modulators.timezone_format_sample') }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
+                        <i class="fa-solid fa-circle-info text-gray-400"></i>
+                        {{ __('modulators.timezone_all_times_in') }} <strong class="font-semibold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }}</strong>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 lg:justify-end">
+                        <i class="fa-solid fa-stopwatch text-gray-400"></i>
+                        {{ __('modulators.timezone_live_counters') }}
+                    </span>
+                </div>
             </div>
 
             <div class="rounded-xl border border-sky-200 bg-sky-50/60 dark:bg-sky-900/10 dark:border-sky-800 p-4 sm:p-5">
@@ -523,81 +558,108 @@
                     <p>{{ __('modulators.no_transponders_yet') }}</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    @foreach($transponders as $t)
-                        @php
-                            $sinceMs = strtotime($t['live_since_iso']) * 1000;
-                        @endphp
-                        <div wire:key="tp-{{ $t['id'] }}"
-                             data-live-since="{{ $sinceMs }}"
-                             class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm flex flex-col gap-3">
+                <div x-data="{ filter: 'all', grouped: false }">
 
-                            <div class="flex items-center justify-between">
-                                <div class="text-lg font-bold text-gray-900 dark:text-white">
-                                    <i class="fa-solid fa-satellite mr-1 text-amber-500"></i>
-                                    {{ $t['code'] }}
-                                </div>
-                                <span class="inline-flex items-center text-xs font-semibold px-2 py-1 rounded-full
-                                    {{ $t['is_on'] ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200' }}">
-                                    <span class="w-2 h-2 mr-1.5 rounded-full {{ $t['is_on'] ? 'bg-green-500' : 'bg-red-500' }}"></span>
-                                    {{ $t['is_on'] ? __('modulators.on') : __('modulators.off') }}
-                                </span>
-                            </div>
+                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+                        <div class="flex flex-col gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-layer-group text-amber-500"></i>
+                                {{ __('modulators.filter_title') }}
+                            </span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button type="button"
+                                        @click="filter = 'all'"
+                                        :class="filter === 'all' ? 'bg-amber-600 text-white border-amber-600 shadow' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-amber-400'"
+                                        class="inline-flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition">
+                                    <i class="fa-solid fa-border-all"></i>
+                                    {{ __('modulators.filter_all') }}
+                                    <span class="ml-0.5 rounded-full bg-black/10 px-1.5 text-[10px]">{{ $transponders->count() }}</span>
+                                </button>
 
-                            <div class="text-sm text-gray-600 dark:text-gray-300">
-                                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                    {{ __('modulators.active_site') }}
-                                </div>
-                                <div class="font-semibold text-amber-600 dark:text-amber-300">
-                                    {{ __($t['active_site']) }}
-                                </div>
+                                @foreach([$siteZacatecas => $countZacatecas, $siteToluca => $countToluca] as $siteKey => $siteCount)
+                                    <button type="button"
+                                            data-site="{{ $siteKey }}"
+                                            @click="filter = $el.dataset.site"
+                                            :class="filter === $el.dataset.site ? 'bg-emerald-600 text-white border-emerald-600 shadow' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-emerald-400'"
+                                            class="inline-flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition">
+                                        <i class="fa-solid fa-tower-broadcast"></i>
+                                        {{ __($siteKey) }}
+                                        <span class="ml-0.5 rounded-full bg-black/10 px-1.5 text-[10px]">{{ $siteCount }}</span>
+                                    </button>
+                                @endforeach
                             </div>
+                        </div>
 
-                            <div class="rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2">
-                                <div class="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300">
-                                    <span class="inline-flex items-center gap-1.5 font-semibold">
-                                        <span class="relative flex h-2 w-2">
-                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                                        </span>
-                                        {{ __('modulators.live_counter_label') }}
-                                        <span class="text-amber-700/70 dark:text-amber-300/70">·</span>
-                                        <span>{{ __($t['active_site']) }}</span>
-                                    </span>
-                                    <span class="font-mono text-base font-bold text-amber-800 dark:text-amber-200" data-live-target>
-                                        {{ $t['time_current_human'] }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="rounded-md bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 px-3 py-2">
-                                <div class="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
-                                    <span>
-                                        <i class="fa-solid fa-clock-rotate-left mr-1"></i>
-                                        {{ __('modulators.time_in_other_site_short', ['site' => __($t['opposite_site'])]) }}
-                                    </span>
-                                    <span class="font-mono">
-                                        {{ $t['time_other_human'] }}
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-earth-americas text-indigo-500"></i>
+                                {{ __('modulators.timezone_all_times_in') }}
+                                <strong class="font-bold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }}</strong>
+                            </span>
 
                             <button type="button"
-                                wire:click="requestSwitch({{ $t['id'] }})"
-                                wire:loading.attr="disabled"
-                                wire:target="requestSwitch({{ $t['id'] }})"
-                                class="w-full inline-flex justify-center items-center text-white bg-amber-600 hover:bg-amber-700 focus:ring-4 focus:outline-none focus:ring-amber-300 font-semibold rounded-lg text-sm px-4 py-2.5 text-center transition disabled:opacity-60 disabled:cursor-not-allowed">
-                                <span wire:loading.remove wire:target="requestSwitch({{ $t['id'] }})">
-                                    <i class="fa-solid fa-right-left mr-1.5"></i>
-                                    {{ __('modulators.switch_to') }} {{ __($t['opposite_site']) }}
-                                </span>
-                                <span wire:loading wire:target="requestSwitch({{ $t['id'] }})">
-                                    <i class="fa-solid fa-spinner fa-spin mr-1.5"></i>
-                                    {{ __('modulators.switching') }}
+                                    @click="grouped = !grouped"
+                                    :class="grouped ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-indigo-400'"
+                                    class="inline-flex items-center gap-2 rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition">
+                                <i class="fa-solid fa-table-columns"></i>
+                                {{ __('modulators.filter_group_toggle') }}
+                                <span class="relative inline-flex h-4 w-7 items-center rounded-full transition"
+                                      :class="grouped ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'">
+                                    <span class="inline-block h-3 w-3 transform rounded-full bg-white transition"
+                                          :class="grouped ? 'translate-x-3.5' : 'translate-x-0.5'"></span>
                                 </span>
                             </button>
                         </div>
-                    @endforeach
+                    </div>
+
+                    <div x-show="!grouped" class="mt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                            @foreach($transponders as $t)
+                                <div wire:key="flat-tp-{{ $t['id'] }}"
+                                     data-site="{{ $t['active_site'] }}"
+                                     x-show="filter === 'all' || filter === $el.dataset.site"
+                                     class="h-full">
+                                    @include('livewire.admin.modulators.partials.ku-card', ['t' => $t])
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div x-show="grouped" x-cloak class="mt-4 space-y-5">
+                        @foreach([
+                            ['site' => $siteZacatecas, 'items' => $zacatecasTransponders, 'label' => __('modulators.group_zacatecas')],
+                            ['site' => $siteToluca, 'items' => $tolucaTransponders, 'label' => __('modulators.group_toluca')],
+                        ] as $group)
+                            <section wire:key="grp-{{ md5($group['site']) }}"
+                                     data-site="{{ $group['site'] }}"
+                                     x-show="filter === 'all' || filter === $el.dataset.site">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                                        <i class="fa-solid fa-tower-broadcast"></i>
+                                    </span>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $group['label'] }}</h3>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                                        {{ $group['items']->count() }}
+                                    </span>
+                                    <span class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></span>
+                                </div>
+
+                                @if($group['items']->isEmpty())
+                                    <div class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-5 text-center text-xs text-gray-500 dark:text-gray-400">
+                                        {{ __('modulators.group_empty') }}
+                                    </div>
+                                @else
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                        @foreach($group['items'] as $t)
+                                            <div wire:key="grp-{{ md5($group['site']) }}-tp-{{ $t['id'] }}" class="h-full">
+                                                @include('livewire.admin.modulators.partials.ku-card', ['t' => $t])
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </section>
+                        @endforeach
+                    </div>
                 </div>
             @endif
         </div>
@@ -605,10 +667,19 @@
 
     <div class="w-full bg-white rounded-lg shadow-2xl dark:border mt-6 dark:bg-gray-800 dark:border-gray-700">
         <div class="p-6 space-y-4 sm:p-8">
-            <h2 class="text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-                <i class="fa-solid fa-clock-rotate-left mr-1.5 text-amber-500"></i>
-                {{ __('modulators.recent_switch_log') }}
-            </h2>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h2 class="text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+                    <i class="fa-solid fa-clock-rotate-left mr-1.5 text-amber-500"></i>
+                    {{ __('modulators.recent_switch_log') }}
+                </h2>
+                <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-earth-americas text-indigo-500"></i>
+                    {{ __('modulators.timezone_all_times_in') }}
+                    <strong class="font-bold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }}</strong>
+                    <span class="text-gray-400">·</span>
+                    <span class="font-mono">{{ $timezone['name'] }}</span>
+                </span>
+            </div>
 
             @if($recentEvents->isEmpty())
                 <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -619,7 +690,10 @@
                     <table class="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
                         <thead class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                             <tr>
-                                <th class="py-2 pr-4">{{ __('modulators.when') }}</th>
+                                <th class="py-2 pr-4">
+                                    {{ __('modulators.when') }}
+                                    <span class="ml-1 normal-case tracking-normal text-[9px] font-bold px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ $timezone['gmt'] }}</span>
+                                </th>
                                 <th class="py-2 pr-4">{{ __('modulators.transponder') }}</th>
                                 <th class="py-2 pr-4">{{ __('modulators.from') }}</th>
                                 <th class="py-2 pr-4">{{ __('modulators.to') }}</th>

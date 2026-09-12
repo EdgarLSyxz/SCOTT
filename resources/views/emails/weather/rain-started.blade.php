@@ -347,13 +347,13 @@
         @endif
 
         <div class="alert">
-            <strong>📡 Acción sugerida:</strong> Verificar el estado de los moduladores
+            <strong>📡 Acción sugerida:</strong> Verificar el estado de las conmutaciones
             y la señal del uplink en {{ $siteLabel }}. Recibirás una notificación
             automática cuando la lluvia finalice.
         </div>
 
         <div class="footer">
-            Notificación generada por SCOTT · Panel de Moduladores
+            Notificación generada por SCOTT · Panel de Conmutaciones
             <br>
             {{ $event->rain_started_at->format('Y-m-d H:i:s') }}
         </div>

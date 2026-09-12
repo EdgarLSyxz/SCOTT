@@ -259,7 +259,7 @@
         @endif
 
         <div class="footer">
-            Notificación generada por SCOTT · Panel de Moduladores
+            Notificación generada por SCOTT · Panel de Conmutaciones
             <br>
             {{ $event->rain_ended_at?->format('Y-m-d H:i:s') ?? now()->format('Y-m-d H:i:s') }}
         </div>
