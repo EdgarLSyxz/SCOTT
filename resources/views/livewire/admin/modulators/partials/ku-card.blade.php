@@ -1,72 +1,38 @@
 @php
     $sinceMs = strtotime($t['live_since_iso']) * 1000;
     $telepuertoImg = fn (string $site) => asset('storage/telepuertos/' . $site . '.png');
+    $pinLength = (int) config('modulators.switch_pin_length', 4);
+    $confirmTitle = __('modulators.pin_confirm_title');
+    $confirmText = __('modulators.pin_confirm_text', [
+        'code' => $t['code'],
+        'from' => __($t['active_site']),
+        'to' => __($t['opposite_site']),
+    ]);
+    $confirmYes = __('modulators.pin_confirm_yes');
+    $confirmCancel = __('modulators.modal_cancel');
+    $pinInvalidTitle = __('modulators.pin_invalid');
+    $pinInvalidText = __('modulators.pin_invalid_text');
+    $pinPasteTitle = __('modulators.pin_paste_blocked_title');
+    $pinPasteText = __('modulators.pin_paste_blocked_text');
 @endphp
 
 <div data-live-since="{{ $sinceMs }}"
      data-site="{{ $t['active_site'] }}"
      data-tp-id="{{ (int) $t['id'] }}"
-     data-msg-required="{{ __('modulators.password_required') }}"
-     data-msg-invalid="{{ __('modulators.password_invalid_text') }}"
-     x-data="{
-        open: false,
-        password: '',
-        error: '',
-        busy: false,
-        toggle() {
-            if (this.busy) { return; }
-            this.open = !this.open;
-            this.password = '';
-            this.error = '';
-            if (this.open) {
-                this.$nextTick(() => { if (this.$refs.pw) { this.$refs.pw.focus(); } });
-            }
-        },
-        close() {
-            if (this.busy) { return; }
-            this.open = false;
-            this.password = '';
-            this.error = '';
-        },
-        submit() {
-            if (this.busy) { return; }
-            const ds = this.$el.dataset;
-            if (!this.password || String(this.password).trim() === '') {
-                this.error = ds.msgRequired || 'Password required';
-                return;
-            }
-            this.busy = true;
-            this.error = '';
-            this.$wire.confirmSwitch(parseInt(ds.tpId, 10), String(this.password))
-                .then((res) => {
-                    this.busy = false;
-                    if (res && res.ok) {
-                        this.open = false;
-                        this.password = '';
-                        this.error = '';
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: res.title,
-                                text: res.message,
-                                timer: 2600,
-                                showConfirmButton: true,
-                                confirmButtonColor: '#d97706',
-                            });
-                        }
-                    } else {
-                        this.error = (res && res.error) ? res.error : (ds.msgInvalid || 'Error');
-                        this.password = '';
-                    }
-                })
-                .catch((e) => {
-                    this.busy = false;
-                    this.error = ds.msgInvalid || 'Error';
-                    this.password = '';
-                    console.error('[conmutaciones] confirmSwitch failed', e);
-                });
-        }
-     }"
+     data-tp-code="{{ $t['code'] }}"
+     data-tp-from="{{ __($t['active_site']) }}"
+     data-tp-to="{{ __($t['opposite_site']) }}"
+     data-pin-length="{{ $pinLength }}"
+x-data="window.kuCard({{ $pinLength }}, {
+            pinInvalidTitle: @js($pinInvalidTitle),
+            pinInvalidText: @js($pinInvalidText),
+            pinPasteTitle: @js($pinPasteTitle),
+            pinPasteText: @js($pinPasteText),
+            confirmTitle: @js($confirmTitle),
+            confirmText: @js($confirmText),
+            confirmYes: @js($confirmYes),
+            confirmCancel: @js($confirmCancel),
+        })"
      class="relative rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg hover:border-amber-300 dark:hover:border-amber-700 transition flex flex-col h-full">
 
     <div class="relative h-44 shrink-0 rounded-t-[0.6rem] overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -75,7 +41,7 @@
                  alt="{{ __($t['active_site']) }}"
                  loading="lazy"
                  onerror="this.style.display='none'"
-                 class="max-w-[86%] max-h-[86%] object-contain rounded">
+                 class="max-w-[86%] max-h-[86%] object-contain rounded dark:invert">
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/45 to-gray-900/10"></div>
 
@@ -90,19 +56,17 @@
             </span>
         </div>
 
-        <div class="absolute bottom-2 left-3 right-3">
-            <div class="flex items-center gap-1.5 text-sm uppercase tracking-wider text-amber-300 font-bold">
-                <i class="fa-solid fa-satellite"></i>
+        <div class="absolute inset-x-0 bottom-0 px-4 pt-10 pb-3.5 bg-gradient-to-t from-gray-950/95 via-gray-900/75 to-transparent">
+            <div class="text-[10px] uppercase tracking-[0.22em] text-amber-300/90 font-extrabold">
                 {{ __('modulators.ku_card_transmitting_from') }}
             </div>
-            <div class="flex items-end justify-between gap-2">
-                <span class="text-2xl font-extrabold text-white leading-tight tracking-tight drop-shadow">
-                    {{ $t['code'] }}
-                </span>
-                <span class="text-sm font-bold text-white/95 leading-tight drop-shadow inline-flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-amber-300"></i>
-                    {{ __($t['active_site']) }}
-                </span>
+
+            <h3 class="mt-1 text-[28px] leading-[1.02] font-black text-white tracking-tight uppercase drop-shadow-lg">
+                {{ __($t['active_site']) }}
+            </h3>
+
+            <div class="mt-1 text-2xl font-extrabold text-white/95 tracking-wide drop-shadow leading-none">
+                {{ $t['code'] }}
             </div>
         </div>
     </div>
@@ -129,7 +93,7 @@
                                    alt="{{ __($site) }}"
                                    loading="lazy"
                                    onerror="this.style.display='none'"
-                                   class="w-11 h-11 rounded-lg object-cover">
+                                   class="w-11 h-11 rounded-lg object-cover dark:invert">
                             <span class="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white">
                                 <i class="fa-solid fa-check text-[9px]"></i>
                             </span>
@@ -156,7 +120,7 @@
                              alt="{{ __($site) }}"
                              loading="lazy"
                              onerror="this.style.display='none'"
-                             class="w-11 h-11 rounded-lg object-cover opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition">
+                             class="w-11 h-11 rounded-lg object-cover opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 dark:invert transition">
                         <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-amber-800 dark:group-hover:text-amber-200 transition">
                             {{ __($site) }}
                         </span>
@@ -189,11 +153,12 @@
         </div>
     </div>
 
-    <div x-show="open" x-cloak
+    <div x-show="open" x-cloak style="display: none;"
+         data-pin-subroot
          class="fixed inset-0 z-[100] flex items-center justify-center p-4"
          @keydown.escape.window="close()">
 
-        <div x-show="open"
+        <div x-show="open" x-cloak style="display: none;"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -203,7 +168,7 @@
              class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm"
              @click="close()"></div>
 
-        <div x-show="open"
+        <div x-show="open" x-cloak style="display: none;"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
@@ -220,11 +185,11 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-amber-700/95 via-amber-600/70 to-amber-500/40"></div>
                 <div class="absolute inset-0 px-5 flex items-center gap-3">
                     <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white shrink-0">
-                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                        <i class="fa-solid fa-shield-halved text-lg"></i>
                     </span>
                     <div class="text-white">
-                        <div class="text-base font-bold leading-tight">{{ __('modulators.modal_title') }}</div>
-                        <div class="text-[11px] text-amber-50">{{ __('modulators.modal_subtitle') }}</div>
+                        <div class="text-base font-bold leading-tight">{{ __('modulators.pin_modal_title') }}</div>
+                        <div class="text-[11px] text-amber-50">{{ __('modulators.pin_modal_subtitle') }}</div>
                     </div>
                 </div>
             </div>
@@ -235,56 +200,70 @@
                             <img src="{{ $telepuertoImg($t['active_site']) }}"
                                 alt="{{ __($t['active_site']) }}"
                                 onerror="this.style.display='none'"
-                                class="w-14 h-14 rounded-lg object-cover opacity-70">
-                        <div class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">{{ __('modulators.modal_from') }}</div>
-                        <div class="text-xs font-bold text-red-600 dark:text-red-300">{{ __($t['active_site']) }}</div>
+                                class="w-14 h-14 rounded-lg object-cover opacity-30 grayscale dark:invert transition">
+                        <div class="text-[9px] uppercase tracking-wider text-red-600 dark:text-red-300 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-toggle-off"></i>
+                            {{ __('modulators.modal_from') }}
+                        </div>
+                        <div class="text-xs font-bold text-red-600/80 dark:text-red-300/80 decoration-red-400/70">{{ __($t['active_site']) }}</div>
                     </div>
-                    <div class="flex flex-col items-center justify-center text-amber-600 dark:text-amber-300 px-1">
-                        <i class="fa-solid fa-satellite text-lg"></i>
-                        <span class="text-xs font-extrabold">{{ $t['code'] }}</span>
-                        <i class="fa-solid fa-arrow-right-long text-base"></i>
+                    <div class="flex flex-col text-base items-center justify-center text-amber-600 dark:text-amber-300 px-1 space-y-1">
+                        <span class="font-extrabold">{{ $t['code'] }}</span>
+                        <i class="fa-solid fa-arrow-right-long"></i>
                     </div>
                     <div class="flex-1 flex flex-col items-center gap-1 text-center">
                             <img src="{{ $telepuertoImg($t['opposite_site']) }}"
                                 alt="{{ __($t['opposite_site']) }}"
                                 onerror="this.style.display='none'"
-                                class="w-14 h-14 rounded-lg object-cover">
-                        <div class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">{{ __('modulators.modal_to') }}</div>
-                        <div class="text-xs font-bold text-emerald-600 dark:text-emerald-300">{{ __($t['opposite_site']) }}</div>
+                                class="w-14 h-14 rounded-lg object-cover opacity-100 dark:invert transition">
+                        <div class="text-[9px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-toggle-on"></i>
+                            {{ __('modulators.modal_to') }}
+                        </div>
+                        <div class="text-xs font-bold text-emerald-700 dark:text-emerald-200">{{ __($t['opposite_site']) }}</div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-                        <i class="fa-solid fa-lock text-amber-600"></i>
-                        {{ __('modulators.password_label') }}
+                    <label class="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-2">
+                        <i class="fa-solid fa-keyboard text-amber-600 w-3.5 h-3.5 text-[12px] leading-none inline-flex items-center justify-center shrink-0"></i>
+                        {{ __('modulators.pin_label') }}
                     </label>
-                    <input x-ref="pw"
-                           type="password"
-                           x-model="password"
-                           @keydown.enter.prevent="submit()"
-                           autocomplete="off"
-                           autocapitalize="off"
-                           autocorrect="off"
-                           spellcheck="false"
-                           maxlength="128"
-                           :disabled="busy"
-                           placeholder="{{ __('modulators.password_placeholder') }}"
-                           class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-4 focus:ring-amber-300 focus:border-amber-500 dark:focus:ring-amber-700 transition disabled:opacity-60">
-                    <p class="mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-start gap-1.5">
-                        <i class="fa-solid fa-shield-halved text-amber-500 mt-0.5"></i>
-                        <span>{{ __('modulators.modal_security_notice') }}</span>
+                    <div class="flex items-center justify-center gap-2" @paste="handlePaste($event)">
+                        @for($i = 0; $i < $pinLength; $i++)
+                            <input
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="1"
+                                x-ref="pinBoxes"
+                                :value="pin[{{ $i }}]"
+                                @input="handleInput({{ $i }}, $event)"
+                                @keydown="handleKeydown({{ $i }}, $event)"
+                                @focus="$el.select()"
+                                @paste.prevent="handlePaste($event)"
+                                @drop.prevent="handlePaste($event)"
+                                @copy.prevent
+                                @cut.prevent
+                                @contextmenu.prevent
+                                autocomplete="off"
+                                autocapitalize="off"
+                                autocorrect="off"
+                                spellcheck="false"
+                                :disabled="busy"
+                                data-pin-index="{{ $i }}"
+                                aria-label="{{ __('modulators.pin_label') }} {{ $i + 1 }}"
+                                class="w-12 h-14 text-center text-2xl font-extrabold rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-4 focus:ring-amber-300 focus:border-amber-500 dark:focus:ring-amber-700 transition disabled:opacity-60 caret-amber-500" />
+                        @endfor
+                    </div>
+                    <p class="mt-3 text-[11px] text-gray-500 dark:text-gray-400 flex items-start justify-center gap-1.5 text-center">
+                        <i class="fa-solid fa-circle-info text-amber-500 mt-0.5"></i>
+                        <span>{{ __('modulators.pin_help_text') }}</span>
                     </p>
-                    <p class="mt-1 text-[11px] text-amber-700 dark:text-amber-300 font-mono flex items-center gap-1.5">
+                    <p class="mt-1.5 text-[11px] text-amber-700 dark:text-amber-300 font-mono flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-key"></i>
-                        <span>{{ __('modulators.modal_password_hint') }}</span>
+                        <span>{{ __('modulators.pin_default_hint') }}</span>
                     </p>
-                </div>
-
-                <div x-show="error" x-cloak x-transition
-                     class="rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-xs text-red-700 dark:text-red-200 flex items-start gap-2">
-                    <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
-                    <span x-text="error"></span>
                 </div>
             </div>
 
@@ -295,19 +274,6 @@
                         class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-60">
                     <i class="fa-solid fa-xmark"></i>
                     {{ __('modulators.modal_cancel') }}
-                </button>
-                <button type="button"
-                        @click="submit()"
-                        :disabled="busy || !password || password.trim() === ''"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700 focus:ring-4 focus:ring-amber-300 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span x-show="!busy" class="inline-flex items-center gap-1.5">
-                        <i class="fa-solid fa-right-left"></i>
-                        {{ __('modulators.modal_confirm') }}
-                    </span>
-                    <span x-show="busy" x-cloak class="inline-flex items-center gap-1.5">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        {{ __('modulators.modal_confirming') }}
-                    </span>
                 </button>
             </div>
         </div>

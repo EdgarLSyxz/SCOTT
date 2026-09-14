@@ -30,7 +30,7 @@ class ModulatorPanel extends Component
         return __('modulators.modulators_panel');
     }
 
-    public function confirmSwitch(?int $transponderId, ?string $password = null): array
+    public function confirmSwitch(?int $transponderId, ?string $pin = null): array
     {
         $this->authorizeAccess();
 
@@ -42,11 +42,11 @@ class ModulatorPanel extends Component
             ];
         }
 
-        if (! $this->verifySwitchPassword($password)) {
+        if (! $this->verifySwitchPin($pin)) {
             return [
                 'ok' => false,
-                'error' => __('modulators.password_invalid_text'),
-                'title' => __('modulators.password_invalid'),
+                'error' => __('modulators.pin_invalid_text'),
+                'title' => __('modulators.pin_invalid'),
             ];
         }
 
@@ -107,12 +107,18 @@ class ModulatorPanel extends Component
         ];
     }
 
-    private function verifySwitchPassword(?string $password): bool
+    private function verifySwitchPin(?string $pin): bool
     {
-        $expected = (string) config('modulators.switch_password', '');
-        $provided = is_string($password) ? $password : '';
+        $expected = (string) config('modulators.switch_pin', '');
+        $length = (int) config('modulators.switch_pin_length', 4);
+        $provided = is_string($pin) ? $pin : '';
 
-        if ($expected === '') {
+        if ($expected === '' || $length <= 0) {
+            return false;
+        }
+
+        $provided = preg_replace('/\D+/', '', $provided) ?? '';
+        if (strlen($provided) !== $length || strlen($expected) !== $length) {
             return false;
         }
 

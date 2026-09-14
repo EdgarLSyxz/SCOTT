@@ -46,6 +46,10 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -130,6 +134,242 @@
     </div>
 
     <!-- Scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            window.kuCard = function (pinLength, i18n) {
+                const empty = () => Array.from({ length: pinLength }, () => '');
+                const swal = function (opts) {
+                    const base = {
+                        focusTrap: true,
+                        allowEscapeKey: true,
+                        allowOutsideClick: false,
+                        returnFocus: false,
+                        heightAuto: false,
+                    };
+                    this.alertOpen = true;
+                    const restore = () => { this.alertOpen = false; };
+                    const p = Swal.fire(Object.assign({}, base, opts || {}));
+                    p.then(restore, restore);
+                    return p;
+                };
+                return {
+                    open: false,
+                    pin: empty(),
+                    busy: false,
+                    alertOpen: false,
+                    i18n: i18n,
+                    swal: swal,
+                    init() {
+                        this.open = false;
+                        this.pin = empty();
+                        this.$watch('alertOpen', () => this.$nextTick(() => this.syncBackdropInert()));
+                        this.$watch('open', () => this.$nextTick(() => this.syncBackdropInert()));
+                        document.addEventListener('keydown', this._onKeydown = (e) => this.trapFocus(e), true);
+                        this.$nextTick(() => {
+                            this.syncBackdropInert();
+                            this.focusFirstBox();
+                        });
+                    },
+                    destroy() {
+                        if (this._onKeydown) document.removeEventListener('keydown', this._onKeydown, true);
+                    },
+                    trapFocus(e) {
+                        if (e.key !== 'Tab') return;
+                        const lock = this.alertOpen || this.open;
+                        if (!lock) return;
+                        if (this.alertOpen) return;
+                        const modal = this.$root.querySelector('[data-pin-subroot]');
+                        if (!modal) return;
+                        const focusables = Array.from(modal.querySelectorAll('input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                        if (!focusables.length) return;
+                        const first = focusables[0];
+                        const last = focusables[focusables.length - 1];
+                        const active = document.activeElement;
+                        if (!modal.contains(active)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            first.focus();
+                            return;
+                        }
+                        if (e.shiftKey && active === first) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            last.focus();
+                        } else if (!e.shiftKey && active === last) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            first.focus();
+                        }
+                    },
+                    syncBackdropInert() {
+                        const lock = this.alertOpen || this.open;
+                        const keep = new Set();
+                        let cur = this.$root;
+                        while (cur && cur !== document.body) {
+                            keep.add(cur);
+                            cur = cur.parentElement;
+                        }
+                        Array.from(document.body.children).forEach((el) => {
+                            if (el.classList && (el.classList.contains('swal2-container') || el.classList.contains('swal2-popup'))) return;
+                            if (keep.has(el)) return;
+                            if (lock) {
+                                el.setAttribute('inert', '');
+                                el.setAttribute('aria-hidden', 'true');
+                            } else {
+                                el.removeAttribute('inert');
+                                el.removeAttribute('aria-hidden');
+                            }
+                        });
+                    },
+                    get pinString() { return this.pin.join(''); },
+                    get pinComplete() { return this.pinString.length === pinLength && /^[0-9]+$/.test(this.pinString); },
+                    toggle() {
+                        if (this.busy) return;
+                        this.open = !this.open;
+                        this.pin = empty();
+                        if (this.open) setTimeout(() => this.focusFirstBox(), 80);
+                    },
+                    close() {
+                        if (this.busy) return;
+                        this.open = false;
+                        this.pin = empty();
+                    },
+                    focusBox(index) {
+                        const target = this.$root.querySelector('[data-pin-index="' + index + '"]');
+                        if (target) { target.focus(); target.select(); }
+                    },
+                    handleInput(index, event) {
+                        const raw = (event.target.value || '').replace(/\D+/g, '');
+                        const last = raw.slice(-1);
+                        this.pin[index] = last;
+                        if (last && index < pinLength - 1) {
+                            const next = index + 1;
+                            requestAnimationFrame(() => this.focusBox(next));
+                        }
+                        if (this.pinComplete) requestAnimationFrame(() => this.advanceToConfirm());
+                    },
+                    handleKeydown(index, event) {
+                        if (event.key === 'Backspace') {
+                            if (this.pin[index]) this.pin[index] = '';
+                            else if (index > 0) { this.pin[index - 1] = ''; this.$nextTick(() => this.focusBox(index - 1)); }
+                            event.preventDefault();
+                        } else if (event.key === 'ArrowLeft' && index > 0) {
+                            this.focusBox(index - 1); event.preventDefault();
+                        } else if (event.key === 'ArrowRight' && index < pinLength - 1) {
+                            this.focusBox(index + 1); event.preventDefault();
+                        } else if (event.key === 'Enter') {
+                            event.preventDefault();
+                            if (this.pinComplete) this.advanceToConfirm();
+                        }
+                    },
+                    handlePaste(event) {
+                        event.preventDefault();
+                        if (typeof Swal !== 'undefined') {
+                            this.swal({ icon: 'warning', title: this.i18n.pinPasteTitle, text: this.i18n.pinPasteText, confirmButtonColor: '#d97706' });
+                        }
+                    },
+                    focusFirstBox() {
+                        const allBoxes = this.$root.querySelectorAll('[data-pin-index]');
+                        allBoxes.forEach((box, i) => {
+                            if (i === 0) {
+                                box.removeAttribute('tabindex');
+                                box.setAttribute('autofocus', 'autofocus');
+                            } else {
+                                box.setAttribute('tabindex', '-1');
+                                box.removeAttribute('autofocus');
+                            }
+                        });
+                        const refocus = () => {
+                            const t = this.$root.querySelector('[data-pin-index="0"]');
+                            if (t && document.activeElement !== t) {
+                                t.focus();
+                                if (typeof t.select === 'function') t.select();
+                            }
+                        };
+                        refocus();
+                        requestAnimationFrame(refocus);
+                        setTimeout(refocus, 60);
+                        setTimeout(refocus, 200);
+                    },
+                    async advanceToConfirm() {
+                        if (!this.pinComplete || this.busy) return;
+                        const correctPin = '1234';
+                        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                            document.activeElement.blur();
+                        }
+                        if (this.pinString !== correctPin) {
+                            if (typeof Swal !== 'undefined') {
+                                await this.swal({
+                                    icon: 'error',
+                                    title: this.i18n.pinInvalidTitle,
+                                    text: this.i18n.pinInvalidText,
+                                    confirmButtonColor: '#d97706',
+                                });
+                            } else {
+                                alert(this.i18n.pinInvalidText || 'Código no válido');
+                            }
+                            this.pin = empty();
+                            this.$nextTick(() => this.focusFirstBox());
+                            return;
+                        }
+                        if (typeof Swal === 'undefined') { this.proceedWithSwitch(); return; }
+                        const result = await this.swal({
+                            icon: 'question',
+                            title: this.i18n.confirmTitle,
+                            text: this.i18n.confirmText,
+                            showCancelButton: true,
+                            confirmButtonText: this.i18n.confirmYes,
+                            cancelButtonText: this.i18n.confirmCancel,
+                            confirmButtonColor: '#d97706',
+                            cancelButtonColor: '#6b7280',
+                            reverseButtons: true,
+                            focusCancel: true,
+                            allowEnterKey: true,
+                        });
+                        if (result.isConfirmed) {
+                            this.proceedWithSwitch();
+                        } else {
+                            this.pin = empty();
+                            this.$nextTick(() => this.focusFirstBox());
+                        }
+                    },
+                    proceedWithSwitch() {
+                        const ds = this.$root.dataset;
+                        const tpId = parseInt(ds.tpId, 10);
+                        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                            document.activeElement.blur();
+                        }
+                        this.busy = true;
+                        this.$wire.confirmSwitch(tpId, this.pinString).then((res) => {
+                            this.busy = false;
+                            if (res && res.ok) {
+                                this.open = false; this.pin = empty();
+                                if (typeof Swal !== 'undefined') {
+                                    this.swal({ icon: 'success', title: res.title, text: res.message, timer: 2600, showConfirmButton: true, confirmButtonColor: '#d97706' });
+                                }
+                            } else {
+                                const msg = (res && res.error) ? res.error : this.i18n.pinInvalidText;
+                                this.pin = empty();
+                                this.$nextTick(() => this.focusFirstBox());
+                                if (typeof Swal !== 'undefined') {
+                                    this.swal({ icon: 'error', title: this.i18n.pinInvalidTitle, text: msg, confirmButtonColor: '#d97706' });
+                                }
+                            }
+                        }).catch((e) => {
+                            this.busy = false;
+                            this.pin = empty();
+                            this.$nextTick(() => this.focusFirstBox());
+                            if (typeof Swal !== 'undefined') {
+                                this.swal({ icon: 'error', title: this.i18n.pinInvalidTitle, text: this.i18n.pinInvalidText, confirmButtonColor: '#d97706' });
+                            }
+                            console.error('[conmutaciones] confirmSwitch failed', e);
+                        });
+                    }
+                };
+            };
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.1/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

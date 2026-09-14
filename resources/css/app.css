@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 [x-cloak] {
-    display: none;
+    display: none !important;
 }
 
 .col-w-60 { width: 60px; min-width: 60px; }

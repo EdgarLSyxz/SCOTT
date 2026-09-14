@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'switch_password' => env('MODULATORS_SWITCH_PASSWORD', 'scott2026'),
+    'switch_pin' => env('MODULATORS_SWITCH_PIN', '1234'),
+    'switch_pin_length' => 4,
 ];
