@@ -20,6 +20,7 @@ class UserPermissions extends Component
     public $canEditRoles;
     public $canEditPermissions;
     public $reportMails = [];
+    public $hasSwitchAdmin = false;
 
     public function mount(User $user)
     {
@@ -71,6 +72,9 @@ class UserPermissions extends Component
 
         $this->canEditRoles = $isAuthMaster && !$isSelf;
         $this->canEditPermissions = ($isAuthMaster && !$isSelf) || ($isAuthAdmin && $isTargetUser && !$isSelf);
+
+        $switchPerm = Permission::where('name', 'switches.admin')->first();
+        $this->hasSwitchAdmin = $switchPerm ? $user->hasPermissionTo('switches.admin') : false;
 
         $firstMasterId = User::role('master')->orderBy('id')->value('id');
 
@@ -371,6 +375,44 @@ class UserPermissions extends Component
             'icon' => 'success',
             'title' => __('Well done!'),
             'text' => $this->user->can_switch_area ? __('User can now switch area.') : __('User can no longer switch area.'),
+        ]);
+    }
+
+    public function toggleSwitchAdmin()
+    {
+        $auth = auth()->user();
+
+        if (! ($this->canEditPermissions || ($auth && $auth->hasRole('master')))) {
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => __('Access denied'),
+                'text' => __('You are not authorized to change this setting.'),
+            ]);
+            return;
+        }
+
+        $permName = 'switches.admin';
+
+        $perm = Permission::firstOrCreate([
+            'name' => $permName,
+            'guard_name' => 'web',
+        ]);
+
+        if ($this->user->hasPermissionTo($permName)) {
+            $this->user->revokePermissionTo($permName);
+            $message = __('Switch administration permission revoked.');
+        } else {
+            $this->user->givePermissionTo($permName);
+            $message = __('Switch administration permission granted.');
+        }
+
+        $this->user->load('permissions');
+        $this->hasSwitchAdmin = $this->user->hasPermissionTo($permName);
+
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => $message,
         ]);
     }
 

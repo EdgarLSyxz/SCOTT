@@ -61,6 +61,7 @@ class UserController extends Controller
                 'role' => 'required|exists:roles,name',
                 'status' => 'required|boolean',
                 'can_switch_area' => 'required|boolean',
+                'is_conmutaciones_manager' => 'required|boolean',
                 'default_area' => 'sometimes|accepted',
             ], [
                 'email.regex' => __('Only @stargroup.com.mx emails are allowed.'),
@@ -99,6 +100,9 @@ class UserController extends Controller
         $user->default_area = $user->area;
         if (array_key_exists('can_switch_area', $data)) {
             $user->can_switch_area = (bool) $data['can_switch_area'];
+        }
+        if (array_key_exists('is_conmutaciones_manager', $data)) {
+            $user->is_conmutaciones_manager = (bool) $data['is_conmutaciones_manager'];
         }
         $user->email_verified_at = now();
         $user->save();
@@ -155,6 +159,7 @@ class UserController extends Controller
                 'area' => 'required|in:OTT,DTH',
                 'default_area' => 'sometimes|accepted',
                 'can_switch_area' => 'required|boolean',
+                'is_conmutaciones_manager' => 'required|boolean',
                 'status' => 'required|boolean',
             ]);
         } catch (ValidationException $e) {
@@ -193,6 +198,9 @@ class UserController extends Controller
                 $user->area = $user->default_area ?? $data['area'];
             }
             $user->can_switch_area = (bool) $data['can_switch_area'];
+        }
+        if (array_key_exists('is_conmutaciones_manager', $data)) {
+            $user->is_conmutaciones_manager = (bool) $data['is_conmutaciones_manager'];
         }
         $user->status = $data['status'];
         if (!empty($data['password'])) {

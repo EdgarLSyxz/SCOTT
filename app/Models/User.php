@@ -15,7 +15,6 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasRoles;
 
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
 
     use HasProfilePhoto;
@@ -37,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'area',
         'can_switch_area',
         'default_area',
+        'is_conmutaciones_manager',
     ];
 
     public const AREA_OTT = 'OTT';
@@ -87,6 +87,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
         'status' => 'boolean',
         'can_switch_area' => 'boolean',
+        'is_conmutaciones_manager' => 'boolean',
     ];
 
     public function reports()

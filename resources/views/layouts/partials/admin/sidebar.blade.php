@@ -96,7 +96,10 @@
         }
     }
 
-    $canAccessModulators = $currentUser && (int) $currentUser->id === 1;
+    $canAccessModulators = $currentUser && (
+        (int) $currentUser->id === 1
+        || (bool) ($currentUser->is_conmutaciones_manager ?? false)
+    );
 
     if (! $canAccessModulators) {
         $links = array_values(array_filter($links, function ($l) {

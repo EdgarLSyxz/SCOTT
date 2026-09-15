@@ -129,7 +129,7 @@
                                 {{ __('Allow area switch') }}
                             </x-label>
                             <select id="can_switch_area" name="can_switch_area"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500' }}">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
                                 <option disabled>{{ __('Select option') }}</option>
                                 <option value="1" @if(old('can_switch_area', $user->can_switch_area)) selected @endif>{{ __('Yes') }}</option>
                                 <option value="0" @if(!old('can_switch_area', $user->can_switch_area)) selected @endif>{{ __('No') }}</option>
@@ -148,6 +148,18 @@
                                 <option value="0" @if(!$user->status) selected @endif>{{ __('Inactive') }}</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="mt-6">
+                        <x-label for="is_conmutaciones_manager">
+                            <i class="fa-solid fa-right-left mr-1"></i>
+                            {{ __('Conmutaciones manager') }}
+                        </x-label>
+                        <select id="is_conmutaciones_manager" name="is_conmutaciones_manager"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
+                            <option disabled>{{ __('Select option') }}</option>
+                            <option value="1" @if(old('is_conmutaciones_manager', $user->is_conmutaciones_manager)) selected @endif>{{ __('Yes') }}</option>
+                            <option value="0" @if(!old('is_conmutaciones_manager', $user->is_conmutaciones_manager)) selected @endif>{{ __('No') }}</option>
+                        </select>
                     </div>
                     <div class="flex justify-end items-center">
                         <x-button :class="(Auth::user()->area === 'DTH' ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800' : 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800') . ' flex justify-center items-center mt-8 font-bold text-white'">

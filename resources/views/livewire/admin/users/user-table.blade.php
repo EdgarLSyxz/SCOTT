@@ -15,8 +15,11 @@
                         <i class="fa-solid fa-shield-halved mr-1.5"></i>
                         {{ __('Role') }}
                     </th>
-                    @php $authUser = auth()->user(); @endphp
-                    @if ($authUser && $authUser->id === 1)
+                    @php
+                        $authUser = auth()->user();
+                        $isMasterViewer = $authUser && ($authUser->id === 1 || $authUser->hasRole('master'));
+                    @endphp
+                    @if ($isMasterViewer)
                         <th class="py-3 px-6 whitespace-nowrap cursor-pointer w-[150px]"
                             wire:click="toggleAreaFilter">
                             <i class="fa-solid fa-building mr-1"></i>
@@ -51,9 +54,30 @@
                         {{ __('Switch') }}
                     </th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap w-[120px]">
-                        <i class="fa-solid fa-toggle-on mr-1.5"></i>
-                        {{ __('Status') }}
+                        <i class="fa-solid fa-arrow-right-arrow-left mr-1.5"></i>
+                        {{ __('Conmutar') }}
                     </th>
+                    @if ($isMasterViewer)
+                        <th class="px-6 py-3 whitespace-nowrap cursor-pointer w-[120px]"
+                            wire:click="toggleStatusFilter">
+                            <i class="fa-solid fa-toggle-on mr-1.5"></i>
+                            <span class="text-gray-500 dark:text-white">
+                                @if ($statusFilter === 'active')
+                                    {{ __('Active') }}
+                                @elseif ($statusFilter === 'inactive')
+                                    {{ __('Inactive') }}
+                                @else
+                                    {{ __('Status') }}
+                                @endif
+                                <i class="ml-1 fa-solid fa-sort"></i>
+                            </span>
+                        </th>
+                    @else
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap w-[120px]">
+                            <i class="fa-solid fa-toggle-on mr-1.5"></i>
+                            {{ __('Status') }}
+                        </th>
+                    @endif
                     <th scope="col" class="px-6 py-3 text-center whitespace-nowrap w-[40px]">
                     </th>
                 </tr>
@@ -177,6 +201,22 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            @php $hasSwitchAdmin = method_exists($user, 'hasPermissionTo') ? $user->hasPermissionTo('switches.admin') : false; @endphp
+                            @if ($hasSwitchAdmin)
+                                <span
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100">
+                                    <i class="fa-solid fa-circle-check mr-1"></i>
+                                    {{ __('Yes') }}
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                    <i class="fa-solid fa-ban mr-1"></i>
+                                    {{ __('No') }}
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             @if ($user->status)
                                 <span
                                     class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
@@ -199,7 +239,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="bg-white dark:bg-gray-800 py-6 text-center">
+                        <td colspan="8" class="bg-white dark:bg-gray-800 py-6 text-center">
                             <i class="fa-solid fa-circle-info mr-1"></i>
                             {{ __('There are no users registered for this area.') }}
                         </td>

@@ -25,8 +25,8 @@
 
                     $canSwitchTrueClasses = 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100';
                     $canSwitchFalseClasses = 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
-                                    @endphp
-                                    @php
+                @endphp
+                @php
                     $roleName = null;
                     if (method_exists($user, 'getRoleNames')) {
                         $roleName = $user->getRoleNames()->first() ?? null;
@@ -260,6 +260,30 @@
                         </div>
                     </div>
                 @endif
+
+                <div class="relative" x-data="{ tip: false }">
+                    @php
+                        $switchAdminActive = 'bg-indigo-200 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100';
+                        $switchAdminInactive = 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
+                    @endphp
+                    <button @mouseenter="tip = true" @mouseleave="tip = false"
+                        @if(!$canEditPermissions) disabled @else wire:click="toggleSwitchAdmin" @endif
+                        type="button"
+                        aria-pressed="{{ $hasSwitchAdmin ? 'true' : 'false' }}"
+                        class="{{ $smallBadgeBase }} {{ $hasSwitchAdmin ? $switchAdminActive : $switchAdminInactive }} {{ $canEditPermissions ? 'cursor-pointer' : '' }}">
+                        <i class="fa-solid fa-arrow-right-arrow-left text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div x-show="tip" x-cloak x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute z-50 left-1/2 transform -translate-x-1/2 mt-2 w-max px-2 py-1 rounded-md text-xs text-white bg-gray-800 dark:bg-gray-100 dark:text-gray-900">
+                        {{ $hasSwitchAdmin ? __('It can commute') : __('It cannot commute') }}
+                    </div>
+                </div>
+
                 <div class="relative" x-data="{ tip: false }">
                     @php $canSwitch = $user->can_switch_area ?? false; @endphp
                     <span @mouseenter="tip = true" @mouseleave="tip = false"
@@ -279,6 +303,7 @@
                         {{ $canSwitch ? __('Can switch area') : __('Cannot switch area') }}
                     </div>
                 </div>
+
                 @if($userArea)
                     <div class="relative" x-data="{ tip: false }">
                         @php

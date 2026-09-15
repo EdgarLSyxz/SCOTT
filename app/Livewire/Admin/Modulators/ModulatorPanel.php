@@ -278,8 +278,9 @@ class ModulatorPanel extends Component
 
         $isMaster = $user->id === 1;
         $isDth = $user->area === 'DTH';
+        $isConmutacionesManager = (bool) ($user->is_conmutaciones_manager ?? false);
 
-        if (! ($isMaster || $isDth)) {
+        if (! ($isMaster || $isDth || $isConmutacionesManager)) {
             abort(403);
         }
     }
