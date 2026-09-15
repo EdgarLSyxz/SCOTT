@@ -204,7 +204,7 @@
                             @php $hasSwitchAdmin = method_exists($user, 'hasPermissionTo') ? $user->hasPermissionTo('switches.admin') : false; @endphp
                             @if ($hasSwitchAdmin)
                                 <span
-                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100">
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                                     <i class="fa-solid fa-circle-check mr-1"></i>
                                     {{ __('Yes') }}
                                 </span>

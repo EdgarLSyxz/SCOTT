@@ -115,4 +115,24 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Report::class, 'reported_by')->latestOfMany();
     }
+
+    public function canAccessModulators(): bool
+    {
+        $isMaster = (int) $this->id === 1 || $this->hasRole('master');
+        $isDth = strtoupper(trim((string) ($this->area ?? ''))) === 'DTH';
+        $isConmutacionesManager = (bool) ($this->is_conmutaciones_manager ?? false);
+
+        $hasSwitchesAdminPermission = false;
+        try {
+            $permission = \Spatie\Permission\Models\Permission::firstOrCreate([
+                'name' => 'switches.admin',
+                'guard_name' => 'web',
+            ]);
+            $hasSwitchesAdminPermission = $permission && $this->hasPermissionTo('switches.admin');
+        } catch (\Throwable $e) {
+            $hasSwitchesAdminPermission = false;
+        }
+
+        return $isMaster || $isDth || $isConmutacionesManager || $hasSwitchesAdminPermission;
+    }
 }

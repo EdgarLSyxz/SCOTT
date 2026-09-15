@@ -16,11 +16,7 @@ class EnsureUserCanAccessModulators
             abort(403);
         }
 
-        $isMaster = (int) $user->id === 1;
-        $isDth = $user->area === 'DTH';
-        $isConmutacionesManager = (bool) ($user->is_conmutaciones_manager ?? false);
-
-        if (! ($isMaster || $isDth || $isConmutacionesManager)) {
+        if (! $user->canAccessModulators()) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 

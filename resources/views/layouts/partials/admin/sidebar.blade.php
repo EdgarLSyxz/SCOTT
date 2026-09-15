@@ -47,7 +47,7 @@
             'name' => __('modulators.modulators'),
             'icon' => 'fa-solid fa-right-left',
             'route' => route('admin.modulators.index'),
-            'active' => request()->routeIs('admin.modulators.*'),
+            'active' => request()->routeIs('admin.modulators.*') || request()->routeIs('modulators.*'),
         ],
         [
             'name' => __('Grafana'),
@@ -96,10 +96,7 @@
         }
     }
 
-    $canAccessModulators = $currentUser && (
-        (int) $currentUser->id === 1
-        || (bool) ($currentUser->is_conmutaciones_manager ?? false)
-    );
+    $canAccessModulators = $currentUser?->canAccessModulators() ?? false;
 
     if (! $canAccessModulators) {
         $links = array_values(array_filter($links, function ($l) {
