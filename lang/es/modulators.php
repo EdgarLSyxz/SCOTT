@@ -102,7 +102,7 @@ return [
     'timezone_label' => 'Zona horaria',
     'timezone_local_time' => 'Hora local',
     'timezone_format_sample' => 'AAAA-MM-DD HH:MM:SS',
-    'timezone_all_times_in' => 'Todas las horas se muestran en',
+    'timezone_all_times_in' => 'Zona horaria',
     'timezone_live_counters' => 'Contadores en vivo en formato HH:MM:SS',
 
     'weather_section_title' => 'Clima en sitio de uplink',
@@ -172,7 +172,7 @@ return [
 
     'weather_sun_summary' => 'Resumen de sol (3 días)',
     'weather_sun_section_title' => 'Información solar',
-    'weather_sun_uv_index' => 'Índice UV máx.',
+    'weather_sun_uv_index' => 'Índice UV Máx.',
     'weather_sun_radiation' => 'Radiación acumulada',
     'weather_sun_sunshine' => 'Horas de sol',
     'weather_sun_sunrise' => 'Amanecer',
