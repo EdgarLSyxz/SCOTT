@@ -157,6 +157,8 @@
                     open: false,
                     pin: empty(),
                     busy: false,
+                    advanceInProgress: false,
+                    validatedPin: '',
                     alertOpen: false,
                     i18n: i18n,
                     swal: swal,
@@ -228,12 +230,21 @@
                         if (this.busy) return;
                         this.open = !this.open;
                         this.pin = empty();
+                        this.validatedPin = '';
                         if (this.open) setTimeout(() => this.focusFirstBox(), 80);
                     },
                     close() {
                         if (this.busy) return;
                         this.open = false;
                         this.pin = empty();
+                        this.validatedPin = '';
+                    },
+                    resetAfterRequest(closeModal = false) {
+                        this.busy = false;
+                        if (closeModal) this.open = false;
+                        this.pin = empty();
+                        this.validatedPin = '';
+                        this.$nextTick(() => this.syncBackdropInert());
                     },
                     focusBox(index) {
                         const target = this.$root.querySelector('[data-pin-index="' + index + '"]');
@@ -241,13 +252,17 @@
                     },
                     handleInput(index, event) {
                         const raw = (event.target.value || '').replace(/\D+/g, '');
-                        const last = raw.slice(-1);
-                        this.pin[index] = last;
-                        if (last && index < pinLength - 1) {
+                        const digit = raw.slice(-1);
+                        if (!digit) {
+                            this.pin[index] = '';
+                            return;
+                        }
+                        this.pin[index] = digit;
+                        if (index < pinLength - 1) {
                             const next = index + 1;
                             requestAnimationFrame(() => this.focusBox(next));
                         }
-                        if (this.pinComplete) requestAnimationFrame(() => this.advanceToConfirm());
+                        if (this.pinComplete && !this.advanceInProgress) this.advanceToConfirm();
                     },
                     handleKeydown(index, event) {
                         if (event.key === 'Backspace') {
@@ -292,28 +307,86 @@
                         setTimeout(refocus, 60);
                         setTimeout(refocus, 200);
                     },
+                    readPinFromDom() {
+                        const inputs = this.$root.querySelectorAll('[data-pin-index]');
+                        let value = '';
+                        inputs.forEach((input) => {
+                            const v = (input.value || '').replace(/\D+/g, '');
+                            value += v.length > 0 ? v[v.length - 1] : '';
+                        });
+                        return value.slice(0, pinLength);
+                    },
+                    getWire() {
+                        if (this.$wire) return this.$wire;
+                        // Fallback: buscar el componente Livewire mas cercano en el DOM
+                        let el = this.$root;
+                        while (el) {
+                            if (el.__livewire && el.__livewire.$wire) return el.__livewire.$wire;
+                            el = el.parentElement;
+                        }
+                        // Ultimo fallback: buscar por wire:id en el documento
+                        const rootEl = document.querySelector('[wire\\:id]');
+                        if (rootEl && rootEl.__livewire && rootEl.__livewire.$wire) return rootEl.__livewire.$wire;
+                        return null;
+                    },
                     async advanceToConfirm() {
-                        if (!this.pinComplete || this.busy) return;
-                        const correctPin = '1234';
+                        if (!this.pinComplete || this.busy || this.advanceInProgress) return;
+                        this.advanceInProgress = true;
                         if (document.activeElement && typeof document.activeElement.blur === 'function') {
                             document.activeElement.blur();
                         }
-                        if (this.pinString !== correctPin) {
-                            if (typeof Swal !== 'undefined') {
-                                await this.swal({
-                                    icon: 'error',
-                                    title: this.i18n.pinInvalidTitle,
-                                    text: this.i18n.pinInvalidText,
-                                    confirmButtonColor: '#d97706',
-                                });
-                            } else {
-                                alert(this.i18n.pinInvalidText || 'Código no válido');
-                            }
+                        this.busy = true;
+                        const domPin = this.readPinFromDom();
+                        this.validatedPin = domPin.length === pinLength ? domPin : this.pinString;
+                        console.log('[conmutaciones] advanceToConfirm: domPin=', JSON.stringify(domPin), 'pinString=', JSON.stringify(this.pinString), 'validatedPin=', JSON.stringify(this.validatedPin), 'hasWire=', !!this.getWire());
+                        const wire = this.getWire();
+                        if (!wire) {
+                            console.error('[conmutaciones] No Livewire wire available');
+                            this.busy = false;
+                            this.advanceInProgress = false;
                             this.pin = empty();
+                            this.validatedPin = '';
                             this.$nextTick(() => this.focusFirstBox());
+                            if (typeof Swal !== 'undefined') {
+                                this.swal({ icon: 'error', title: this.i18n.genericErrorTitle, text: this.i18n.genericErrorText, confirmButtonColor: '#d97706' });
+                            }
                             return;
                         }
-                        if (typeof Swal === 'undefined') { this.proceedWithSwitch(); return; }
+                        try {
+                            const validation = await wire.validateSwitchPin(this.validatedPin);
+                            this.busy = false;
+                            if (!validation || !validation.ok) {
+                                this.advanceInProgress = false;
+                                this.pin = empty();
+                                this.validatedPin = '';
+                                this.$nextTick(() => this.focusFirstBox());
+                                if (typeof Swal !== 'undefined') {
+                                    this.swal({
+                                        icon: 'error',
+                                        title: (validation && validation.title) || this.i18n.pinInvalidTitle,
+                                        text: (validation && validation.error) || this.i18n.pinInvalidText,
+                                        confirmButtonColor: '#d97706',
+                                    });
+                                }
+                                return;
+                            }
+                        } catch (e) {
+                            this.advanceInProgress = false;
+                            this.busy = false;
+                            this.pin = empty();
+                            this.validatedPin = '';
+                            this.$nextTick(() => this.focusFirstBox());
+                            if (typeof Swal !== 'undefined') {
+                                this.swal({ icon: 'error', title: this.i18n.genericErrorTitle, text: this.i18n.genericErrorText, confirmButtonColor: '#d97706' });
+                            }
+                            console.error('[conmutaciones] validateSwitchPin failed', e);
+                            return;
+                        }
+                        if (typeof Swal === 'undefined') {
+                            this.advanceInProgress = false;
+                            this.proceedWithSwitch(this.validatedPin);
+                            return;
+                        }
                         const result = await this.swal({
                             icon: 'question',
                             title: this.i18n.confirmTitle,
@@ -328,42 +401,156 @@
                             allowEnterKey: true,
                         });
                         if (result.isConfirmed) {
-                            this.proceedWithSwitch();
+                            this.advanceInProgress = false;
+                            this.proceedWithSwitch(this.validatedPin);
                         } else {
+                            this.advanceInProgress = false;
                             this.pin = empty();
+                            this.validatedPin = '';
                             this.$nextTick(() => this.focusFirstBox());
                         }
                     },
-                    proceedWithSwitch() {
+                    proceedWithSwitch(pinOverride = null) {
                         const ds = this.$root.dataset;
                         const tpId = parseInt(ds.tpId, 10);
                         if (document.activeElement && typeof document.activeElement.blur === 'function') {
                             document.activeElement.blur();
                         }
                         this.busy = true;
-                        this.$wire.confirmSwitch(tpId, this.pinString).then((res) => {
+                        const pin = (pinOverride && pinOverride.length > 0) ? pinOverride : this.validatedPin;
+                        if (!pin || pin.length !== pinLength) {
                             this.busy = false;
-                            if (res && res.ok) {
-                                this.open = false; this.pin = empty();
-                                if (typeof Swal !== 'undefined') {
-                                    this.swal({ icon: 'success', title: res.title, text: res.message, timer: 2600, showConfirmButton: true, confirmButtonColor: '#d97706' });
-                                }
-                            } else {
-                                const msg = (res && res.error) ? res.error : this.i18n.pinInvalidText;
-                                this.pin = empty();
-                                this.$nextTick(() => this.focusFirstBox());
-                                if (typeof Swal !== 'undefined') {
-                                    this.swal({ icon: 'error', title: this.i18n.pinInvalidTitle, text: msg, confirmButtonColor: '#d97706' });
-                                }
-                            }
-                        }).catch((e) => {
-                            this.busy = false;
-                            this.pin = empty();
+                            this.resetAfterRequest();
                             this.$nextTick(() => this.focusFirstBox());
                             if (typeof Swal !== 'undefined') {
                                 this.swal({ icon: 'error', title: this.i18n.pinInvalidTitle, text: this.i18n.pinInvalidText, confirmButtonColor: '#d97706' });
                             }
+                            console.error('[conmutaciones] proceedWithSwitch called without a valid PIN', { pinOverride, validatedPin: this.validatedPin, pinString: this.pinString });
+                            return;
+                        }
+                        const wire = this.getWire();
+                        if (!wire) {
+                            console.error('[conmutaciones] No Livewire wire available in proceedWithSwitch');
+                            this.busy = false;
+                            this.resetAfterRequest();
+                            this.$nextTick(() => this.focusFirstBox());
+                            if (typeof Swal !== 'undefined') {
+                                this.swal({ icon: 'error', title: this.i18n.genericErrorTitle, text: this.i18n.genericErrorText, confirmButtonColor: '#d97706' });
+                            }
+                            return;
+                        }
+                        wire.confirmSwitch(tpId, pin).then((res) => {
+                            console.log('[conmutaciones] confirmSwitch sent: tpId=', tpId, 'pin=', JSON.stringify(pin), 'response=', JSON.stringify(res));
+                            this.busy = false;
+                            if (res && res.ok) {
+                                this.resetAfterRequest(true);
+                                if (typeof Swal !== 'undefined') {
+                                    this.swal({ icon: 'success', title: res.title, text: res.message, timer: 2600, showConfirmButton: true, confirmButtonColor: '#d97706' });
+                                }
+                            } else {
+                                const isPinError = res && (res.error_code === 'pin_invalid' || (!res.error_code && res.title && res.title === this.i18n.pinInvalidTitle));
+                                const title = (res && res.title) ? res.title : (isPinError ? this.i18n.pinInvalidTitle : this.i18n.genericErrorTitle);
+                                const msg = (res && res.error) ? res.error : this.i18n.pinInvalidText;
+                                this.resetAfterRequest();
+                                this.$nextTick(() => this.focusFirstBox());
+                                if (typeof Swal !== 'undefined') {
+                                    this.swal({ icon: 'error', title: title, text: msg, confirmButtonColor: '#d97706' });
+                                }
+                            }
+                        }).catch((e) => {
+                            this.resetAfterRequest();
+                            this.$nextTick(() => this.focusFirstBox());
+                            if (typeof Swal !== 'undefined') {
+                                this.swal({ icon: 'error', title: this.i18n.genericErrorTitle, text: this.i18n.genericErrorText, confirmButtonColor: '#d97706' });
+                            }
                             console.error('[conmutaciones] confirmSwitch failed', e);
+                        });
+                    }
+                };
+            };
+
+            window.pinSettingsModal = function (pinLength, i18n) {
+                const digitsOnly = (value) => (value || '').replace(/\D+/g, '').slice(0, pinLength);
+                const isCompletePin = (value) => value.length === pinLength;
+
+                return {
+                    open: false,
+                    busy: false,
+                    currentPin: '',
+                    newPin: '',
+                    newPinConfirmation: '',
+                    i18n: i18n,
+                    close() {
+                        if (this.busy) return;
+                        this.open = false;
+                        this.currentPin = '';
+                        this.newPin = '';
+                        this.newPinConfirmation = '';
+                    },
+                    sanitize(field) {
+                        this[field] = digitsOnly(this[field]);
+                    },
+                    getWire() {
+                        if (this.$wire) return this.$wire;
+                        let el = this.$root || (this.$el && this.$el.parentElement);
+                        while (el) {
+                            if (el.__livewire && el.__livewire.$wire) return el.__livewire.$wire;
+                            el = el.parentElement;
+                        }
+                        const rootEl = document.querySelector('[wire\\:id]');
+                        if (rootEl && rootEl.__livewire && rootEl.__livewire.$wire) return rootEl.__livewire.$wire;
+                        return null;
+                    },
+                    submit() {
+                        if (this.busy) return;
+
+                        if (!isCompletePin(this.currentPin) || !isCompletePin(this.newPin) || !isCompletePin(this.newPinConfirmation)) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ icon: 'warning', title: this.i18n.invalidTitle, text: this.i18n.lengthText, confirmButtonColor: '#d97706' });
+                            }
+                            return;
+                        }
+
+                        if (this.newPin !== this.newPinConfirmation) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ icon: 'warning', title: this.i18n.invalidTitle, text: this.i18n.mismatchText, confirmButtonColor: '#d97706' });
+                            }
+                            return;
+                        }
+
+                        const wire = this.getWire();
+                        if (!wire) {
+                            console.error('[conmutaciones] No Livewire wire available in pinSettingsModal.submit');
+                            this.busy = false;
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ icon: 'error', title: this.i18n.invalidTitle, confirmButtonColor: '#d97706' });
+                            }
+                            return;
+                        }
+
+                        this.busy = true;
+                        wire.updateSwitchPin(this.currentPin, this.newPin, this.newPinConfirmation).then((res) => {
+                            this.busy = false;
+                            if (res && res.ok) {
+                                this.close();
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({ icon: 'success', title: res.title, text: res.message, confirmButtonColor: '#d97706' });
+                                }
+                            } else {
+                                const msg = (res && res.error) ? res.error : this.i18n.invalidTitle;
+                                this.currentPin = '';
+                                this.newPin = '';
+                                this.newPinConfirmation = '';
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({ icon: 'error', title: (res && res.title) || this.i18n.invalidTitle, text: msg, confirmButtonColor: '#d97706' });
+                                }
+                            }
+                        }).catch((e) => {
+                            this.busy = false;
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ icon: 'error', title: this.i18n.invalidTitle, confirmButtonColor: '#d97706' });
+                            }
+                            console.error('[conmutaciones] updateSwitchPin failed', e);
                         });
                     }
                 };

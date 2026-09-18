@@ -98,13 +98,15 @@
                     <i class="fa-solid fa-right-left mr-1.5"></i>
                     {{ __('modulators.modulators') }}
                 </h1>
-                <p class="text-sm font-light leading-tight text-gray-500 dark:text-gray-400">
-                    {{ __('modulators.modulators_subtitle') }}
-                    <span class="font-semibold {{ $areaColor('text-amber-600') }}">{{ __($siteZacatecas) }}</span>
-                    {{ __('modulators.and') }}
-                    <span class="font-semibold {{ $areaColor('text-amber-600') }}">{{ __($siteToluca) }}</span>.
-                    {{ __('modulators.golden_rule') }}
-                </p>
+                <div class="flex flex-col md:items-end gap-2">
+                    <p class="text-sm font-light leading-tight text-gray-500 dark:text-gray-400">
+                        {{ __('modulators.modulators_subtitle') }}
+                        <span class="font-semibold {{ $areaColor('text-amber-600') }}">{{ __($siteZacatecas) }}</span>
+                        {{ __('modulators.and') }}
+                        <span class="font-semibold {{ $areaColor('text-amber-600') }}">{{ __($siteToluca) }}</span>.
+                        {{ __('modulators.golden_rule') }}
+                    </p>
+                </div>
             </div>
 
             <div class="flex flex-col lg:flex-row items-center justify-center gap-3">
@@ -745,6 +747,109 @@
                                         :class="grouped ? 'translate-x-3.5' : 'translate-x-0.5'"></span>
                                 </span>
                             </button>
+                            @if($canManagePin)
+                                @php $pinSettingsLength = (int) config('modulators.switch_pin_length', 4); @endphp
+                                <div x-data="window.pinSettingsModal({{ $pinSettingsLength }}, {
+                                        invalidTitle: @js(__('modulators.pin_invalid')),
+                                        lengthText: @js(__('modulators.pin_length_text', ['length' => $pinSettingsLength])),
+                                        mismatchText: @js(__('modulators.pin_confirmation_mismatch')),
+                                    })">
+                                    <button type="button"
+                                            @click="open = true"
+                                            class="inline-flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-xs font-bold transition bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 {{ $areaColor('hover:border-amber-400') }}">
+                                        <i class="fa-solid fa-key"></i>
+                                        {{ __('modulators.pin_settings_button') }}
+                                    </button>
+
+                                    <div x-show="open" x-cloak style="display: none;"
+                                         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                                         @keydown.escape.window="close()">
+                                        <div x-show="open" x-cloak style="display: none;"
+                                             x-transition:enter="ease-out duration-150"
+                                             x-transition:enter-start="opacity-0"
+                                             x-transition:enter-end="opacity-100"
+                                             x-transition:leave="ease-in duration-100"
+                                             x-transition:leave-start="opacity-100"
+                                             x-transition:leave-end="opacity-0"
+                                             class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm"
+                                             @click="close()"></div>
+
+                                        <div x-show="open" x-cloak style="display: none;"
+                                             x-transition:enter="ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="ease-in duration-150"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-95"
+                                             class="relative w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden text-left">
+
+                                            <div class="px-5 py-4 {{ $areaColor('bg-amber-600') }} text-white flex items-center gap-2">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fa-solid fa-key text-2xl"></i>
+                                                </div>
+                                                <div class="flex flex-col items-start">
+                                                    <span class="font-bold">Actualizar PIN de conmutación</span>
+                                                    <p class="text-[11px] text-white/90">
+                                                        Ingresa {{ $pinSettingsLength }} dígitos numéricos para el nuevo PIN.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-5 space-y-3">
+                                                <div>
+                                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">
+                                                        {{ __('modulators.pin_current_label') }}
+                                                    </label>
+                                                    <input type="password" inputmode="numeric" pattern="[0-9]*"
+                                                           maxlength="{{ $pinSettingsLength }}"
+                                                           x-model="currentPin" @input="sanitize('currentPin')"
+                                                           autocomplete="off" :disabled="busy"
+                                                           class="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-3 py-2 text-center text-lg font-bold tracking-[0.4em] disabled:opacity-60 {{ $areaColor('focus:ring-4 focus:ring-amber-300 focus:border-amber-500 dark:focus:ring-amber-700') }}">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">
+                                                        {{ __('modulators.pin_new_label') }}
+                                                    </label>
+                                                    <input type="password" inputmode="numeric" pattern="[0-9]*"
+                                                           maxlength="{{ $pinSettingsLength }}"
+                                                           x-model="newPin" @input="sanitize('newPin')"
+                                                           autocomplete="off" :disabled="busy"
+                                                           class="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-3 py-2 text-center text-lg font-bold tracking-[0.4em] disabled:opacity-60 {{ $areaColor('focus:ring-4 focus:ring-amber-300 focus:border-amber-500 dark:focus:ring-amber-700') }}">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">
+                                                        {{ __('modulators.pin_new_confirm_label') }}
+                                                    </label>
+                                                    <input type="password" inputmode="numeric" pattern="[0-9]*"
+                                                           maxlength="{{ $pinSettingsLength }}"
+                                                           x-model="newPinConfirmation" @input="sanitize('newPinConfirmation')"
+                                                           autocomplete="off" :disabled="busy"
+                                                           class="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-3 py-2 text-center text-lg font-bold tracking-[0.4em] disabled:opacity-60 {{ $areaColor('focus:ring-4 focus:ring-amber-300 focus:border-amber-500 dark:focus:ring-amber-700') }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="px-5 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-2">
+                                                <button type="button"
+                                                        @click="close()"
+                                                        :disabled="busy"
+                                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                    {{ __('modulators.modal_cancel') }}
+                                                </button>
+                                                <button type="button"
+                                                        @click="submit()"
+                                                        :disabled="busy"
+                                                        class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold text-white disabled:opacity-60 {{ $areaColor('bg-amber-600 hover:bg-amber-700') }}">
+                                                    <i class="fa-solid fa-floppy-disk" x-show="!busy"></i>
+                                                    <i class="fa-solid fa-spinner fa-spin" x-show="busy"></i>
+                                                    <span x-show="!busy">{{ __('modulators.pin_settings_save') }}</span>
+                                                    <span x-show="busy">Actualizando...</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -811,9 +916,7 @@
                 <span class="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                     <i class="fa-solid fa-earth-americas"></i>
                     {{ __('modulators.timezone_all_times_in') }}
-                    <strong class="font-bold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }}</strong>
-                    <span class="text-gray-400">·</span>
-                    <span class="font-mono">{{ $timezone['name'] }}</span>
+                    <strong class="font-bold text-gray-700 dark:text-gray-200">{{ $timezone['gmt'] }} {{ $timezone['name'] }}</strong>
                 </span>
             </div>
         </div>

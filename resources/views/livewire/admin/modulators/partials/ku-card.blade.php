@@ -14,6 +14,8 @@
     $pinInvalidText = __('modulators.pin_invalid_text');
     $pinPasteTitle = __('modulators.pin_paste_blocked_title');
     $pinPasteText = __('modulators.pin_paste_blocked_text');
+    $genericErrorTitle = __('modulators.pin_generic_error_title');
+    $genericErrorText = __('modulators.pin_generic_error_text');
     $areaIsDTH = Auth::user()->area === 'DTH';
     $areaColor = fn(string $classes) => $areaIsDTH ? str_replace('amber', 'secondary', $classes) : str_replace('amber', 'primary', $classes);
 @endphp
@@ -30,6 +32,8 @@
             pinInvalidText: @js($pinInvalidText),
             pinPasteTitle: @js($pinPasteTitle),
             pinPasteText: @js($pinPasteText),
+            genericErrorTitle: @js($genericErrorTitle),
+            genericErrorText: @js($genericErrorText),
             confirmTitle: @js($confirmTitle),
             confirmText: @js($confirmText),
             confirmYes: @js($confirmYes),
@@ -239,10 +243,6 @@
                     <p class="mt-3 text-[11px] text-gray-500 dark:text-gray-400 flex items-start justify-center gap-1.5 text-center">
                         <i class="fa-solid fa-circle-info {{ $areaColor('text-amber-500') }} mt-0.5"></i>
                         <span>{{ __('modulators.pin_help_text') }}</span>
-                    </p>
-                    <p class="mt-1.5 text-[11px] {{ $areaColor('text-amber-700 dark:text-amber-300') }} font-mono flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-key"></i>
-                        <span>{{ __('modulators.pin_default_hint') }}</span>
                     </p>
                 </div>
             </div>

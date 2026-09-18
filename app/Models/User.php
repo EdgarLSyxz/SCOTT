@@ -135,4 +135,19 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $isMaster || $isDth || $isConmutacionesManager || $hasSwitchesAdminPermission;
     }
+
+    public function canManageModulatorPin(): bool
+    {
+        $isMaster = (int) $this->id === 1 || $this->hasRole('master');
+        $isConmutacionesManager = (bool) ($this->is_conmutaciones_manager ?? false);
+
+        $hasSwitchesAdminPermission = false;
+        try {
+            $hasSwitchesAdminPermission = $this->hasPermissionTo('switches.admin');
+        } catch (\Throwable $e) {
+            $hasSwitchesAdminPermission = false;
+        }
+
+        return $isMaster || $isConmutacionesManager || $hasSwitchesAdminPermission;
+    }
 }

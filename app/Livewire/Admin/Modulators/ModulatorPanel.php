@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Modulators;
 
+use App\Models\ModulatorSetting;
 use App\Models\Transponder;
 use App\Models\TransponderStateEvent;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Services\WeatherService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,9 +22,15 @@ class ModulatorPanel extends Component
 
     public ?string $weatherLastUpdatedAt = null;
 
+    public bool $canManagePin = false;
+
     public function mount(): void
     {
         $this->authorizeAccess();
+
+        /** @var User|null $user */
+        $user = Auth::user();
+        $this->canManagePin = (bool) ($user && $user->canManageModulatorPin());
     }
 
     public function title(): string
@@ -37,6 +45,7 @@ class ModulatorPanel extends Component
         if ($transponderId === null) {
             return [
                 'ok' => false,
+                'error_code' => 'transponder_not_found',
                 'error' => __('modulators.transponder_not_found'),
                 'title' => __('modulators.transponder_not_found'),
             ];
@@ -45,6 +54,7 @@ class ModulatorPanel extends Component
         if (! $this->verifySwitchPin($pin)) {
             return [
                 'ok' => false,
+                'error_code' => 'pin_invalid',
                 'error' => __('modulators.pin_invalid_text'),
                 'title' => __('modulators.pin_invalid'),
             ];
@@ -53,6 +63,7 @@ class ModulatorPanel extends Component
         if (! Schema::hasTable('transponders')) {
             return [
                 'ok' => false,
+                'error_code' => 'module_not_ready',
                 'error' => __('modulators.module_not_ready_text'),
                 'title' => __('modulators.module_not_ready'),
             ];
@@ -62,6 +73,7 @@ class ModulatorPanel extends Component
         if (! $transponder) {
             return [
                 'ok' => false,
+                'error_code' => 'transponder_not_found',
                 'error' => __('modulators.transponder_not_found'),
                 'title' => __('modulators.transponder_not_found'),
             ];
@@ -107,22 +119,105 @@ class ModulatorPanel extends Component
         ];
     }
 
+    public function validateSwitchPin(?string $pin = null): array
+    {
+        $this->authorizeAccess();
+
+        if (! $this->verifySwitchPin($pin)) {
+            return [
+                'ok' => false,
+                'error_code' => 'pin_invalid',
+                'error' => __('modulators.pin_invalid_text'),
+                'title' => __('modulators.pin_invalid'),
+            ];
+        }
+
+        return ['ok' => true];
+    }
+
+    public function updateSwitchPin(?string $currentPin, ?string $newPin, ?string $newPinConfirmation): array
+    {
+        $this->authorizeAccess();
+
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (! $user || ! $user->canManageModulatorPin()) {
+            abort(403);
+        }
+
+        $length = (int) config('modulators.switch_pin_length', 4);
+
+        if (! $this->verifySwitchPin($currentPin)) {
+            return [
+                'ok' => false,
+                'error_code' => 'pin_current_invalid',
+                'error' => __('modulators.pin_current_invalid_text'),
+                'title' => __('modulators.pin_invalid'),
+            ];
+        }
+
+        $newDigits = preg_replace('/\D+/', '', (string) $newPin) ?? '';
+        $confirmDigits = preg_replace('/\D+/', '', (string) $newPinConfirmation) ?? '';
+
+        if (strlen($newDigits) !== $length) {
+            return [
+                'ok' => false,
+                'error_code' => 'pin_length',
+                'error' => __('modulators.pin_length_text', ['length' => $length]),
+                'title' => __('modulators.pin_invalid'),
+            ];
+        }
+
+        if (! hash_equals($newDigits, $confirmDigits)) {
+            return [
+                'ok' => false,
+                'error_code' => 'pin_confirmation_mismatch',
+                'error' => __('modulators.pin_confirmation_mismatch'),
+                'title' => __('modulators.pin_invalid'),
+            ];
+        }
+
+        $setting = ModulatorSetting::current();
+        $setting->update([
+            'switch_pin_hash' => Hash::make($newDigits),
+            'updated_by' => $user->id,
+        ]);
+
+        return [
+            'ok' => true,
+            'title' => __('modulators.pin_updated_title'),
+            'message' => __('modulators.pin_updated_text'),
+        ];
+    }
+
     private function verifySwitchPin(?string $pin): bool
     {
-        $expected = (string) config('modulators.switch_pin', '');
         $length = (int) config('modulators.switch_pin_length', 4);
         $provided = is_string($pin) ? $pin : '';
-
-        if ($expected === '' || $length <= 0) {
-            return false;
-        }
-
         $provided = preg_replace('/\D+/', '', $provided) ?? '';
-        if (strlen($provided) !== $length || strlen($expected) !== $length) {
+
+        if ($length <= 0 || strlen($provided) !== $length) {
+            \Illuminate\Support\Facades\Log::warning('verifySwitchPin rejected: wrong length', [
+                'provided_raw' => is_string($pin) ? $pin : null,
+                'provided_sanitized' => $provided,
+                'expected_length' => $length,
+            ]);
             return false;
         }
 
-        return hash_equals($expected, $provided);
+        $setting = ModulatorSetting::current();
+
+        $matches = filled($setting->switch_pin_hash)
+            && Hash::check($provided, $setting->switch_pin_hash);
+
+        \Illuminate\Support\Facades\Log::info('verifySwitchPin', [
+            'provided' => $provided,
+            'hash_prefix' => filled($setting->switch_pin_hash) ? substr($setting->switch_pin_hash, 0, 10) : null,
+            'hash_updated_at' => $setting->updated_at?->toIso8601String(),
+            'matches' => $matches,
+        ]);
+
+        return $matches;
     }
 
     #[On('modulator-refresh')]
