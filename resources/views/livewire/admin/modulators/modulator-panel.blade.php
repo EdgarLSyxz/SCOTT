@@ -1,7 +1,7 @@
-<div wire:poll.600000ms="refreshWeather">
+<divwire:poll.600000ms="refreshWeather">
 @php
-    $areaIsDTH = Auth::user()->area === 'DTH';
-    $areaColor = fn (string $classes) => $areaIsDTH ? str_replace('amber', 'secondary', $classes) : str_replace('amber', 'primary', $classes);
+$areaIsDTH = Auth::user()->area === 'DTH';
+$areaColor = fn(string $classes) => $areaIsDTH ? str_replace('amber', 'secondary', $classes) : str_replace('amber', 'primary', $classes);
 @endphp
     <script>
         function scottFormatDuration(totalSeconds) {
@@ -194,11 +194,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     @foreach([$siteZacatecas, $siteToluca] as $siteKey)
                         @php
-                            $payload = $weatherBySite[$siteKey] ?? null;
-                            $siteName = $payload['label'] ?? __($siteKey);
-                            $summary = $payload['rainfall_summary'] ?? null;
-                            $isRainingNow = $payload && (($payload['current']['precipitation'] ?? 0) > 0 || ($payload['current']['rain'] ?? 0) > 0);
-                            $timelineHours = $payload['hourly_timeline']['hours'] ?? [];
+    $payload = $weatherBySite[$siteKey] ?? null;
+    $siteName = $payload['label'] ?? __($siteKey);
+    $summary = $payload['rainfall_summary'] ?? null;
+    $isRainingNow = $payload && (($payload['current']['precipitation'] ?? 0) > 0 || ($payload['current']['rain'] ?? 0) > 0);
+    $timelineHours = $payload['hourly_timeline']['hours'] ?? [];
                         @endphp
                         <div class="rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 p-4 shadow-sm">
                             <div class="flex items-center justify-between gap-3">
@@ -224,25 +224,25 @@
                                     </div>
                                     @if($payload)
                                         @php
-                                            $uvNow = $payload['current']['uv_index'] ?? null;
-                                            $uvNowLevel = \App\Services\WeatherService::uvLevelStatic($uvNow);
-                                            $uvNowColors = [
-                                                'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-                                                'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-                                                'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
-                                                'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-                                                'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
-                                                'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-                                            ];
-                                            $uvNowLabels = [
-                                                'low' => 'modulators.weather_sun_uv_low',
-                                                'moderate' => 'modulators.weather_sun_uv_moderate',
-                                                'high' => 'modulators.weather_sun_uv_high',
-                                                'very_high' => 'modulators.weather_sun_uv_very_high',
-                                                'extreme' => 'modulators.weather_sun_uv_extreme',
-                                                'unknown' => 'modulators.weather_sun_uv_unknown',
-                                            ];
-                                            $radNow = $payload['current']['shortwave_radiation'] ?? null;
+        $uvNow = $payload['current']['uv_index'] ?? null;
+        $uvNowLevel = \App\Services\WeatherService::uvLevelStatic($uvNow);
+        $uvNowColors = [
+            'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+            'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+            'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
+            'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+            'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
+            'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+        ];
+        $uvNowLabels = [
+            'low' => 'modulators.weather_sun_uv_low',
+            'moderate' => 'modulators.weather_sun_uv_moderate',
+            'high' => 'modulators.weather_sun_uv_high',
+            'very_high' => 'modulators.weather_sun_uv_very_high',
+            'extreme' => 'modulators.weather_sun_uv_extreme',
+            'unknown' => 'modulators.weather_sun_uv_unknown',
+        ];
+        $radNow = $payload['current']['shortwave_radiation'] ?? null;
                                         @endphp
                                         <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                                             @if($isRainingNow)
@@ -287,13 +287,13 @@
                                 </div>
                             @else
                                 @php
-                                    $maxTimelineMm = 0.0;
-                                    foreach ($timelineHours as $h) {
-                                        if (($h['precipitation'] ?? 0) > $maxTimelineMm) {
-                                            $maxTimelineMm = (float) $h['precipitation'];
-                                        }
-                                    }
-                                    $hasTimelineRain = $maxTimelineMm > 0;
+        $maxTimelineMm = 0.0;
+        foreach ($timelineHours as $h) {
+            if (($h['precipitation'] ?? 0) > $maxTimelineMm) {
+                $maxTimelineMm = (float) $h['precipitation'];
+            }
+        }
+        $hasTimelineRain = $maxTimelineMm > 0;
                                 @endphp
 
                                 <div class="mt-4 rounded-md border border-indigo-200 dark:border-indigo-900 bg-indigo-50/40 dark:bg-indigo-900/20 p-3">
@@ -314,30 +314,30 @@
                                             <div class="flex items-end gap-[2px] h-16">
                                                 @foreach($timelineHours as $h)
                                                     @php
-                                                        $mm = (float) ($h['precipitation'] ?? 0);
-                                                        $ratio = $maxTimelineMm > 0 ? ($mm / $maxTimelineMm) : 0;
-                                                        $barHeight = $mm > 0 ? max(8, (int) round($ratio * 64)) : 3;
-                                                        $intensity = $h['rain_intensity'] ?? 'none';
-                                                        $barColors = [
-                                                            'none' => 'bg-gray-200 dark:bg-gray-700',
-                                                            'light' => 'bg-sky-300 dark:bg-sky-700',
-                                                            'moderate' => 'bg-blue-400 dark:bg-blue-600',
-                                                            'heavy' => 'bg-blue-700 dark:bg-blue-400',
-                                                        ];
-                                                        $barColor = $barColors[$intensity] ?? $barColors['none'];
-                                                        $hourLabel = substr((string) $h['hour'], 0, 2);
-                                                        $probText = $h['probability'] !== null ? (int) $h['probability'] . '%' : '';
-                                                        $tooltipParts = [$hourLabel . ':00'];
-                                                        if ($mm > 0) {
-                                                            $tooltipParts[] = number_format($mm, 1) . ' mm';
-                                                        }
-                                                        if ($probText) {
-                                                            $tooltipParts[] = $probText;
-                                                        }
-                                                        if (!empty($h['label'])) {
-                                                            $tooltipParts[] = $h['label'];
-                                                        }
-                                                        $tooltip = implode(' · ', $tooltipParts);
+                $mm = (float) ($h['precipitation'] ?? 0);
+                $ratio = $maxTimelineMm > 0 ? ($mm / $maxTimelineMm) : 0;
+                $barHeight = $mm > 0 ? max(8, (int) round($ratio * 64)) : 3;
+                $intensity = $h['rain_intensity'] ?? 'none';
+                $barColors = [
+                    'none' => 'bg-gray-200 dark:bg-gray-700',
+                    'light' => 'bg-sky-300 dark:bg-sky-700',
+                    'moderate' => 'bg-blue-400 dark:bg-blue-600',
+                    'heavy' => 'bg-blue-700 dark:bg-blue-400',
+                ];
+                $barColor = $barColors[$intensity] ?? $barColors['none'];
+                $hourLabel = substr((string) $h['hour'], 0, 2);
+                $probText = $h['probability'] !== null ? (int) $h['probability'] . '%' : '';
+                $tooltipParts = [$hourLabel . ':00'];
+                if ($mm > 0) {
+                    $tooltipParts[] = number_format($mm, 1) . ' mm';
+                }
+                if ($probText) {
+                    $tooltipParts[] = $probText;
+                }
+                if (!empty($h['label'])) {
+                    $tooltipParts[] = $h['label'];
+                }
+                $tooltip = implode(' · ', $tooltipParts);
                                                     @endphp
                                                     <div class="flex-1 flex flex-col items-center justify-end group relative" title="{{ $tooltip }}">
                                                         <div class="w-full rounded-sm {{ $barColor }} hover:opacity-80" style="height: {{ $barHeight }}px"></div>
@@ -347,8 +347,8 @@
 
                                             <div class="flex items-center mt-1 text-[9px] text-gray-400 dark:text-gray-500 font-mono">
                                                 @php
-                                                    $hourCount = count($timelineHours);
-                                                    $showEvery = max(1, (int) ceil($hourCount / 8));
+            $hourCount = count($timelineHours);
+            $showEvery = max(1, (int) ceil($hourCount / 8));
                                                 @endphp
                                                 @for($i = 0; $i < $hourCount; $i++)
                                                     @if($i % $showEvery === 0)
@@ -370,29 +370,29 @@
                                 </div>
 
                                 @php
-                                    $sunSummary = $payload['sun_summary'] ?? null;
+        $sunSummary = $payload['sun_summary'] ?? null;
                                 @endphp
 
                                 @if($summary || $sunSummary)
                                     <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         @if($summary)
                                             @php
-                                                $probLevel = $summary['max_probability_level'] ?? 'unknown';
-                                                $probColors = [
-                                                    'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-                                                    'moderate' => $areaColor('bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'),
-                                                    'high' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
-                                                    'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-                                                ];
-                                                $probLabels = [
-                                                    'low' => 'modulators.weather_rain_prob_low',
-                                                    'moderate' => 'modulators.weather_rain_prob_moderate',
-                                                    'high' => 'modulators.weather_rain_prob_high',
-                                                    'unknown' => 'modulators.weather_rain_prob_unknown',
-                                                ];
-                                                $probLabel = __($probLabels[$probLevel] ?? 'modulators.weather_rain_prob_unknown');
-                                                $probColor = $probColors[$probLevel] ?? $probColors['unknown'];
-                                                $rainBarWidth = min(100, (int) ($summary['max_probability'] ?? 0));
+                $probLevel = $summary['max_probability_level'] ?? 'unknown';
+                $probColors = [
+                    'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+                    'moderate' => $areaColor('bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'),
+                    'high' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
+                    'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                ];
+                $probLabels = [
+                    'low' => 'modulators.weather_rain_prob_low',
+                    'moderate' => 'modulators.weather_rain_prob_moderate',
+                    'high' => 'modulators.weather_rain_prob_high',
+                    'unknown' => 'modulators.weather_rain_prob_unknown',
+                ];
+                $probLabel = __($probLabels[$probLevel] ?? 'modulators.weather_rain_prob_unknown');
+                $probColor = $probColors[$probLevel] ?? $probColors['unknown'];
+                $rainBarWidth = min(100, (int) ($summary['max_probability'] ?? 0));
                                             @endphp
                                             <div class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-900/20 p-3">
                                                 <div class="flex items-center justify-between gap-2 mb-2">
@@ -431,34 +431,34 @@
 
                                         @if($sunSummary)
                                             @php
-                                                $sunUvLevel = $sunSummary['max_uv_level'] ?? 'unknown';
-                                                $sunUvColors = [
-                                                    'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-                                                                                                        'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-                                                    'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
-                                                    'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-                                                    'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
-                                                    'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-                                                ];
-                                                $sunUvLabels = [
-                                                    'low' => 'modulators.weather_sun_uv_low',
-                                                    'moderate' => 'modulators.weather_sun_uv_moderate',
-                                                    'high' => 'modulators.weather_sun_uv_high',
-                                                    'very_high' => 'modulators.weather_sun_uv_very_high',
-                                                    'extreme' => 'modulators.weather_sun_uv_extreme',
-                                                    'unknown' => 'modulators.weather_sun_uv_unknown',
-                                                ];
-                                                $sunUvLabel = __($sunUvLabels[$sunUvLevel] ?? 'modulators.weather_sun_uv_unknown');
-                                                $sunUvColor = $sunUvColors[$sunUvLevel] ?? $sunUvColors['unknown'];
-                                                $sunUvValue = $sunSummary['max_uv_index'] !== null ? number_format((float) $sunSummary['max_uv_index'], 1) : '—';
-                                                $sunUvBarWidth = $sunSummary['max_uv_index'] !== null
-                                                    ? min(100, (int) round(((float) $sunSummary['max_uv_index'] / 11.0) * 100))
-                                                    : 0;
-                                                $sunRadiation = $sunSummary['total_radiation_mj'] !== null ? number_format((float) $sunSummary['total_radiation_mj'], 1) . ' MJ/m²' : '—';
-                                                $sunSeconds = (int) ($sunSummary['total_sunshine_seconds'] ?? 0);
-                                                $sunHours = $sunSeconds > 0 ? number_format($sunSeconds / 3600, 1) . ' h' : '—';
-                                                $sunFirst = $sunSummary['first_sunrise'] ? \Carbon\Carbon::parse($sunSummary['first_sunrise'])->format('H:i') : '—';
-                                                $sunLast = $sunSummary['last_sunset'] ? \Carbon\Carbon::parse($sunSummary['last_sunset'])->format('H:i') : '—';
+                $sunUvLevel = $sunSummary['max_uv_level'] ?? 'unknown';
+                $sunUvColors = [
+                    'low' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+                    'moderate' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+                    'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
+                    'very_high' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+                    'extreme' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
+                    'unknown' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                ];
+                $sunUvLabels = [
+                    'low' => 'modulators.weather_sun_uv_low',
+                    'moderate' => 'modulators.weather_sun_uv_moderate',
+                    'high' => 'modulators.weather_sun_uv_high',
+                    'very_high' => 'modulators.weather_sun_uv_very_high',
+                    'extreme' => 'modulators.weather_sun_uv_extreme',
+                    'unknown' => 'modulators.weather_sun_uv_unknown',
+                ];
+                $sunUvLabel = __($sunUvLabels[$sunUvLevel] ?? 'modulators.weather_sun_uv_unknown');
+                $sunUvColor = $sunUvColors[$sunUvLevel] ?? $sunUvColors['unknown'];
+                $sunUvValue = $sunSummary['max_uv_index'] !== null ? number_format((float) $sunSummary['max_uv_index'], 1) : '—';
+                $sunUvBarWidth = $sunSummary['max_uv_index'] !== null
+                    ? min(100, (int) round(((float) $sunSummary['max_uv_index'] / 11.0) * 100))
+                    : 0;
+                $sunRadiation = $sunSummary['total_radiation_mj'] !== null ? number_format((float) $sunSummary['total_radiation_mj'], 1) . ' MJ/m²' : '—';
+                $sunSeconds = (int) ($sunSummary['total_sunshine_seconds'] ?? 0);
+                $sunHours = $sunSeconds > 0 ? number_format($sunSeconds / 3600, 1) . ' h' : '—';
+                $sunFirst = $sunSummary['first_sunrise'] ? \Carbon\Carbon::parse($sunSummary['first_sunrise'])->format('H:i') : '—';
+                $sunLast = $sunSummary['last_sunset'] ? \Carbon\Carbon::parse($sunSummary['last_sunset'])->format('H:i') : '—';
                                             @endphp
                                             <div class="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-900/20 p-3">
                                                 <div class="flex items-center justify-between gap-2 mb-2">
@@ -496,40 +496,40 @@
                                 <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     @foreach($payload['daily'] as $idx => $day)
                                         @php
-                                            $dayLabels = [
-                                                __('modulators.weather_today'),
-                                                __('modulators.weather_tomorrow'),
-                                                __('modulators.weather_day_after'),
-                                            ];
-                                            $dayLabel = $dayLabels[$idx] ?? '';
-                                            $intensity = $day['rain_intensity'] ?? 'none';
-                                            $intensityColors = [
-                                                'none' => 'border-sky-200 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-900/20',
-                                                'light' => 'border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/30',
-                                                'moderate' => 'border-blue-300 dark:border-blue-800 bg-blue-100 dark:bg-blue-900/40',
-                                                'heavy' => 'border-blue-500 dark:border-blue-700 bg-blue-200 dark:bg-blue-900/60',
-                                            ];
-                                            $intensityColor = $intensityColors[$intensity] ?? $intensityColors['none'];
-                                            $intensityLabels = [
-                                                'none' => 'modulators.weather_rain_intensity_none',
-                                                'light' => 'modulators.weather_rain_intensity_light',
-                                                'moderate' => 'modulators.weather_rain_intensity_moderate',
-                                                'heavy' => 'modulators.weather_rain_intensity_heavy',
-                                            ];
-                                            $intensityLabel = __($intensityLabels[$intensity] ?? 'modulators.weather_rain_intensity_none');
-                                            $dayProb = $day['precipitation_probability_max'] ?? null;
-                                            $dayPrecip = $day['precipitation_sum'] ?? null;
-                                            $dayHours = $day['precipitation_hours'] ?? null;
-                                            $peak = $day['peak_hour'] ?? null;
-                                            $windows = $day['rain_windows'] ?? [];
-                                            $daySun = $day['sun'] ?? [];
-                                            $dayUv = $daySun['uv_index_max'] ?? null;
-                                            $dayUvLevel = \App\Services\WeatherService::uvLevelStatic($dayUv !== null ? (float) $dayUv : null);
-                                            $dayRad = $daySun['shortwave_radiation_sum'] ?? null;
-                                            $daySunshineSec = $daySun['sunshine_duration_seconds'] ?? null;
-                                            $dayDaylightSec = $daySun['daylight_duration_seconds'] ?? null;
-                                            $daySunrise = $daySun['sunrise'] ?? null;
-                                            $daySunset = $daySun['sunset'] ?? null;
+            $dayLabels = [
+                __('modulators.weather_today'),
+                __('modulators.weather_tomorrow'),
+                __('modulators.weather_day_after'),
+            ];
+            $dayLabel = $dayLabels[$idx] ?? '';
+            $intensity = $day['rain_intensity'] ?? 'none';
+            $intensityColors = [
+                'none' => 'border-sky-200 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-900/20',
+                'light' => 'border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/30',
+                'moderate' => 'border-blue-300 dark:border-blue-800 bg-blue-100 dark:bg-blue-900/40',
+                'heavy' => 'border-blue-500 dark:border-blue-700 bg-blue-200 dark:bg-blue-900/60',
+            ];
+            $intensityColor = $intensityColors[$intensity] ?? $intensityColors['none'];
+            $intensityLabels = [
+                'none' => 'modulators.weather_rain_intensity_none',
+                'light' => 'modulators.weather_rain_intensity_light',
+                'moderate' => 'modulators.weather_rain_intensity_moderate',
+                'heavy' => 'modulators.weather_rain_intensity_heavy',
+            ];
+            $intensityLabel = __($intensityLabels[$intensity] ?? 'modulators.weather_rain_intensity_none');
+            $dayProb = $day['precipitation_probability_max'] ?? null;
+            $dayPrecip = $day['precipitation_sum'] ?? null;
+            $dayHours = $day['precipitation_hours'] ?? null;
+            $peak = $day['peak_hour'] ?? null;
+            $windows = $day['rain_windows'] ?? [];
+            $daySun = $day['sun'] ?? [];
+            $dayUv = $daySun['uv_index_max'] ?? null;
+            $dayUvLevel = \App\Services\WeatherService::uvLevelStatic($dayUv !== null ? (float) $dayUv : null);
+            $dayRad = $daySun['shortwave_radiation_sum'] ?? null;
+            $daySunshineSec = $daySun['sunshine_duration_seconds'] ?? null;
+            $dayDaylightSec = $daySun['daylight_duration_seconds'] ?? null;
+            $daySunrise = $daySun['sunrise'] ?? null;
+            $daySunset = $daySun['sunset'] ?? null;
                                         @endphp
                                         <div class="rounded-md border p-2.5 flex flex-col h-[340px] {{ $intensityColor }}">
                                             <div class="flex items-center justify-between">
@@ -568,9 +568,9 @@
                                                     </span>
                                                 </div>
                                                 @php
-                                                    $hasHours = $dayHours !== null && $dayHours > 0;
-                                                    $peakHour = $peak ? substr((string) ($peak['hour'] ?? ''), 0, 2) : null;
-                                                    $peakProb = $peak && $peak['probability'] !== null ? (int) $peak['probability'] : null;
+            $hasHours = $dayHours !== null && $dayHours > 0;
+            $peakHour = $peak ? substr((string) ($peak['hour'] ?? ''), 0, 2) : null;
+            $peakProb = $peak && $peak['probability'] !== null ? (int) $peak['probability'] : null;
                                                 @endphp
                                                 <div class="flex items-center justify-between text-[10px]">
                                                     <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
@@ -615,11 +615,11 @@
                                                 @endif
 
                                                 @php
-                                                    $daySunriseStr = $daySunrise ? \Carbon\Carbon::parse($daySunrise)->format('H:i') : null;
-                                                    $daySunsetStr = $daySunset ? \Carbon\Carbon::parse($daySunset)->format('H:i') : null;
-                                                    $dayDaylightStr = $dayDaylightSec !== null ? sprintf('%dh %02dm', intdiv((int) $dayDaylightSec, 3600), (intdiv((int) $dayDaylightSec, 60) % 60)) : null;
-                                                    $daySunshineStr = $daySunshineSec !== null ? sprintf('%dh %02dm', intdiv((int) $daySunshineSec, 3600), (intdiv((int) $daySunshineSec, 60) % 60)) : null;
-                                                    $dayRadMj = $dayRad !== null ? number_format(((float) $dayRad) / 1000, 1) . ' MJ/m²' : null;
+            $daySunriseStr = $daySunrise ? \Carbon\Carbon::parse($daySunrise)->format('H:i') : null;
+            $daySunsetStr = $daySunset ? \Carbon\Carbon::parse($daySunset)->format('H:i') : null;
+            $dayDaylightStr = $dayDaylightSec !== null ? sprintf('%dh %02dm', intdiv((int) $dayDaylightSec, 3600), (intdiv((int) $dayDaylightSec, 60) % 60)) : null;
+            $daySunshineStr = $daySunshineSec !== null ? sprintf('%dh %02dm', intdiv((int) $daySunshineSec, 3600), (intdiv((int) $daySunshineSec, 60) % 60)) : null;
+            $dayRadMj = $dayRad !== null ? number_format(((float) $dayRad) / 1000, 1) . ' MJ/m²' : null;
                                                 @endphp
                                                 @if($dayUv !== null || $dayRadMj || $daySunriseStr || $dayDaylightStr)
                                                     <div class="mt-2 pt-2 border-t border-current/10 space-y-1">
@@ -696,6 +696,10 @@
                     @endforeach
                 </div>
             </div>
+        </div>
+    </div>
+
+        <div class="w-full bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 mt-6 p-6">
 
             @if($transponders->isEmpty())
                 <div class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-500 dark:text-gray-400">
@@ -854,7 +858,7 @@
                     </div>
 
                     <div x-show="!grouped" class="mt-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                             @foreach($transponders as $t)
                                 <div wire:key="flat-tp-{{ $t['id'] }}"
                                      data-site="{{ $t['active_site'] }}"
@@ -868,43 +872,43 @@
 
                     <div x-show="grouped" x-cloak class="mt-4 space-y-5">
                         @foreach([
-                            ['site' => $siteZacatecas, 'items' => $zacatecasTransponders, 'label' => __('modulators.group_zacatecas')],
-                            ['site' => $siteToluca, 'items' => $tolucaTransponders, 'label' => __('modulators.group_toluca')],
-                        ] as $group)
-                            <section wire:key="grp-{{ md5($group['site']) }}"
-                                     data-site="{{ $group['site'] }}"
-                                     x-show="filter === 'all' || filter === $el.dataset.site">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
-                                        <i class="fa-solid fa-tower-broadcast"></i>
-                                    </span>
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $group['label'] }}</h3>
-                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
-                                        {{ $group['items']->count() }}
-                                    </span>
-                                    <span class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></span>
-                                </div>
+                                ['site' => $siteZacatecas, 'items' => $zacatecasTransponders, 'label' => __('modulators.group_zacatecas')],
+                                ['site' => $siteToluca, 'items' => $tolucaTransponders, 'label' => __('modulators.group_toluca')],
+                            ] as $group)
+                                <section wire:key="grp-{{ md5($group['site']) }}"
+                                         data-site="{{ $group['site'] }}"
+                                         x-show="filter === 'all' || filter === $el.dataset.site">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                                            <i class="fa-solid fa-tower-broadcast"></i>
+                                        </span>
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $group['label'] }}</h3>
+                                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                                            {{ $group['items']->count() }}
+                                        </span>
+                                        <span class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></span>
+                                    </div>
 
-                                @if($group['items']->isEmpty())
-                                    <div class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-5 text-center text-xs text-gray-500 dark:text-gray-400">
-                                        {{ __('modulators.group_empty') }}
-                                    </div>
-                                @else
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                                        @foreach($group['items'] as $t)
-                                            <div wire:key="grp-{{ md5($group['site']) }}-tp-{{ $t['id'] }}" class="h-full">
-                                                @include('livewire.admin.modulators.partials.ku-card', ['t' => $t])
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </section>
+                                    @if($group['items']->isEmpty())
+                                        <div class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-5 text-center text-xs text-gray-500 dark:text-gray-400">
+                                            {{ __('modulators.group_empty') }}
+                                        </div>
+                                    @else
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                                            @foreach($group['items'] as $t)
+                                                <div wire:key="grp-{{ md5($group['site']) }}-tp-{{ $t['id'] }}" class="h-full">
+                                                    @include('livewire.admin.modulators.partials.ku-card', ['t' => $t])
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </section>
                         @endforeach
                     </div>
                 </div>
             @endif
+
         </div>
-    </div>
 
     <div class="w-full bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 mt-6">
         <div class="p-6 space-y-4">
