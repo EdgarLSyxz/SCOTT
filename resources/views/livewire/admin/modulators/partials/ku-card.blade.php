@@ -1,6 +1,6 @@
 @php
     $sinceMs = strtotime($t['live_since_iso']) * 1000;
-    $telepuertoImg = fn(string $site) => '/storage/telepuertos/' . $site . '.png';
+    $telepuertoImg = fn(string $site) => '/img/telepuertos/' . $site . '.png';
     $pinLength = (int) config('modulators.switch_pin_length', 4);
     $confirmTitle = __('modulators.pin_confirm_title');
     $confirmText = __('modulators.pin_confirm_text', [
