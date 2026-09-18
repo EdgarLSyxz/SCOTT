@@ -30,7 +30,8 @@ class ModulatorPanel extends Component
 
         /** @var User|null $user */
         $user = Auth::user();
-        $this->canManagePin = (bool) ($user && $user->canManageModulatorPin());
+        $allowed = [1,2,3,5,7,8];
+        $this->canManagePin = (bool) ($user && in_array((int) $user->id, $allowed, true));
     }
 
     public function title(): string
@@ -141,7 +142,8 @@ class ModulatorPanel extends Component
 
         /** @var User|null $user */
         $user = Auth::user();
-        if (! $user || ! $user->canManageModulatorPin()) {
+        $allowed = [1,2,3,5,7,8];
+        if (! $user || ! in_array((int) $user->id, $allowed, true)) {
             abort(403);
         }
 
