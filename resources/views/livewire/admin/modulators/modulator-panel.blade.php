@@ -739,6 +739,13 @@ $areaColor = fn(string $classes) => $areaIsDTH ? str_replace('amber', 'secondary
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3">
+                            <a href="{{ route('admin.modulators.switches.export') }}"
+                               class="inline-flex items-center gap-1.5 text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-semibold rounded-lg text-xs px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                               target="_blank"
+                               rel="noopener">
+                                <i class="fa-solid fa-file-excel"></i>
+                                {{ __('Exportar Excel') }}
+                            </a>
                             <button type="button"
                                 @click="grouped = !grouped"
                                 :class="grouped ? '{{ $areaColor('border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200') }}' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 {{ $areaColor('hover:border-amber-400') }}'"

@@ -129,3 +129,7 @@ Route::view('/modulators', 'admin.modulators.index')
     ->name('modulators.index')
     ->middleware(['auth', 'verified'])
     ->middleware(\App\Http\Middleware\EnsureUserCanAccessModulators::class);
+
+Route::get('admin/modulators/switches/export', [\App\Http\Controllers\Admin\ModulatorExportController::class, 'export'])
+    ->name('admin.modulators.switches.export')
+    ->middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserCanAccessModulators::class]);
