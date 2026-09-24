@@ -1320,5 +1320,18 @@
     "Switch administration permission granted.": "Permiso de administración de conmutadores otorgado.",
     "It can commute": "Puede conmutar",
     "It cannot commute": "No puede conmutar",
-    "Switch administration permission revoked.": "Permiso de administración de conmutadores revocado."
+    "Switch administration permission revoked.": "Permiso de administración de conmutadores revocado.",
+    "No solar interference uploads yet": "Aún no hay cargas de interferencias solares",
+    "Upload a PDF to start tracking affected channels and interferences.": "Sube un PDF para comenzar a rastrear los canales afectados y las interferencias.",
+    "Upload your first PDF": "Sube tu primer PDF",
+    "Upload solar interference calendar": "Subir calendario de interferencias solares",
+    "Upload the official PDF so the dashboard can show the affected channels per day.": "Sube el PDF oficial para que el panel pueda mostrar los canales afectados por día.",
+    "PDF Document": "Documento PDF",
+    "Drag and drop a PDF here or": "Arrastra y suelta un PDF aquí o",
+    "Initial status": "Estado inicial",
+    "Active (visible on the dashboard)": "Activo (visible en el panel)",
+    "Inactive (hidden from the dashboard)": "Inactivo (oculto en el panel)",
+    "Save upload": "Guardar carga",
+    "Preview generated": "Vista previa generada",
+    ":count records were detected. Review them before saving.": "Se detectaron :count registros. Revísalos antes de guardar."
 }

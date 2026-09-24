@@ -4,8 +4,10 @@ namespace App\Livewire\App\SolarInterferences;
 
 use App\Models\SolarInterference;
 use App\Models\SolarInterferenceUpload;
+use App\Services\SolarChannelResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class SolarInterferencesModal extends Component
@@ -14,17 +16,14 @@ class SolarInterferencesModal extends Component
 
     public ?string $activeDocumentName = null;
 
-    protected $listeners = [
-        'open-solar-modal' => 'openModal',
-        'close-solar-modal' => 'closeModal',
-    ];
-
+    #[On('open-solar-modal')]
     public function openModal(): void
     {
         $this->loadActiveData();
         $this->open = true;
     }
 
+    #[On('close-solar-modal')]
     public function closeModal(): void
     {
         $this->open = false;
@@ -92,6 +91,11 @@ class SolarInterferencesModal extends Component
         return $this->events
             ->groupBy('date_key')
             ->sortKeys();
+    }
+
+    public function resolveChannel(string $channelName): ?array
+    {
+        return app(SolarChannelResolver::class)->resolve($channelName);
     }
 
     public function render()

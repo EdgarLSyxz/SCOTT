@@ -4,6 +4,7 @@ namespace App\Livewire\App\SolarInterferences;
 
 use App\Models\SolarInterference;
 use App\Models\SolarInterferenceUpload;
+use App\Services\SolarChannelResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -93,6 +94,11 @@ class SolarInterferencesWidget extends Component
         return $this->events
             ->groupBy('date_key')
             ->sortKeys();
+    }
+
+    public function resolveChannel(string $channelName): ?array
+    {
+        return app(SolarChannelResolver::class)->resolve($channelName);
     }
 
     public function render()

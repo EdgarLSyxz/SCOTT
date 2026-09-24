@@ -17,7 +17,7 @@
     <div class="w-full bg-white rounded-lg shadow-2xl dark:border md:mt-0 xl:p-0 dark:bg-gray-800 dark:border-gray-700">
         <div class="p-6 space-y-6 sm:p-8">
             <h1 class="text-xl font-bold truncate leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                <i class="fa-solid fa-sun mr-1.5 text-amber-500"></i>
+                <i class="fa-solid fa-sun mr-1.5"></i>
                 {{ __('Upload solar interference calendar') }}
                 <p class="text-sm font-light truncate leading-tight text-gray-500 dark:text-gray-400">
                     {{ __('Upload the official PDF so the dashboard can show the affected channels per day.') }}
@@ -30,7 +30,7 @@
                 <div>
                     <x-label for="pdf-input" class="block mb-3 font-semibold">
                         <i class="fa-solid fa-file-pdf mr-1"></i>
-                        {{ __('PDF document') }}
+                        {{ __('PDF Document') }}
                     </x-label>
                     <figure class="bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600">
                         <input type="file" id="pdf-input" class="hidden" wire:model="pdfFile" accept="application/pdf">
@@ -45,11 +45,19 @@
                                     {{ __('Size') }}: {{ number_format($pdfFile->getSize() / 1024, 2) }} KB
                                 </p>
                                 <button type="button" wire:click="generatePreview"
+                                    wire:loading.attr="disabled"
+                                    wire:target="generatePreview, pdfFile"
                                     class="mt-4 px-4 py-2 text-sm rounded-lg {{ Auth::user()?->area === 'DTH'
                                         ? 'bg-secondary-700 hover:bg-secondary-800'
-                                        : 'bg-primary-700 hover:bg-primary-800' }} text-white font-medium shadow">
-                                    <i class="fa-solid fa-magnifying-glass-chart mr-1.5"></i>
-                                    {{ __('Re-run preview') }}
+                                        : 'bg-primary-700 hover:bg-primary-800' }} text-white font-medium shadow disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <span wire:loading.remove wire:target="generatePreview, pdfFile">
+                                        <i class="fa-solid fa-magnifying-glass-chart mr-1.5"></i>
+                                        {{ __('Re-run preview') }}
+                                    </span>
+                                    <span wire:loading wire:target="generatePreview, pdfFile">
+                                        <i class="fa-solid fa-spinner fa-spin mr-1.5"></i>
+                                        {{ __('Processing...') }}
+                                    </span>
                                 </button>
                             @else
                                 <p class="text-sm text-gray-400 dark:text-gray-300 text-center">
@@ -62,6 +70,11 @@
                                     </span>
                                 </p>
                             @endif
+
+                            <div wire:loading wire:target="pdfFile" class="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                {{ __('Uploading file...') }}
+                            </div>
                         </div>
                     </figure>
                 </div>
@@ -84,78 +97,129 @@
 
                 @if (!empty($previewRecords))
                     <div class="rounded-xl border border-amber-300/60 bg-amber-50/70 dark:bg-amber-900/20 dark:border-amber-700/40 p-5">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                             <h3 class="text-base font-semibold text-amber-800 dark:text-amber-200">
                                 <i class="fa-solid fa-eye mr-1.5"></i>
                                 {{ __('Preview') }} — {{ $previewDocumentName }}
                             </h3>
                             <span class="text-xs font-medium text-amber-700 dark:text-amber-300">
-                                {{ __('Total') }}: {{ $previewSummary['total'] }}
+                                @php
+                                    $resolvedTotal = 0;
+                                    foreach ($previewRecords as $row) {
+                                        $raw = is_array($row['channels'] ?? null) ? $row['channels'] : [];
+                                        foreach ($raw as $name) {
+                                            if ($this->resolveChannel($name)) {
+                                                $resolvedTotal++;
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                {{ __('Total') }}: {{ $resolvedTotal }}
                             </span>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div class="rounded-lg bg-white dark:bg-gray-800 border border-amber-200/60 dark:border-amber-700/30 px-4 py-3">
-                                <p class="text-xs uppercase text-amber-700 dark:text-amber-300 tracking-wider">{{ __('States') }}</p>
-                                <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ $previewSummary['states'] }}</p>
-                            </div>
-                            <div class="rounded-lg bg-white dark:bg-gray-800 border border-amber-200/60 dark:border-amber-700/30 px-4 py-3">
-                                <p class="text-xs uppercase text-amber-700 dark:text-amber-300 tracking-wider">{{ __('Satellites') }}</p>
-                                <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ $previewSummary['satellites'] }}</p>
-                            </div>
-                            <div class="rounded-lg bg-white dark:bg-gray-800 border border-amber-200/60 dark:border-amber-700/30 px-4 py-3">
-                                <p class="text-xs uppercase text-amber-700 dark:text-amber-300 tracking-wider">{{ __('Telepuerto') }}</p>
-                                <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ $previewSummary['teleports'] }}</p>
-                            </div>
-                        </div>
+                        <div class="max-h-[480px] overflow-y-auto pr-1 -mr-1 space-y-4">
+                            @forelse ($this->groupedPreview as $date => $dayRecords)
+                                @php
+                                    $carbonDate = \Carbon\Carbon::parse($date);
+                                    $resolvedDayChannels = [];
+                                    foreach ($dayRecords as $row) {
+                                        $raw = is_array($row['channels'] ?? null) ? $row['channels'] : [];
+                                        foreach ($raw as $name) {
+                                            $hit = $this->resolveChannel($name);
+                                            if ($hit) {
+                                                $resolvedDayChannels[$hit['number']] = $hit;
+                                            }
+                                        }
+                                    }
+                                    $dayChannelCount = count($resolvedDayChannels);
+                                @endphp
+                                <div class="rounded-lg bg-white dark:bg-gray-800 border border-amber-200/60 dark:border-amber-700/30 overflow-hidden">
+                                    <div class="flex items-center justify-between px-4 py-2.5 bg-amber-100/60 dark:bg-amber-900/40 border-b border-amber-200/60 dark:border-amber-700/30">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-calendar-day text-amber-700 dark:text-amber-300"></i>
+                                            <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                                                {{ $carbonDate->translatedFormat('l, d \\d\\e F') }}
+                                            </h4>
+                                        </div>
+                                        <span class="text-xs text-amber-700 dark:text-amber-300">
+                                            <i class="fa-solid fa-tv mr-1"></i>
+                                            {{ trans_choice(':count channel|:count channels', $dayChannelCount, ['count' => $dayChannelCount]) }}
+                                        </span>
+                                    </div>
 
-                        <div class="mt-4 max-h-72 overflow-y-auto rounded-lg bg-white dark:bg-gray-800 border border-amber-200/60 dark:border-amber-700/30">
-                            <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
-                                <thead class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 uppercase sticky top-0">
-                                    <tr>
-                                        <th class="px-3 py-2">{{ __('Date') }}</th>
-                                        <th class="px-3 py-2">{{ __('Section') }}</th>
-                                        <th class="px-3 py-2">{{ __('Region / Satellite') }}</th>
-                                        <th class="px-3 py-2">{{ __('Time') }}</th>
-                                        <th class="px-3 py-2 text-right">{{ __('Duration') }}</th>
-                                        <th class="px-3 py-2 text-right">{{ __('Channels') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (array_slice($previewRecords, 0, 80) as $row)
-                                        <tr class="border-b border-gray-100 dark:border-gray-700">
-                                            <td class="px-3 py-1.5 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ \Carbon\Carbon::parse($row['event_date'])->format('d/m/Y') }}</td>
-                                            <td class="px-3 py-1.5">
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide
-                                                    @switch($row['section'])
-                                                        @case('state') bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 @break
-                                                        @case('satellite') bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200 @break
-                                                        @default bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200
-                                                    @endswitch">
-                                                    {{ $row['section'] }}
-                                                </span>
-                                            </td>
-                                            <td class="px-3 py-1.5 text-gray-800 dark:text-gray-200">{{ $row['region_name'] }}</td>
-                                            <td class="px-3 py-1.5 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                                {{ $row['start_time'] }}{{ !empty($row['end_time']) ? ' – ' . $row['end_time'] : '' }}
-                                            </td>
-                                            <td class="px-3 py-1.5 text-right text-gray-800 dark:text-gray-200">
-                                                {{ $row['duration_seconds'] > 0 ? gmdate('H:i:s', (int) $row['duration_seconds']) : '—' }}
-                                            </td>
-                                            <td class="px-3 py-1.5 text-right text-gray-800 dark:text-gray-200">
-                                                {{ $row['affected_channels_count'] ?: '—' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    @if (count($previewRecords) > 80)
-                                        <tr>
-                                            <td colspan="6" class="px-3 py-2 text-center text-xs text-gray-500 dark:text-gray-400 italic">
-                                                {{ __('Showing 80 of :total records.', ['total' => count($previewRecords)]) }}
-                                            </td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
+                                    <ul class="divide-y divide-gray-100 dark:divide-gray-700/60">
+                                        @foreach ($dayRecords as $row)
+                                            @php
+                                                $rawChannels = is_array($row['channels'] ?? null) ? array_values(array_filter($row['channels'])) : [];
+                                                $resolved = [];
+                                                foreach ($rawChannels as $channelName) {
+                                                    $hit = $this->resolveChannel($channelName);
+                                                    if ($hit) {
+                                                        $resolved[] = [
+                                                            'name' => $channelName,
+                                                            'matched' => $hit,
+                                                        ];
+                                                    }
+                                                }
+                                                $timeRange = $row['start_time'].($row['end_time'] ? ' – '.$row['end_time'] : '');
+                                                $duration = $row['duration_seconds'] > 0 ? gmdate('H:i:s', (int) $row['duration_seconds']) : null;
+                                            @endphp
+                                            <li class="px-4 py-3 space-y-2">
+                                                <p class="text-xs text-gray-600 dark:text-gray-300">
+                                                    <i class="fa-regular fa-clock mr-1"></i>
+                                                    <span class="font-mono font-semibold">{{ $timeRange }}</span>
+                                                    @if ($duration)
+                                                        <span class="mx-1 text-gray-400">·</span>
+                                                        <i class="fa-regular fa-hourglass mr-1"></i>
+                                                        {{ __('Duration') }}: <span class="font-mono">{{ $duration }}</span>
+                                                    @endif
+                                                </p>
+
+                                                @if (!empty($resolved))
+                                                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                                                        @foreach ($resolved as $item)
+                                                            @php
+                                                                $matched = $item['matched'];
+                                                                $logoUrl = !empty($matched['image_url'])
+                                                                    ? asset('storage/' . $matched['image_url'])
+                                                                    : null;
+                                                            @endphp
+                                                            <div class="group flex flex-col items-center text-center px-1.5 pt-2 pb-1.5 rounded-lg border border-gray-200/70 dark:border-gray-700/60 hover:border-amber-400 dark:hover:border-amber-500 transition-colors"
+                                                                title="{{ $matched['number'] }} · {{ $matched['name'] }}">
+                                                                <div class="w-12 h-12 flex items-center justify-center">
+                                                                    @if ($logoUrl)
+                                                                        <img src="{{ $logoUrl }}"
+                                                                            alt="{{ $matched['name'] }}"
+                                                                            class="max-w-full max-h-full object-contain transition-transform group-hover:scale-110"
+                                                                            loading="lazy"
+                                                                            onerror="this.outerHTML='<i class=\'fa-solid fa-tv text-xl text-gray-300 dark:text-gray-600\'></i>'">
+                                                                    @else
+                                                                        <i class="fa-solid fa-tv text-xl text-gray-300 dark:text-gray-600"></i>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="w-full mt-1.5 px-0.5">
+                                                                    <p class="text-[9px] font-bold text-rose-600 dark:text-rose-400 leading-tight">
+                                                                        {{ $matched['number'] }}
+                                                                    </p>
+                                                                    <p class="text-[10px] font-medium text-gray-700 dark:text-gray-300 leading-tight line-clamp-1">
+                                                                        {{ $matched['name'] }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @empty
+                                <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fa-solid fa-circle-info mr-1"></i>
+                                    {{ __('No records detected.') }}
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 @endif
@@ -163,15 +227,43 @@
                 <div class="flex justify-end gap-2">
                     <a href="{{ route('admin.solar-interferences.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium">
+                        <i class="fa-solid fa-xmark mr-2"></i>
                         {{ __('Cancel') }}
                     </a>
-                    <x-button class="flex justify-center items-center font-bold shadow mt-0"
+                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save"
+                        class="flex justify-center items-center font-bold shadow mt-0 disabled:opacity-60 disabled:cursor-not-allowed"
                         :disabled="empty($previewRecords)">
-                        <i class="fa-solid fa-floppy-disk mr-2"></i>
-                        {{ __('Save upload') }}
+                        <span wire:loading.remove wire:target="save">
+                            <i class="fa-solid fa-floppy-disk mr-2"></i>
+                            {{ __('Save upload') }}
+                        </span>
+                        <span wire:loading wire:target="save">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                            {{ __('Saving...') }}
+                        </span>
                     </x-button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div wire:loading wire:target="generatePreview, save, pdfFile"
+        id="solar-upload-spinner"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;"
+        class="flex items-center justify-center bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm"
+        role="status" aria-live="polite">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl px-6 py-5 flex items-center gap-4 max-w-sm">
+            <i class="fa-solid fa-spinner fa-spin text-2xl text-amber-500"></i>
+            <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                    <span wire:loading wire:target="pdfFile">{{ __('Uploading file...') }}</span>
+                    <span wire:loading wire:target="generatePreview">{{ __('Analyzing PDF, please wait...') }}</span>
+                    <span wire:loading wire:target="save">{{ __('Saving upload, please wait...') }}</span>
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('This may take a few seconds.') }}
+                </p>
+            </div>
         </div>
     </div>
 

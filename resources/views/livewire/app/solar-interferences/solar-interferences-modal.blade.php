@@ -33,72 +33,90 @@
                         </button>
                     </div>
 
-                    @if ($todayHasData)
-                        <div class="mb-5 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10 shadow-lg overflow-hidden">
-                            <div class="px-4 py-3 bg-amber-500/10 dark:bg-amber-500/20 border-b border-amber-300/40 dark:border-amber-700/40 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-sun text-amber-500 animate-pulse"></i>
-                                    <h4 class="font-bold text-amber-900 dark:text-amber-100">
-                                        {{ __('Today') }}
-                                        <span class="font-normal text-amber-700 dark:text-amber-300">·
-                                            {{ \Carbon\Carbon::parse($today)->translatedFormat('l, d \\d\\e F') }}
-                                        </span>
-                                    </h4>
-                                </div>
-                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-amber-500 text-white">
-                                    <i class="fa-solid fa-bolt mr-1"></i>
-                                    {{ __('Focus') }}
-                                </span>
-                            </div>
+                    @php
+                        $todayResolvedEvents = collect($todayEvents)
+                            ->filter(fn ($event) => !empty($event['channel']) && $this->resolveChannel($event['channel']))
+                            ->values();
+                    @endphp
 
-                            <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30 max-h-[320px] overflow-y-auto">
-                                @foreach ($todayEvents as $event)
-                                    <li class="px-4 py-3 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
-                                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
-                                            <i class="fa-solid fa-tv text-sm"></i>
-                                        </span>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
-                                                {{ $event['channel'] }}
-                                            </p>
-                                            <p class="text-xs text-amber-800 dark:text-amber-300">
-                                                <i class="fa-solid {{ $event['section'] === 'satellite' ? 'fa-satellite' : ($event['section'] === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
-                                                {{ $event['label'] }}
-                                            </p>
-                                        </div>
-                                        <div class="text-right shrink-0">
-                                            <p class="text-sm font-mono font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                                                {{ $event['start_time'] }}
-                                                @if ($event['end_time'])
-                                                    <span class="text-gray-400 dark:text-gray-500 mx-1">–</span>
-                                                    {{ $event['end_time'] }}
-                                                @endif
-                                            </p>
-                                            @if ($event['duration_seconds'] > 0)
-                                                <p class="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                    <i class="fa-regular fa-clock mr-1"></i>
-                                                    {{ __('Duration') }}: {{ gmdate('H:i:s', (int) $event['duration_seconds']) }}
-                                                </p>
+                    @if ($todayHasData)
+                        @if ($todayResolvedEvents->isNotEmpty())
+                            <div class="mb-5 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10 shadow-lg overflow-hidden">
+                                <div class="px-4 py-3 bg-amber-500/10 dark:bg-amber-500/20 border-b border-amber-300/40 dark:border-amber-700/40 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-sun text-amber-500 animate-pulse"></i>
+                                        <h4 class="font-bold text-amber-900 dark:text-amber-100">
+                                            {{ __('Today') }}
+                                            <span class="font-normal text-amber-700 dark:text-amber-300">·
+                                                {{ \Carbon\Carbon::parse($today)->translatedFormat('l, d \\d\\e F') }}
+                                            </span>
+                                        </h4>
+                                    </div>
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-amber-500 text-white">
+                                        <i class="fa-solid fa-bolt mr-1"></i>
+                                        {{ __('Focus') }}
+                                    </span>
+                                </div>
+
+                                <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30 max-h-[320px] overflow-y-auto">
+                                    @foreach ($todayResolvedEvents as $event)
+                                        @php
+                                            $resolved = $this->resolveChannel($event['channel']);
+                                            $timeRange = $event['start_time'].($event['end_time'] ? ' – '.$event['end_time'] : '');
+                                            $duration = $event['duration_seconds'] > 0 ? gmdate('H:i:s', (int) $event['duration_seconds']) : null;
+                                            $logoUrl = !empty($resolved['image_url']) ? asset('storage/' . $resolved['image_url']) : null;
+                                        @endphp
+                                        <li class="px-4 py-3 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
+                                            @if ($logoUrl)
+                                                <img src="{{ $logoUrl }}"
+                                                    alt="{{ $resolved['name'] }}"
+                                                    class="w-10 h-10 object-contain shrink-0"
+                                                    onerror="this.style.display='none'">
+                                            @else
+                                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
+                                                    <i class="fa-solid fa-tv text-sm"></i>
+                                                </span>
                                             @endif
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @else
-                        <div class="mb-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-900/30 px-4 py-4 flex items-center gap-3">
-                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 shrink-0">
-                                <i class="fa-solid fa-moon"></i>
-                            </span>
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ __('No affected channels today') }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ __('Showing the upcoming and recent events for context.') }}
-                                </p>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                                    <span class="text-rose-600 dark:text-rose-300 mr-1">{{ $resolved['number'] }}</span>
+                                                    {{ $resolved['name'] }}
+                                                </p>
+                                                <p class="text-xs text-amber-800 dark:text-amber-300 truncate">
+                                                    <i class="fa-solid {{ $event['section'] === 'satellite' ? 'fa-satellite' : ($event['section'] === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
+                                                    {{ $event['label'] }}
+                                                </p>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <p class="text-sm font-mono font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                                    {{ $timeRange }}
+                                                </p>
+                                                @if ($duration)
+                                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                        <i class="fa-regular fa-clock mr-1"></i>
+                                                        {{ __('Duration') }}: {{ $duration }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             </div>
-                        </div>
+                        @else
+                            <div class="mb-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-900/30 px-4 py-4 flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 shrink-0">
+                                    <i class="fa-solid fa-moon"></i>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ __('No affected channels today') }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ __('Showing the upcoming and recent events for context.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
                     @endif
 
                     <div class="max-h-[40vh] overflow-y-auto pr-2 -mr-2">
@@ -114,7 +132,13 @@
                             @php
                                 $carbonDate = \Carbon\Carbon::parse($date);
                                 $isPast = $carbonDate->isPast();
+                                $resolvedDayEvents = collect($dayEvents)
+                                    ->filter(fn ($event) => !empty($event['channel']) && $this->resolveChannel($event['channel']))
+                                    ->values();
                             @endphp
+                            @if ($resolvedDayEvents->isEmpty())
+                                @continue
+                            @endif
                             <div class="mb-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-900/30 overflow-hidden">
                                 <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/40">
                                     <div class="flex items-center gap-2">
@@ -133,19 +157,33 @@
                                         @endif
                                     </div>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ trans_choice(':count channel|:count channels', $dayEvents->pluck('channel')->unique()->count(), ['count' => $dayEvents->pluck('channel')->unique()->count()]) }}
+                                        {{ trans_choice(':count channel|:count channels', $resolvedDayEvents->pluck('channel')->unique()->count(), ['count' => $resolvedDayEvents->pluck('channel')->unique()->count()]) }}
                                     </span>
                                 </div>
 
                                 <ul class="divide-y divide-gray-100 dark:divide-gray-700/60">
-                                    @foreach ($dayEvents as $event)
+                                    @foreach ($resolvedDayEvents as $event)
+                                        @php
+                                            $resolved = $this->resolveChannel($event['channel']);
+                                            $timeRange = $event['start_time'].($event['end_time'] ? ' – '.$event['end_time'] : '');
+                                            $duration = $event['duration_seconds'] > 0 ? gmdate('H:i:s', (int) $event['duration_seconds']) : null;
+                                            $logoUrl = !empty($resolved['image_url']) ? asset('storage/' . $resolved['image_url']) : null;
+                                        @endphp
                                         <li class="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/40 transition">
-                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
-                                                <i class="fa-solid fa-tv text-xs"></i>
-                                            </span>
+                                            @if ($logoUrl)
+                                                <img src="{{ $logoUrl }}"
+                                                    alt="{{ $resolved['name'] }}"
+                                                    class="w-9 h-9 object-contain shrink-0"
+                                                    onerror="this.style.display='none'">
+                                            @else
+                                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
+                                                    <i class="fa-solid fa-tv text-xs"></i>
+                                                </span>
+                                            @endif
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                    {{ $event['channel'] }}
+                                                    <span class="text-rose-600 dark:text-rose-300 mr-1">{{ $resolved['number'] }}</span>
+                                                    {{ $resolved['name'] }}
                                                 </p>
                                                 <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">
                                                     <i class="fa-solid {{ $event['section'] === 'satellite' ? 'fa-satellite' : ($event['section'] === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
@@ -154,15 +192,12 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <p class="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                                    {{ $event['start_time'] }}
-                                                    @if ($event['end_time'])
-                                                        <span class="text-gray-400 dark:text-gray-500 mx-1">–</span>
-                                                        {{ $event['end_time'] }}
-                                                    @endif
+                                                    {{ $timeRange }}
                                                 </p>
-                                                @if ($event['duration_seconds'] > 0)
+                                                @if ($duration)
                                                     <p class="text-[10px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                        {{ gmdate('H:i:s', (int) $event['duration_seconds']) }}
+                                                        <i class="fa-regular fa-hourglass mr-1"></i>
+                                                        {{ $duration }}
                                                     </p>
                                                 @endif
                                             </div>

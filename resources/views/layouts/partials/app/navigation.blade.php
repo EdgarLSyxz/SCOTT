@@ -31,8 +31,8 @@
         </div>
 
         <div class="flex items-center gap-2">
-            @livewire('app.solar-interferences.solar-interferences-widget', key('solar-interferences-widget-nav'))
             <x-theme-toggle />
+            @livewire('app.solar-interferences.solar-interferences-widget', key('solar-interferences-widget-nav'))
             <x-user-dropdown />
         </div>
     </div>

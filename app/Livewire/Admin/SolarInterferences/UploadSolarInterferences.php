@@ -4,7 +4,9 @@ namespace App\Livewire\Admin\SolarInterferences;
 
 use App\Models\SolarInterference;
 use App\Models\SolarInterferenceUpload;
+use App\Services\SolarChannelResolver;
 use App\Services\SolarInterferenceParser;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -128,6 +130,18 @@ class UploadSolarInterferences extends Component
             'teleports' => 0,
             'total' => 0,
         ];
+    }
+
+    public function getGroupedPreviewProperty(): Collection
+    {
+        return collect($this->previewRecords)
+            ->groupBy('event_date')
+            ->sortKeys();
+    }
+
+    public function resolveChannel(string $channelName): ?array
+    {
+        return app(SolarChannelResolver::class)->resolve($channelName);
     }
 
     public function save()
