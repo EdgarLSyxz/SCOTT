@@ -1341,5 +1341,18 @@
     "Document name": "Nombre del documento",
     "Document": "Documento",
     "Range": "Rango",
-    "Uploaded by": "Subido por"
+    "Uploaded by": "Subido por",
+    "Visible on the dashboard": "Visible en el panel",
+    "Deactivate upload": "Desactivar carga",
+    "Delete upload": "Eliminar carga",
+    "Total records": "Registros totales",
+    "Affected channels": "Canales afectados",
+    "Records by date": "Registros por fecha",
+    "Days": "Días",
+    "Today": "Hoy",
+    ":count Channel|:count Channels": ":count Canal|:count Canales",
+    "Channels per satellite": "Canales por satélite"
+    ,"Satellite": "Satélite"
+    ,"Telepuerto": "Telepuerto"
+    ,"State": "Estado"
 }

@@ -20,14 +20,46 @@
         $recordsBySection = $records->groupBy('section');
         $recordsByDate = $records->groupBy(fn ($r) => $r->event_date->format('Y-m-d'))->sortKeys();
 
-        $affectedChannels = collect();
+        // Use a plain array for counting to avoid indirect modification issues on Collection
+        $affectedChannels = [];
         foreach ($records as $record) {
             foreach ($record->channel_list as $channel) {
                 $affectedChannels[$channel] = ($affectedChannels[$channel] ?? 0) + 1;
             }
         }
-        // Use Collection sorting instead of PHP array functions (Collection was passed)
-        $affectedChannels = $affectedChannels->sortDesc();
+
+        // Resolve channel names to canonical channel records (from documents/Channels.json and DB)
+        $resolver = app(\App\Services\SolarChannelResolver::class);
+        $resolvedAffectedArr = [];
+        foreach ($affectedChannels as $rawName => $count) {
+            $resolved = $resolver->resolve($rawName);
+            if ($resolved) {
+                $num = $resolved['number'];
+                if (! isset($resolvedAffectedArr[$num])) {
+                    $resolvedAffectedArr[$num] = [
+                        'number' => $resolved['number'],
+                        'name' => $resolved['name'],
+                        'image_url' => $resolved['image_url'] ?? null,
+                        'count' => 0,
+                    ];
+                }
+                $resolvedAffectedArr[$num]['count'] += $count;
+            } else {
+                // keep unresolved entries keyed by raw name to show fallback
+                $key = 'raw:'.$rawName;
+                if (! isset($resolvedAffectedArr[$key])) {
+                    $resolvedAffectedArr[$key] = [
+                        'number' => null,
+                        'name' => $rawName,
+                        'image_url' => null,
+                        'count' => 0,
+                    ];
+                }
+                $resolvedAffectedArr[$key]['count'] += $count;
+            }
+        }
+
+        $resolvedAffected = collect($resolvedAffectedArr)->sortByDesc('count')->values();
 
         $recordsBySatellite = $records->where('section', \App\Models\SolarInterference::SECTION_SATELLITE)
             ->groupBy('region_name');
@@ -35,8 +67,42 @@
             ->groupBy('region_name');
     @endphp
 
+<x-slot name="action">
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.solar-interferences.index') }}"
+            class="flex w-full sm:w-auto justify-center items-center text-white bg-gray-600 hover:bg-gray-500 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-4 py-2 text-center">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>
+            {{ __('Go back') }}
+        </a>
+        @can('update', $upload)
+            <form method="POST" action="{{ route('admin.solar-interferences.toggle', $upload) }}">
+                @csrf
+                @method('PATCH')
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium shadow {{ $upload->is_active
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white' }}">
+                    <i class="fa-solid {{ $upload->is_active ? 'fa-eye-slash' : 'fa-eye' }} mr-1.5"></i>
+                    {{ $upload->is_active ? __('Deactivate upload') : __('Activate upload') }}
+                </button>
+            </form>
+        @endcan
+        @can('delete', $upload)
+            <form method="POST" action="{{ route('admin.solar-interferences.destroy', $upload) }}"
+                onsubmit="event.preventDefault(); confirmDeleteUpload('{{ $upload->document_name }}', this);">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium shadow">
+                    <i class="fa-solid fa-trash mr-1.5"></i>
+                    {{ __('Delete upload') }}
+                </button>
+            </form>
+        @endcan
+    </div>
+</x-slot>
+
     <div class="space-y-6">
-        {{-- Header / Actions bar --}}
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-6">
             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div class="flex items-start gap-4 min-w-0">
@@ -69,43 +135,9 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('admin.solar-interferences.index') }}"
-                        class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium">
-                        <i class="fa-solid fa-arrow-left mr-1.5"></i>
-                        {{ __('Back') }}
-                    </a>
-                    @can('update', $upload)
-                        <form method="POST" action="{{ route('admin.solar-interferences.toggle', $upload) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium shadow {{ $upload->is_active
-                                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                    : 'bg-emerald-600 hover:bg-emerald-700 text-white' }}">
-                                <i class="fa-solid {{ $upload->is_active ? 'fa-eye-slash' : 'fa-eye' }} mr-1.5"></i>
-                                {{ $upload->is_active ? __('Deactivate upload') : __('Activate upload') }}
-                            </button>
-                        </form>
-                    @endcan
-                    @can('delete', $upload)
-                        <form method="POST" action="{{ route('admin.solar-interferences.destroy', $upload) }}"
-                            onsubmit="event.preventDefault(); confirmDeleteUpload('{{ $upload->document_name }}', this);">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium shadow">
-                                <i class="fa-solid fa-trash mr-1.5"></i>
-                                {{ __('Delete upload') }}
-                            </button>
-                        </form>
-                    @endcan
-                </div>
             </div>
         </div>
 
-        {{-- KPIs --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="rounded-xl border border-indigo-200/60 dark:border-indigo-700/40 bg-indigo-50/60 dark:bg-indigo-900/20 p-4 shadow">
                 <p class="text-xs uppercase text-indigo-700 dark:text-indigo-300 tracking-wider">{{ __('Total records') }}</p>
@@ -121,13 +153,11 @@
             </div>
             <div class="rounded-xl border border-rose-200/60 dark:border-rose-700/40 bg-rose-50/60 dark:bg-rose-900/20 p-4 shadow">
                 <p class="text-xs uppercase text-rose-700 dark:text-rose-300 tracking-wider">{{ __('Affected channels') }}</p>
-                <p class="text-3xl font-bold text-rose-900 dark:text-rose-100 mt-1">{{ number_format($affectedChannels->count()) }}</p>
+                <p class="text-3xl font-bold text-rose-900 dark:text-rose-100 mt-1">{{ number_format($resolvedAffected->count()) }}</p>
             </div>
         </div>
 
-        {{-- Main two-column layout: Affected channels + Calendar --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {{-- LEFT COLUMN: Affected channels --}}
             <div class="xl:col-span-1 space-y-6">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
@@ -136,22 +166,34 @@
                             {{ __('Affected channels') }}
                         </h2>
                         <span class="text-xs font-semibold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 rounded-full">
-                            {{ $affectedChannels->count() }} {{ __('unique') }}
+                            {{ $resolvedAffected->count() }} {{ __('Records') }}
                         </span>
                     </div>
 
-                    @if ($affectedChannels->isNotEmpty())
+                    @if ($resolvedAffected->isNotEmpty())
                         <div class="max-h-[640px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                            @foreach ($affectedChannels as $channel => $count)
+                            @foreach ($resolvedAffected as $item)
+                                @php
+                                    $logoUrl = $item['image_url'] ? asset('storage/' . $item['image_url']) : null;
+                                @endphp
                                 <div class="px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
-                                            <i class="fa-solid fa-tv text-sm"></i>
-                                        </span>
+                                        @if ($logoUrl)
+                                            <img src="{{ $logoUrl }}" alt="{{ $item['name'] }}" class="w-9 h-9 object-contain rounded-md shrink-0" onerror="this.style.display='none'" />
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 shrink-0">
+                                                <i class="fa-solid fa-tv text-sm"></i>
+                                            </span>
+                                        @endif
                                         <div class="min-w-0">
-                                            <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $channel }}</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white truncate">
+                                                @if ($item['number'])
+                                                    <span class="text-rose-600 dark:text-rose-300 mr-1">{{ $item['number'] }}</span>
+                                                @endif
+                                                {{ $item['name'] }}
+                                            </p>
                                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ trans_choice(':count occurrence|:count occurrences', $count, ['count' => $count]) }}
+                                                {{ trans_choice(':count occurrence|:count occurrences', $item['count'], ['count' => $item['count']]) }}
                                             </p>
                                         </div>
                                     </div>
@@ -189,7 +231,7 @@
                                     <div class="flex items-center justify-between mb-2">
                                         <p class="font-semibold text-gray-900 dark:text-white">{{ $satellite }}</p>
                                         <span class="text-xs text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full">
-                                            {{ trans_choice(':count channel|:count channels', $channels->count(), ['count' => $channels->count()]) }}
+                                            {{ trans_choice(':count Channel|:count Channels', $channels->count(), ['count' => $channels->count()]) }}
                                         </span>
                                     </div>
                                     <div class="flex flex-wrap gap-1.5">
@@ -206,7 +248,6 @@
                 @endif
             </div>
 
-            {{-- RIGHT COLUMN: Records grouped by date --}}
             <div class="xl:col-span-2 space-y-6">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
@@ -215,7 +256,7 @@
                             {{ __('Records by date') }}
                         </h2>
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ $recordsByDate->count() }} {{ trans_choice('day', $recordsByDate->count()) }}
+                            {{ $recordsByDate->count() }} {{ trans_choice('Days', $recordsByDate->count()) }}
                         </span>
                     </div>
 
@@ -239,7 +280,7 @@
                                         @endif
                                     </div>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ trans_choice(':count record|:count records', $dayRecords->count(), ['count' => $dayRecords->count()]) }}
+                                        {{ trans_choice(':count Record|:count Records', $dayRecords->count(), ['count' => $dayRecords->count()]) }}
                                     </span>
                                 </div>
 
@@ -287,7 +328,7 @@
                                                             @if ($record->affected_channels_count > 0)
                                                                 <p class="text-xs text-gray-500 dark:text-gray-400">
                                                                     <i class="fa-solid fa-tv mr-1 text-rose-500"></i>
-                                                                    {{ trans_choice(':count channel|:count channels', $record->affected_channels_count, ['count' => $record->affected_channels_count]) }}
+                                                                    {{ trans_choice(':count Channel|:count Channels', $record->affected_channels_count, ['count' => $record->affected_channels_count]) }}
                                                                 </p>
                                                             @endif
                                                         </div>
