@@ -118,6 +118,7 @@ class SolarInterferencesWidget extends Component
             ->pluck('channel')
             ->filter()
             ->unique()
+            ->filter(fn($ch) => $this->resolveChannel($ch))
             ->values();
 
         return view('livewire.app.solar-interferences.solar-interferences-widget', [

@@ -6,7 +6,7 @@
             <i class="fa-solid fa-sun text-lg text-amber-500"></i>
             @if ($todayHasData)
                 <span class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none text-white bg-amber-500 rounded-full ring-2 ring-white dark:ring-gray-900">
-                    {{ $todayEvents->count() }}
+                    {{ $todayChannels->count() }}
                 </span>
             @endif
         </button>
