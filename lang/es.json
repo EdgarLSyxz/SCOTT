@@ -1333,5 +1333,13 @@
     "Inactive (hidden from the dashboard)": "Inactivo (oculto en el panel)",
     "Save upload": "Guardar carga",
     "Preview generated": "Vista previa generada",
-    ":count records were detected. Review them before saving.": "Se detectaron :count registros. Revísalos antes de guardar."
+    ":count records were detected. Review them before saving.": "Se detectaron :count registros. Revísalos antes de guardar.",
+    "Solar interferences": "Interferencias solares",
+    "Total uploads": "Cargas totales",
+    "States": "Estados",
+    "Satellites": "Satélites",
+    "Document name": "Nombre del documento",
+    "Document": "Documento",
+    "Range": "Rango",
+    "Uploaded by": "Subido por"
 }

@@ -102,11 +102,11 @@
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs dark:text-white uppercase dark:bg-gray-600 shadow-2xl">
                         <tr>
-                            <th scope="col" class="px-4 py-3">
+                            <th scope="col" class="px-4 py-3 w-[325px]">
                                 <i class="fa-solid fa-file-pdf mr-1"></i>
                                 {{ __('Document') }}
                             </th>
-                            <th scope="col" class="px-4 py-3 w-[120px] text-right">
+                            <th scope="col" class="px-4 py-3 w-[180px] text-right">
                                 <i class="fa-solid fa-list mr-1"></i>
                                 {{ __('Records') }}
                             </th>
@@ -135,27 +135,27 @@
                                             <i class="fa-solid fa-file-pdf"></i>
                                         </span>
                                         <span class="min-w-0">
-                                            <span class="block font-semibold text-gray-900 dark:text-white truncate max-w-[420px] group-hover:underline">
+                                            <span class="block font-semibold text-gray-900 dark:text-white w-[325px] group-hover:underline truncate leading-tight">
                                                 {{ $upload->document_name }}
                                             </span>
                                             <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                                 <span class="inline-flex items-center mr-3">
                                                     <i class="fa-solid fa-map mr-1 text-blue-500"></i>
-                                                    {{ $upload->states_count }} {{ __('states') }}
+                                                    {{ $upload->states_count }} {{ ucfirst(__('States')) }}
                                                 </span>
                                                 <span class="inline-flex items-center mr-3">
                                                     <i class="fa-solid fa-satellite mr-1 text-purple-500"></i>
-                                                    {{ $upload->satellites_count }} {{ __('satellites') }}
+                                                    {{ $upload->satellites_count }} {{ ucfirst(__('Satellites')) }}
                                                 </span>
                                                 <span class="inline-flex items-center">
                                                     <i class="fa-solid fa-tower-broadcast mr-1 text-emerald-500"></i>
-                                                    {{ $upload->teleports_count }} {{ __('telepuerto') }}
+                                                    {{ $upload->teleports_count }} {{ ucfirst(__('Telepuertos')) }}
                                                 </span>
                                             </span>
                                         </span>
                                     </a>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-gray-900 dark:text-white">
+                                <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-gray-900 dark:text-white w-[180px]">
                                     {{ number_format($upload->records_count) }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-200 text-xs">
@@ -170,12 +170,12 @@
                                     @if ($upload->is_active)
                                         <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-200 rounded-full dark:bg-green-800 dark:text-green-200">
                                             <i class="fa-solid fa-check-circle mr-1.5"></i>
-                                            {{ __('Active on dashboard') }}
+                                            {{ __('Active') }}
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-200 rounded-full dark:bg-red-800 dark:text-red-200">
                                             <i class="fa-solid fa-eye-slash mr-1.5"></i>
-                                            {{ __('Hidden from dashboard') }}
+                                            {{ __('Hidden') }}
                                         </span>
                                     @endif
                                 </td>
