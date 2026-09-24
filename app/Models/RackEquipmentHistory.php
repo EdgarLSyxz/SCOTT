@@ -39,7 +39,9 @@ class RackEquipmentHistory extends Model
     ];
 
     public const TYPE_CREATED = 'created';
+
     public const TYPE_UPDATED = 'updated';
+
     public const TYPE_DELETED = 'deleted';
 
     public function rack(): BelongsTo

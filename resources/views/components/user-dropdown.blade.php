@@ -63,7 +63,7 @@
             @endphp
 
             @if ($canSwitch)
-                <form method="POST" action="{{ route('user.switch-area', ['area' => $nextArea]) }}" x-data>
+                <form method="POST" action="{{ route('admin.user.switch-area', ['area' => $nextArea]) }}" x-data>
                     @csrf
                     <x-dropdown-link href="#" @click.prevent="$root.submit();" class="group">
                         <i @class([

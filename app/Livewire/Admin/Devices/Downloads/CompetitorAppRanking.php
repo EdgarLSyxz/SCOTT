@@ -12,8 +12,11 @@ use Livewire\Component;
 class CompetitorAppRanking extends Component
 {
     public string $snapshotDate;
+
     public array $rows = [];
+
     public bool $showFormModal = false;
+
     public ?int $traceAppId = null;
 
     public function mount(): void
@@ -64,11 +67,11 @@ class CompetitorAppRanking extends Component
 
     public function removeDraftRow(int $index): void
     {
-        if (!isset($this->rows[$index])) {
+        if (! isset($this->rows[$index])) {
             return;
         }
 
-        if (!empty($this->rows[$index]['competitor_app_id'])) {
+        if (! empty($this->rows[$index]['competitor_app_id'])) {
             return;
         }
 
@@ -78,7 +81,7 @@ class CompetitorAppRanking extends Component
 
     public function deleteApp(int $index): void
     {
-        if (!isset($this->rows[$index])) {
+        if (! isset($this->rows[$index])) {
             return;
         }
 
@@ -131,19 +134,19 @@ class CompetitorAppRanking extends Component
                 ]);
 
                 $app = null;
-                if (!empty($row['competitor_app_id'])) {
+                if (! empty($row['competitor_app_id'])) {
                     $app = CompetitorApp::find((int) $row['competitor_app_id']);
                 }
 
                 if ($app) {
                     $app->update([
                         'name' => trim((string) $row['name']),
-                        'store_url' => !empty($row['store_url']) ? trim((string) $row['store_url']) : null,
+                        'store_url' => ! empty($row['store_url']) ? trim((string) $row['store_url']) : null,
                     ]);
                 } else {
                     $app = CompetitorApp::create([
                         'name' => trim((string) $row['name']),
-                        'store_url' => !empty($row['store_url']) ? trim((string) $row['store_url']) : null,
+                        'store_url' => ! empty($row['store_url']) ? trim((string) $row['store_url']) : null,
                         'is_primary' => false,
                         'is_active' => true,
                     ]);
@@ -157,9 +160,9 @@ class CompetitorAppRanking extends Component
                     && $row['rating'] !== '';
 
                 $hasSnapshotData = $hasSnapshotData
-                    || !empty($row['downloads_label'])
-                    || !empty($row['reviews_label'])
-                    || !empty($row['release_date']);
+                    || ! empty($row['downloads_label'])
+                    || ! empty($row['reviews_label'])
+                    || ! empty($row['release_date']);
 
                 if ($hasSnapshotData) {
                     CompetitorAppSnapshot::create([
@@ -167,8 +170,8 @@ class CompetitorAppRanking extends Component
                         'snapshot_date' => $this->snapshotDate,
                         'snapshot_batch_at' => $snapshotBatchAt,
                         'rating' => $row['rating'] !== null && $row['rating'] !== '' ? (float) $row['rating'] : 0,
-                        'downloads_label' => !empty($row['downloads_label']) ? trim((string) $row['downloads_label']) : null,
-                        'reviews_label' => !empty($row['reviews_label']) ? trim((string) $row['reviews_label']) : null,
+                        'downloads_label' => ! empty($row['downloads_label']) ? trim((string) $row['downloads_label']) : null,
+                        'reviews_label' => ! empty($row['reviews_label']) ? trim((string) $row['reviews_label']) : null,
                         'release_date' => $row['release_date'] ?: null,
                     ]);
                 }
@@ -194,7 +197,7 @@ class CompetitorAppRanking extends Component
         ]);
 
         $latestBatchAt = $this->getLatestBatchTimestampForDate($this->snapshotDate);
-        $hasSnapshots = !empty($latestBatchAt);
+        $hasSnapshots = ! empty($latestBatchAt);
 
         if (! $hasSnapshots) {
             $this->dispatch('swal', [
@@ -356,7 +359,7 @@ class CompetitorAppRanking extends Component
     {
         try {
             $latestBatchAt = CompetitorAppSnapshot::whereDate('snapshot_date', $date)->max('snapshot_batch_at');
-            if (!$latestBatchAt) {
+            if (! $latestBatchAt) {
                 return [];
             }
 

@@ -2,28 +2,41 @@
 
 namespace App\Livewire\Admin\Channels;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use App\Models\Channel;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class EditChannel extends Component
 {
     use WithFileUploads;
 
     public $channel;
+
     public $number;
+
     public $origin;
+
     public $name;
+
     public $url;
+
     public $category;
+
     public $status;
+
     public $image_url;
+
     public $new_image;
+
     public $area;
+
     public $audio_spanish_enabled;
+
     public $audio_english_enabled;
+
     public $subtitles_enabled;
+
     public $profiles = [];
 
     public function boot()
@@ -41,7 +54,7 @@ class EditChannel extends Component
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => '¡Error!',
-                    'html' => '<b>' . __('Your update contains the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your update contains the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -118,7 +131,7 @@ class EditChannel extends Component
                 Storage::delete($this->image_url);
             }
 
-            $imageName = time() . '_' . $this->new_image->getClientOriginalName();
+            $imageName = time().'_'.$this->new_image->getClientOriginalName();
             $this->image_url = $this->new_image->storeAs('channels', $imageName, 'public');
         }
 
@@ -138,13 +151,13 @@ class EditChannel extends Component
             'subtitles_enabled' => $subtitlesEnabled,
             'status' => $this->status,
             'image_url' => $this->image_url,
-            'profiles' => $this->profiles ?: null
+            'profiles' => $this->profiles ?: null,
         ]);
 
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Channel updated successfully.')
+            'text' => __('Channel updated successfully.'),
         ]);
 
         return redirect()->route('admin.channels.show', $this->channel);

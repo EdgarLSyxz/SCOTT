@@ -2,16 +2,19 @@
 
 namespace App\Livewire\App\Reports;
 
-use Livewire\Component;
+use App\Events\CommentAdded;
 use App\Models\Comment;
 use App\Models\Report;
-use App\Events\CommentAdded;
+use Livewire\Component;
 
 class ReportCommentsModal extends Component
 {
     public $reportId;
+
     public $body = '';
+
     public $editingId = null;
+
     public $editBody = '';
 
     protected $rules = [
@@ -44,8 +47,9 @@ class ReportCommentsModal extends Component
     public function editComment($id)
     {
         $comment = Comment::findOrFail($id);
-        if ($comment->user_id !== auth()->id())
+        if ($comment->user_id !== auth()->id()) {
             return;
+        }
         $this->editingId = $id;
         $this->editBody = $comment->body;
     }
@@ -54,8 +58,9 @@ class ReportCommentsModal extends Component
     {
         $this->validateOnly('editBody');
         $comment = Comment::findOrFail($id);
-        if ($comment->user_id !== auth()->id())
+        if ($comment->user_id !== auth()->id()) {
             return;
+        }
         $comment->body = $this->editBody;
         $comment->save();
         $this->touchReportActivity();
@@ -76,8 +81,9 @@ class ReportCommentsModal extends Component
     public function deleteComment($id)
     {
         $comment = Comment::findOrFail($id);
-        if ($comment->user_id !== auth()->id())
+        if ($comment->user_id !== auth()->id()) {
             return;
+        }
         $comment->delete();
         $this->touchReportActivity();
         event(new CommentAdded($comment));

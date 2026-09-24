@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Admin\Grafana;
 
-use Livewire\Component;
 use App\Models\GrafanaPanel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Livewire\Component;
 
 class GrafanaTable extends Component
 {
@@ -31,7 +31,7 @@ class GrafanaTable extends Component
                         $query->where('area', $user->area);
                     }
                 } else {
-                    if (!empty($user->area)) {
+                    if (! empty($user->area)) {
                         $query->where('area', $user->area);
                     } else {
                         $query->whereRaw('0 = 1');
@@ -51,6 +51,7 @@ class GrafanaTable extends Component
             if ($panel->id == 3) {
                 return 2;
             }
+
             return $panel->id;
         })->values();
 

@@ -13,7 +13,7 @@ class ReportController extends Controller
      */
     public function index()
     {
-        return view("app.reports.index");
+        return view('app.reports.index');
     }
 
     /**
@@ -57,7 +57,7 @@ class ReportController extends Controller
         // Get comments
         $comments = $report->comments()->with('user')->latest()->get();
 
-        return view("app.reports.show", compact("report", "sla", "comments"));
+        return view('app.reports.show', compact('report', 'sla', 'comments'));
     }
 
     /**
@@ -76,7 +76,7 @@ class ReportController extends Controller
         }
 
         return view('app.reports.edit', [
-            'report' => $report
+            'report' => $report,
         ]);
     }
 

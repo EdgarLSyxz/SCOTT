@@ -2,17 +2,17 @@
 
 namespace App\Exports;
 
-use App\Models\Report;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, WithMapping, WithStyles
+class ReportsExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     public $details;
+
     public $search;
 
     public function __construct($reports, $search = null)
@@ -25,12 +25,15 @@ class ReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                 $search = strtolower($this->search);
                 $filtered = $filtered->filter(function ($detail) use ($search) {
                     $number = strtolower($detail->channel->number ?? '');
-                    $name   = strtolower($detail->channel->name ?? '');
+                    $name = strtolower($detail->channel->name ?? '');
+
                     return str_contains($number, $search) || str_contains($name, $search);
                 });
             }
+
             return $filtered->map(function ($detail) use ($report) {
                 $detail->parentReport = $report;
+
                 return $detail;
             });
         });
@@ -70,10 +73,10 @@ class ReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
     {
         $report = $detail->parentReport;
 
-        $number      = $detail->channel->number ?? 'No Number';
-        $name        = $detail->channel->name ?? 'Unknown Channel';
+        $number = $detail->channel->number ?? 'No Number';
+        $name = $detail->channel->name ?? 'Unknown Channel';
         $subcategory = $detail->subcategory ?? 'Unknown Subcategory';
-        $protocol    = $detail->protocol ?? 'No Protocol';
+        $protocol = $detail->protocol ?? 'No Protocol';
 
         if (
             $report->type === 'Functions' &&
@@ -90,13 +93,13 @@ class ReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             $description = $detail->description ?? 'No Applicable';
         }
         $losses = '';
-        if ($report->type === 'Functions' && $subcategory === 'CUTV' && !$detail->reportContentLosses->isEmpty()) {
-            $losses = $detail->reportContentLosses->map(function ($loss) use ($number, $name, $subcategory) {
+        if ($report->type === 'Functions' && $subcategory === 'CUTV' && ! $detail->reportContentLosses->isEmpty()) {
+            $losses = $detail->reportContentLosses->map(function ($loss) {
                 $start = \Carbon\Carbon::parse($loss->start_time);
-                $end   = \Carbon\Carbon::parse($loss->end_time);
-                $diff  = $start->diff($end);
-                $days    = (int) $diff->format('%a');
-                $hours   = (int) $diff->format('%H');
+                $end = \Carbon\Carbon::parse($loss->end_time);
+                $diff = $start->diff($end);
+                $days = (int) $diff->format('%a');
+                $hours = (int) $diff->format('%H');
                 $minutes = (int) $diff->format('%I');
                 $duration = '';
                 if ($days > 0) {
@@ -106,6 +109,7 @@ class ReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                     $duration .= "{$hours}h ";
                 }
                 $duration .= "{$minutes}m";
+
                 return "Start: {$start->format('d/m/Y H:i')}, End: {$end->format('d/m/Y H:i')}, Duration: {$duration}";
             })->join("\n");
         }

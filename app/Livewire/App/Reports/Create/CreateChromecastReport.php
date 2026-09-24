@@ -2,11 +2,11 @@
 
 namespace App\Livewire\App\Reports\Create;
 
-use Livewire\Component;
 use App\Models\Chromecast;
 use App\Models\Report;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Component;
 
 class CreateChromecastReport extends Component
 {
@@ -53,7 +53,7 @@ class CreateChromecastReport extends Component
 
         } catch (\Exception $e) {
             throw ValidationException::withMessages([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

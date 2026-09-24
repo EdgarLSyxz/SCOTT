@@ -6,10 +6,11 @@ use App\Http\Controllers\Admin\DownloadExportController;
 use App\Http\Controllers\Admin\GrafanaController;
 use App\Http\Controllers\Admin\LogAnalyticsController;
 use App\Http\Controllers\Admin\PackageController;
-use App\Http\Controllers\Admin\RadioController;
 use App\Http\Controllers\Admin\RackIpRangeController;
 use App\Http\Controllers\Admin\RackLayoutController;
+use App\Http\Controllers\Admin\RadioController;
 use App\Http\Controllers\Admin\ReportSlaController;
+use App\Http\Controllers\Admin\SolarInterferenceController;
 use App\Http\Controllers\Admin\StageController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -86,13 +87,24 @@ Route::get('admin/devices/downloads/months', [DownloadExportController::class, '
 Route::resource('/radios', RadioController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Radio']);
 
+Route::prefix('solar-interferences')->name('solar-interferences.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [SolarInterferenceController::class, 'index'])->name('index');
+    Route::get('/create', [SolarInterferenceController::class, 'create'])->name('create');
+    Route::get('/upload/{upload}', [SolarInterferenceController::class, 'show'])->name('show');
+    Route::delete('/upload/{upload}', [SolarInterferenceController::class, 'destroy'])->name('destroy');
+    Route::patch('/upload/{upload}/toggle', [SolarInterferenceController::class, 'toggleStatus'])->name('toggle');
+});
+
 Route::resource('/grafana', GrafanaController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\GrafanaPanel']);
 
 Route::resource('admin/reports/sla', ReportSlaController::class)
     ->middleware(['auth', 'verified']);
 
-Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])->name('user.switch-area')->middleware(['auth', 'verified']);
+Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])
+    ->withoutMiddleware(\App\Http\Middleware\CheckUserStatus::class)
+    ->name('user.switch-area')
+    ->middleware(['auth', 'verified']);
 
 Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');

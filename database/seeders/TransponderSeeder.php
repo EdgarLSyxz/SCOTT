@@ -15,7 +15,7 @@ class TransponderSeeder extends Seeder
             Transponder::updateOrCreate(
                 ['code' => $code],
                 [
-                    'description' => 'Transponder ' . $code,
+                    'description' => 'Transponder '.$code,
                     'active_site' => Transponder::SITE_ZACATECAS,
                     'is_on' => true,
                     'sort_order' => $index,

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Stage;
+use Illuminate\Database\Seeder;
 
 class StagesSeeder extends Seeder
 {

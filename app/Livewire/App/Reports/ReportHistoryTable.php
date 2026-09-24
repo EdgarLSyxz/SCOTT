@@ -2,32 +2,47 @@
 
 namespace App\Livewire\App\Reports;
 
-use Livewire\Component;
-use Livewire\WithPagination;
+use App\Exports\ReportsExport;
 use App\Models\Report;
 use App\Models\User;
+use Livewire\Component;
+use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ReportsExport;
 
 class ReportHistoryTable extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $orderField = 'created_at';
+
     public $orderDirection = 'desc';
+
     public $areaFilter = 'all';
+
     public $statusFilter = null;
+
     public $selectedUser = null;
+
     public $typeFilter = null;
+
     public $reportTypes = ['Momentary', 'Hourly', 'Functions'];
+
     public $statusOptions = ['Revision', 'Resolved', 'Reported'];
+
     public $userOptions = [];
+
     public $startDate;
+
     public $endDate;
+
     public $currentTypeIndex = -1;
+
     public $currentStatusIndex = -1;
+
     public $currentUserIndex = -1;
+
     protected $queryString = ['search', 'orderField', 'orderDirection', 'areaFilter' => ['except' => 'all']];
 
     public function mount()
@@ -59,8 +74,9 @@ class ReportHistoryTable extends Component
             ->pluck('reported_by')
             ->toArray();
 
-        if (empty($usersWithReports))
+        if (empty($usersWithReports)) {
             return;
+        }
 
         if ($this->orderField !== 'reported_by') {
             $this->orderField = 'reported_by';
@@ -102,7 +118,7 @@ class ReportHistoryTable extends Component
             'selectedUser',
             'typeFilter',
             'startDate',
-            'endDate'
+            'endDate',
         ]);
 
         $this->currentTypeIndex = -1;
@@ -149,8 +165,7 @@ class ReportHistoryTable extends Component
         $query = Report::query()
             ->where(function ($q) {
                 $q->where('category', 'like', "%{$this->search}%")
-                    ->orWhereHas('reportedBy', fn($query) =>
-                    $query->where('name', 'like', "%{$this->search}%"))
+                    ->orWhereHas('reportedBy', fn ($query) => $query->where('name', 'like', "%{$this->search}%"))
                     ->orWhereHas('reportDetails.channel', function ($q) {
                         $q->where('name', 'like', "%{$this->search}%")
                             ->orWhere('number', 'like', "%{$this->search}%")
@@ -171,8 +186,7 @@ class ReportHistoryTable extends Component
         }
 
         if ($this->selectedUser) {
-            $query->whereHas('reportedBy', fn($q) =>
-            $q->where('name', $this->selectedUser));
+            $query->whereHas('reportedBy', fn ($q) => $q->where('name', $this->selectedUser));
         }
 
         if ($this->startDate && $this->endDate) {

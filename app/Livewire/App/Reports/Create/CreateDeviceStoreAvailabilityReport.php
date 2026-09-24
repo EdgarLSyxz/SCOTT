@@ -63,6 +63,7 @@ class CreateDeviceStoreAvailabilityReport extends Component
                     'title' => __('Error'),
                     'text' => __('You must select at least one device to create a report.'),
                 ]);
+
                 return;
             }
 
@@ -75,18 +76,19 @@ class CreateDeviceStoreAvailabilityReport extends Component
                 }
             }
 
-            if (!empty($repeatedDevices)) {
+            if (! empty($repeatedDevices)) {
                 $errorMessages = '<ul style="text-align: center;">';
                 foreach ($repeatedDevices as $deviceName) {
-                    $errorMessages .= '<li>• ' . __('The device ":device" cannot be selected more than once.', ['device' => $deviceName]) . '</li>';
+                    $errorMessages .= '<li>• '.__('The device ":device" cannot be selected more than once.', ['device' => $deviceName]).'</li>';
                 }
                 $errorMessages .= '</ul>';
 
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your report log contains errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your report log contains errors:').'</b><br><br>'.$errorMessages,
                 ]);
+
                 return;
             }
 
@@ -141,7 +143,7 @@ class CreateDeviceStoreAvailabilityReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Error'),
-                'html' => '<b>' . __('Your report log contains errors:') . '</b><br><br>' . $errorMessages,
+                'html' => '<b>'.__('Your report log contains errors:').'</b><br><br>'.$errorMessages,
             ]);
         }
     }
@@ -176,7 +178,7 @@ class CreateDeviceStoreAvailabilityReport extends Component
                 ->where('name', '<>', 'Android (Mobile & TV)')
                 ->orderBy('name')
                 ->get()
-                ->map(fn($device) => [
+                ->map(fn ($device) => [
                     'id' => $device->id,
                     'name' => $device->name,
                     'image' => $device->image,

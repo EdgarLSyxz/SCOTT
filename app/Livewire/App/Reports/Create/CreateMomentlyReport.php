@@ -4,22 +4,25 @@ namespace App\Livewire\App\Reports\Create;
 
 use App\Enums\MediaIssue;
 use App\Mail\Reports\ReportCreatedMail;
-use Livewire\Component;
+use App\Models\Channel;
 use App\Models\Report;
 use App\Models\ReportDetail;
 use App\Models\Stage;
-use App\Models\Channel;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Mail;
-use App\Models\User;
+use Livewire\Component;
 
 class CreateMomentlyReport extends Component
 {
     public $reportData;
+
     public $stages;
+
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
+
     public $mediaOptions = [];
 
     public function mount()
@@ -73,12 +76,12 @@ class CreateMomentlyReport extends Component
             foreach ($this->reportData['channels'] as $channel) {
                 $existingChannel = ReportDetail::where('channel_id', $channel['channel_id'])
                     ->where('status', 'Revision')
-                    ->whereHas('report', fn($q) => $q->where('area', $userArea))
+                    ->whereHas('report', fn ($q) => $q->where('area', $userArea))
                     ->exists();
 
                 if ($existingChannel) {
                     throw ValidationException::withMessages([
-                        'reportData.channels' => __('The channel is currently under review and cannot be added.')
+                        'reportData.channels' => __('The channel is currently under review and cannot be added.'),
                     ]);
                 }
             }
@@ -91,8 +94,8 @@ class CreateMomentlyReport extends Component
                 if ($count > 1) {
                     throw ValidationException::withMessages([
                         'reportData.channels' => __('The channel ":channel" cannot be selected more than once.', [
-                            'channel' => Channel::find($channelId)?->number ?? $channelId
-                        ])
+                            'channel' => Channel::find($channelId)?->number ?? $channelId,
+                        ]),
                     ]);
                 }
             }
@@ -129,7 +132,7 @@ class CreateMomentlyReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'success',
                 'title' => __('Well done!'),
-                'text' => __('Momentary report created successfully.')
+                'text' => __('Momentary report created successfully.'),
             ]);
 
             $this->dispatch('reportCreated');
@@ -147,7 +150,7 @@ class CreateMomentlyReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Error'),
-                'html' => '<b>' . __('Your report log contains errors:') . '</b><br><br>' . $errorMessages,
+                'html' => '<b>'.__('Your report log contains errors:').'</b><br><br>'.$errorMessages,
             ]);
         }
     }
@@ -161,7 +164,7 @@ class CreateMomentlyReport extends Component
         ], [], [
             'reportData.category' => __('category name'),
             'reportData.reviewed_by' => __('reviewed by'),
-            'reportData.channels' => __('channels')
+            'reportData.channels' => __('channels'),
         ]);
 
         $userArea = Auth::user()->area ?? Report::AREA_OTT;
@@ -174,13 +177,13 @@ class CreateMomentlyReport extends Component
         foreach ($this->reportData['channels'] as $index => $channel) {
             $protocolRule = $userArea === Report::AREA_DTH
                 ? 'nullable'
-                : 'required|in:' . implode(',', $this->protocols);
+                : 'required|in:'.implode(',', $this->protocols);
 
             $this->validate([
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
                 "reportData.channels.$index.stage" => ['required', $baseStageRule],
                 "reportData.channels.$index.protocol" => $protocolRule,
-                "reportData.channels.$index.media" => 'required|in:' . implode(',', array_keys($this->mediaOptions)),
+                "reportData.channels.$index.media" => 'required|in:'.implode(',', array_keys($this->mediaOptions)),
                 "reportData.channels.$index.description" => 'required|string',
             ], [], [
                 "reportData.channels.$index.channel_id" => __('channel'),

@@ -16,8 +16,7 @@ class RainEndedMail extends Mailable
     public function __construct(
         public WeatherRainEvent $event,
         public ?array $forecast = null
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

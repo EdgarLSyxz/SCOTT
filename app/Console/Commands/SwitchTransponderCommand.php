@@ -23,6 +23,7 @@ class SwitchTransponderCommand extends Command
         $transponder = Transponder::where('code', $code)->first();
         if (! $transponder) {
             $this->error("[modulators] Transponder '{$code}' not found.");
+
             return self::FAILURE;
         }
 

@@ -2,14 +2,16 @@
 
 namespace App\Livewire\App\Reports;
 
-use Livewire\Component;
 use App\Models\Report;
 use App\Services\ReportSlaService;
+use Livewire\Component;
 
 class ReportDetailModal extends Component
 {
     public $reporteId;
+
     public $selectedReport;
+
     public $sla = null;
 
     public function mount($reporteId)

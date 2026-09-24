@@ -3,24 +3,28 @@
 namespace App\Livewire\App\Reports\Create;
 
 use App\Mail\Reports\ReportFunctionsCreatedMail;
-use Livewire\Component;
-use App\Models\Report;
-use App\Models\ReportDetail;
-use App\Models\ReportContentLoss;
-use App\Models\Stage;
 use App\Models\Channel;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
+use App\Models\Report;
+use App\Models\ReportContentLoss;
+use App\Models\ReportDetail;
+use App\Models\Stage;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+use Livewire\Component;
 
 class CreateFunctionsReport extends Component
 {
     public $stages;
+
     public $categories = [];
+
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
+
     public $mediaOptions = ['AUDIO', 'VIDEO', 'AUDIO/VIDEO'];
+
     public $allowedStages = ['CDN BPK', 'CDN TELMEX', 'CDN BPK/TELMEX'];
 
     public function mount()
@@ -106,14 +110,14 @@ class CreateFunctionsReport extends Component
     {
         $category = $this->categories[$categoryIndex] ?? null;
 
-        if (!$category || $category['name'] !== 'CUTV') {
+        if (! $category || $category['name'] !== 'CUTV') {
             return 0;
         }
 
         $totalPeriods = 0;
 
         foreach ($category['channels'] as $channel) {
-            if (!isset($channel['loss_periods']) || !is_array($channel['loss_periods'])) {
+            if (! isset($channel['loss_periods']) || ! is_array($channel['loss_periods'])) {
                 continue;
             }
             $totalPeriods += count($channel['loss_periods']);
@@ -170,10 +174,10 @@ class CreateFunctionsReport extends Component
                                 "categories.$categoryIndex.channels.$channelIndex.loss_periods" => 'required|array|min:1',
                             ];
 
-                            if (!empty($channel['loss_periods'])) {
+                            if (! empty($channel['loss_periods'])) {
                                 foreach ($channel['loss_periods'] as $periodIndex => $period) {
                                     $rules["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.start_time"] = 'required|date|before_or_equal:now';
-                                    $rules["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.end_time"] = 'required|date|after:categories.' . $categoryIndex . '.channels.' . $channelIndex . '.loss_periods.' . $periodIndex . '.start_time|before_or_equal:now';
+                                    $rules["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.end_time"] = 'required|date|after:categories.'.$categoryIndex.'.channels.'.$channelIndex.'.loss_periods.'.$periodIndex.'.start_time|before_or_equal:now';
                                 }
                             }
                             break;
@@ -198,20 +202,20 @@ class CreateFunctionsReport extends Component
                     }
 
                     $messages = [
-                        "categories.$categoryIndex.channels.$channelIndex.channel_id.required" => __("The channel is required."),
-                        "categories.$categoryIndex.channels.$channelIndex.stage.required" => __("The stage is required."),
-                        "categories.$categoryIndex.channels.$channelIndex.protocol.required" => __("The protocol is required."),
-                        "categories.$categoryIndex.channels.$channelIndex.media.required" => __("The media type is required."),
-                        "categories.$categoryIndex.channels.$channelIndex.description.required" => __("The description is required."),
-                        "categories.$categoryIndex.channels.$channelIndex.description.min" => __("The description is required."),
+                        "categories.$categoryIndex.channels.$channelIndex.channel_id.required" => __('The channel is required.'),
+                        "categories.$categoryIndex.channels.$channelIndex.stage.required" => __('The stage is required.'),
+                        "categories.$categoryIndex.channels.$channelIndex.protocol.required" => __('The protocol is required.'),
+                        "categories.$categoryIndex.channels.$channelIndex.media.required" => __('The media type is required.'),
+                        "categories.$categoryIndex.channels.$channelIndex.description.required" => __('The description is required.'),
+                        "categories.$categoryIndex.channels.$channelIndex.description.min" => __('The description is required.'),
                     ];
 
                     if ($category['name'] === 'CUTV') {
-                        $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.required"] = __("Each channel in CUTV must have at least one loss period.");
-                        $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.min"] = __("Each channel in CUTV must have at least one loss period.");
+                        $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.required"] = __('Each channel in CUTV must have at least one loss period.');
+                        $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.min"] = __('Each channel in CUTV must have at least one loss period.');
                         foreach ($channel['loss_periods'] as $periodIndex => $period) {
-                            $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.start_time.required"] = __("The start time is required.");
-                            $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.end_time.required"] = __("The end time is required.");
+                            $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.start_time.required"] = __('The start time is required.');
+                            $messages["categories.$categoryIndex.channels.$channelIndex.loss_periods.$periodIndex.end_time.required"] = __('The end time is required.');
                         }
                     }
 
@@ -254,7 +258,7 @@ class CreateFunctionsReport extends Component
                         'description' => $channel['description'] ?? null,
                     ]);
 
-                    if ($category['name'] === 'CUTV' && !empty($channel['loss_periods'])) {
+                    if ($category['name'] === 'CUTV' && ! empty($channel['loss_periods'])) {
                         foreach ($channel['loss_periods'] as $period) {
                             ReportContentLoss::create([
                                 'report_detail_id' => $reportDetail->id,
@@ -287,7 +291,7 @@ class CreateFunctionsReport extends Component
 
                 if ($categoryIndex !== null && isset($this->categories[$categoryIndex]['name'])) {
                     $categoryName = $this->categories[$categoryIndex]['name'];
-                    if (!isset($groupedErrors[$categoryName])) {
+                    if (! isset($groupedErrors[$categoryName])) {
                         $groupedErrors[$categoryName] = [];
                     }
 
@@ -305,12 +309,12 @@ class CreateFunctionsReport extends Component
                 }
             }
 
-            $errorHtml = '<b>' . __('Your report log contains errors:') . '</b><br><br>';
+            $errorHtml = '<b>'.__('Your report log contains errors:').'</b><br><br>';
 
             foreach ($groupedErrors as $categoryName => $errors) {
-                $errorHtml .= '<b>' . __('Category') . ': ' . e($categoryName) . '</b><ul>';
+                $errorHtml .= '<b>'.__('Category').': '.e($categoryName).'</b><ul>';
                 foreach ($errors as $error) {
-                    $errorHtml .= '<li>• ' . e($error) . '</li>';
+                    $errorHtml .= '<li>• '.e($error).'</li>';
                 }
                 $errorHtml .= '</ul><br>';
             }

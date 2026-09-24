@@ -1,17 +1,21 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up() {
+return new class extends Migration
+{
+    public function up()
+    {
         Schema::table('channels', function (Blueprint $table) {
             $table->string('area')->nullable()->after('profiles');
         });
         DB::table('channels')->whereNull('area')->update(['area' => 'DTH/OTT']);
     }
 
-    public function down() {
+    public function down()
+    {
         Schema::table('channels', function (Blueprint $table) {
             $table->dropColumn('area');
         });

@@ -2,20 +2,21 @@
 
 namespace App\Mail\Reports;
 
+use App\Models\Report;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Report;
 
 class ReportFunctionsCreatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $report;
+
     public $categories;
+
     public $reportedBy;
 
     /**

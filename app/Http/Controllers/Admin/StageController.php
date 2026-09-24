@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stage;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class StageController extends Controller
 {
@@ -26,7 +26,7 @@ class StageController extends Controller
 
         $stages = $query->orderBy('status', 'desc')->get();
 
-        return view("admin.stages.index", compact("stages"));
+        return view('admin.stages.index', compact('stages'));
     }
 
     /**
@@ -36,7 +36,7 @@ class StageController extends Controller
     {
         $this->authorize('create', Stage::class);
 
-        return view("admin.stages.create");
+        return view('admin.stages.create');
     }
 
     /**
@@ -45,13 +45,13 @@ class StageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            "name" => "required|string",
-            "area" => "required|in:OTT,DTH",
-            "status" => "required|string",
+            'name' => 'required|string',
+            'area' => 'required|in:OTT,DTH',
+            'status' => 'required|string',
         ], [], [
-            "name" => __('stage name'),
-            "area" => __('stage area'),
-            "status" => __('stage status'),
+            'name' => __('stage name'),
+            'area' => __('stage area'),
+            'status' => __('stage status'),
         ]);
 
         $stage = Stage::create([
@@ -63,7 +63,7 @@ class StageController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('New stage created successfully.')
+            'text' => __('New stage created successfully.'),
         ]);
 
         return redirect()->route('admin.stages.show', $stage);
@@ -111,7 +111,7 @@ class StageController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Stage updated successfully.')
+            'text' => __('Stage updated successfully.'),
         ]);
 
         return redirect()->route('admin.stages.show', $stage);
@@ -129,7 +129,7 @@ class StageController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Stage deleted successfully.')
+            'text' => __('Stage deleted successfully.'),
         ]);
 
         return redirect()->route('admin.stages.index');

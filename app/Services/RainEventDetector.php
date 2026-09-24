@@ -12,9 +12,7 @@ use Throwable;
 
 class RainEventDetector
 {
-    public function __construct(private readonly WeatherService $weather)
-    {
-    }
+    public function __construct(private readonly WeatherService $weather) {}
 
     public function processSite(string $site, array $payload): array
     {
@@ -63,6 +61,7 @@ class RainEventDetector
         foreach ($payloadBySite as $site => $payload) {
             $results[$site] = $this->processSite($site, $payload ?? []);
         }
+
         return $results;
     }
 
@@ -126,6 +125,7 @@ class RainEventDetector
                 'site' => $site,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -135,12 +135,14 @@ class RainEventDetector
         try {
             $event->rain_ended_at = now();
             $event->save();
+
             return $event;
         } catch (Throwable $e) {
             Log::error('RainEventDetector: failed to close event', [
                 'event_id' => $event->id,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -152,6 +154,7 @@ class RainEventDetector
             $event->update([
                 'notification_started_status' => WeatherRainEvent::STATUS_SKIPPED,
             ]);
+
             return;
         }
 
@@ -159,6 +162,7 @@ class RainEventDetector
             $event->update([
                 'notification_started_status' => WeatherRainEvent::STATUS_SKIPPED,
             ]);
+
             return;
         }
 
@@ -188,6 +192,7 @@ class RainEventDetector
             $event->update([
                 'notification_ended_status' => WeatherRainEvent::STATUS_SKIPPED,
             ]);
+
             return;
         }
 
@@ -195,6 +200,7 @@ class RainEventDetector
             $event->update([
                 'notification_ended_status' => WeatherRainEvent::STATUS_SKIPPED,
             ]);
+
             return;
         }
 
@@ -234,6 +240,7 @@ class RainEventDetector
         if (is_string($configured)) {
             $configured = array_filter(array_map('trim', explode(',', $configured)));
         }
+
         return $configured;
     }
 
@@ -246,6 +253,7 @@ class RainEventDetector
                 'site' => $site,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }

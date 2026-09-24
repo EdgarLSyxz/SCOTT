@@ -22,6 +22,7 @@ class RadioPolicy
         if (! $user->can('radios.view')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'DTH';
     }
 
@@ -30,6 +31,7 @@ class RadioPolicy
         if (! $user->can('radios.view')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'DTH';
     }
 
@@ -38,6 +40,7 @@ class RadioPolicy
         if (! $user->can('radios.create')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'DTH';
     }
 
@@ -46,6 +49,7 @@ class RadioPolicy
         if (! $user->can('radios.edit')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'DTH';
     }
 
@@ -54,6 +58,7 @@ class RadioPolicy
         if (! $user->can('radios.delete')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'DTH';
     }
 }

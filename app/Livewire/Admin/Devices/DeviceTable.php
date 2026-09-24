@@ -2,19 +2,23 @@
 
 namespace App\Livewire\Admin\Devices;
 
-use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\Device;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class DeviceTable extends Component
 {
-    use WithPagination, AuthorizesRequests;
+    use AuthorizesRequests, WithPagination;
 
     public $name = '';
+
     public $status = true;
+
     public $protocolFilter = null;
+
     public $statusFilter = null;
+
     public $queryString = ['protocolFilter', 'statusFilter'];
 
     public function toggleProtocolFilter()
@@ -68,8 +72,8 @@ class DeviceTable extends Component
 
         if (is_null($this->protocolFilter) && is_null($this->statusFilter)) {
             $query->whereIn('protocol', ['HLS', 'DASH'])
-                  ->orderByRaw("CASE WHEN protocol = 'HLS' THEN 0 WHEN protocol = 'DASH' THEN 1 ELSE 2 END")
-                  ->orderBy('name', 'asc');
+                ->orderByRaw("CASE WHEN protocol = 'HLS' THEN 0 WHEN protocol = 'DASH' THEN 1 ELSE 2 END")
+                ->orderBy('name', 'asc');
         } else {
             if (! is_null($this->protocolFilter)) {
                 $query->orderBy('name', 'asc');

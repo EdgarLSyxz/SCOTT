@@ -2,12 +2,12 @@
 
 namespace App\Livewire\App\Reports\Create;
 
-use App\Models\ChannelTest;
-use Livewire\Component;
-use App\Models\Report;
 use App\Models\Channel;
+use App\Models\ChannelTest;
+use App\Models\Report;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Component;
 
 class CreateProfileReport extends Component
 {
@@ -21,9 +21,10 @@ class CreateProfileReport extends Component
         $this->reportData = [
             'title' => '',
             'reviewed_by' => '',
-            'channels' => array_map(function($channelId) {
+            'channels' => array_map(function ($channelId) {
                 $channel = $this->initializeChannel();
                 $channel['channel_id'] = $channelId;
+
                 return $channel;
             }, $preloadChannels),
         ];
@@ -78,8 +79,9 @@ class CreateProfileReport extends Component
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'text' => __('You must select at least one channel to create a report.')
+                    'text' => __('You must select at least one channel to create a report.'),
                 ]);
+
                 return;
             }
 
@@ -91,17 +93,18 @@ class CreateProfileReport extends Component
                     $repeatedChannels[] = Channel::find($channelId)?->number ?? $channelId;
                 }
             }
-            if (!empty($repeatedChannels)) {
+            if (! empty($repeatedChannels)) {
                 $errorMessages = '<ul style="text-align: center;">';
                 foreach ($repeatedChannels as $channelNumber) {
-                    $errorMessages .= "<li>• " . __('The channel ":channel" cannot be selected more than once.', ['channel' => $channelNumber]) . "</li>";
+                    $errorMessages .= '<li>• '.__('The channel ":channel" cannot be selected more than once.', ['channel' => $channelNumber]).'</li>';
                 }
                 $errorMessages .= '</ul>';
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your report log contains errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your report log contains errors:').'</b><br><br>'.$errorMessages,
                 ]);
+
                 return;
             }
 
@@ -132,7 +135,7 @@ class CreateProfileReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'success',
                 'title' => __('Well done!'),
-                'text' => __('Video profile test report created successfully.')
+                'text' => __('Video profile test report created successfully.'),
             ]);
 
             $this->dispatch('reportCreated');
@@ -150,7 +153,7 @@ class CreateProfileReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Error'),
-                'html' => '<b>' . __('Your report log contains errors:') . '</b><br><br>' . $errorMessages,
+                'html' => '<b>'.__('Your report log contains errors:').'</b><br><br>'.$errorMessages,
             ]);
         }
     }
@@ -162,7 +165,7 @@ class CreateProfileReport extends Component
             'reportData.channels' => 'required|array|min:1',
         ], [], [
             'reportData.title' => __('title'),
-            'reportData.channels' => __('channels')
+            'reportData.channels' => __('channels'),
         ]);
 
         foreach ($this->reportData['channels'] as $cIndex => $channel) {
@@ -192,7 +195,7 @@ class CreateProfileReport extends Component
                 ->where('profiles', '!=', '[]')
                 ->orderBy('number')
                 ->get()
-                ->map(fn($c) => [
+                ->map(fn ($c) => [
                     'id' => $c->id,
                     'number' => $c->number,
                     'name' => $c->name,

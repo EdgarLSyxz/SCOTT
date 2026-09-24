@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\DownloadsExcelMail;
 use App\Models\CompetitorAppSnapshot;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -20,7 +20,7 @@ class DownloadExportController extends Controller
     {
         $latestBatchAt = CompetitorAppSnapshot::max('snapshot_batch_at');
 
-        if (!$latestBatchAt) {
+        if (! $latestBatchAt) {
             return [
                 'snapshot_date' => null,
                 'rows' => [],
@@ -51,10 +51,10 @@ class DownloadExportController extends Controller
                 ];
             });
 
-        $primaryRow = $rows->first(fn ($row) => !empty($row['is_primary']));
+        $primaryRow = $rows->first(fn ($row) => ! empty($row['is_primary']));
         $topRows = $rows->take(10);
 
-        if ($primaryRow && !$topRows->contains(fn ($row) => (int) ($row['competitor_app_id'] ?? 0) === (int) ($primaryRow['competitor_app_id'] ?? 0))) {
+        if ($primaryRow && ! $topRows->contains(fn ($row) => (int) ($row['competitor_app_id'] ?? 0) === (int) ($primaryRow['competitor_app_id'] ?? 0))) {
             $topRows->push($primaryRow);
         }
 
@@ -101,7 +101,7 @@ class DownloadExportController extends Controller
             return (string) $years[0];
         }
 
-        return max($years) . ' - ' . min($years);
+        return max($years).' - '.min($years);
     }
 
     private function buildProtocolSummary(array $downloadRows): array
@@ -117,12 +117,12 @@ class DownloadExportController extends Controller
         ];
 
         foreach ($downloadRows as $row) {
-            $protocol = strtoupper(trim((string)($row['protocol'] ?? '')));
-            if (!in_array($protocol, $protocols, true)) {
+            $protocol = strtoupper(trim((string) ($row['protocol'] ?? '')));
+            if (! in_array($protocol, $protocols, true)) {
                 continue;
             }
 
-            $count = (int)($row['count'] ?? 0);
+            $count = (int) ($row['count'] ?? 0);
             if ($count <= 0) {
                 continue;
             }
@@ -131,7 +131,7 @@ class DownloadExportController extends Controller
 
             $deviceId = $row['device_id'] ?? null;
             if ($deviceId !== null && $deviceId !== '') {
-                $deviceSets[$protocol][(string)$deviceId] = true;
+                $deviceSets[$protocol][(string) $deviceId] = true;
             }
         }
 
@@ -167,7 +167,7 @@ class DownloadExportController extends Controller
                 continue;
             }
 
-            if (!isset($rowsByYear[$year])) {
+            if (! isset($rowsByYear[$year])) {
                 $rowsByYear[$year] = [];
             }
 
@@ -199,7 +199,7 @@ class DownloadExportController extends Controller
 
         foreach ($downloadRows as $row) {
             $protocol = strtoupper(trim((string) ($row['protocol'] ?? '')));
-            if (!in_array($protocol, $protocols, true)) {
+            if (! in_array($protocol, $protocols, true)) {
                 continue;
             }
 
@@ -236,6 +236,7 @@ class DownloadExportController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 
@@ -270,6 +271,7 @@ class DownloadExportController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 
@@ -277,7 +279,7 @@ class DownloadExportController extends Controller
     {
         $file = base_path('documents/Calculo de Consumo por CDN.xlsx');
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             return ['rows' => [], 'headers' => []];
         }
 
@@ -317,13 +319,13 @@ class DownloadExportController extends Controller
                 $cols = [];
                 $rawCols = [];
                 foreach ($def['cols'] as $col) {
-                    $cell = $sheet->getCell($col . $rowNum);
+                    $cell = $sheet->getCell($col.$rowNum);
                     $val = $cell->getCalculatedValue();
                     $rawCols[$col] = $val;
                     $cols[$col] = $this->formatCdnValue($val);
                 }
 
-                $cEmpty = !isset($rawCols['C']) || $rawCols['C'] === null || $rawCols['C'] === '' || (is_string($rawCols['C']) && trim((string) $rawCols['C']) === '');
+                $cEmpty = ! isset($rawCols['C']) || $rawCols['C'] === null || $rawCols['C'] === '' || (is_string($rawCols['C']) && trim((string) $rawCols['C']) === '');
 
                 $rows[] = [
                     'label' => $def['label'],
@@ -337,6 +339,7 @@ class DownloadExportController extends Controller
             return ['headers' => $headers, 'rows' => $rows];
         } catch (\Throwable $e) {
             \Log::error('Error reading CDN consumption Excel', ['error' => $e->getMessage()]);
+
             return ['rows' => [], 'headers' => []];
         }
     }
@@ -347,7 +350,7 @@ class DownloadExportController extends Controller
             return '—';
         }
 
-        if (!is_numeric($val)) {
+        if (! is_numeric($val)) {
             return (string) $val;
         }
 
@@ -398,16 +401,16 @@ class DownloadExportController extends Controller
             }
         }
 
-        $filename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.csv';
+        $filename = __('Download History').' - '.now()->format(format: 'dmY His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function () use ($query, $start, $end) {
+        $callback = function () use ($query) {
             $handle = fopen('php://output', 'w');
-            fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             $headerRow = ['device_id', 'device_name', 'protocol', 'month', 'year', 'count', 'device_area', 'created_at'];
             fputcsv($handle, $headerRow);
@@ -423,7 +426,7 @@ class DownloadExportController extends Controller
                         $r->count ?? '—',
                         $r->device_area ?? '—',
                         isset($r->created_at)
-                            ? Carbon::parse($r->created_at)->format('Y-m-d H:i:s') . ' UTC-6'
+                            ? Carbon::parse($r->created_at)->format('Y-m-d H:i:s').' UTC-6'
                             : '—',
                     ];
                     fputcsv($handle, $values);
@@ -467,11 +470,11 @@ class DownloadExportController extends Controller
             $monthsData = $query->pluck('month')->toArray();
 
             $monthLabels = [];
-            $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            $monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
             foreach ($monthsData as $m) {
                 $monthNumber = intval($m);
-                $monthName = $monthNames[$monthNumber - 1] ?? 'Mes ' . $monthNumber;
+                $monthName = $monthNames[$monthNumber - 1] ?? 'Mes '.$monthNumber;
                 $monthLabels[] = [
                     'value' => $monthNumber,
                     'label' => $monthName,
@@ -487,6 +490,7 @@ class DownloadExportController extends Controller
                 'error' => $e->getMessage(),
                 'year' => $year,
             ]);
+
             return response()->json(['months' => [], 'year' => $year], 200);
         }
     }
@@ -525,6 +529,7 @@ class DownloadExportController extends Controller
                     $areaFilter = $viewerArea;
                 } else {
                     \Log::info('historyData: User not admin, no area assigned, returning empty', ['user_id' => $auth->id]);
+
                     return response()->json($data);
                 }
             }
@@ -553,14 +558,15 @@ class DownloadExportController extends Controller
                 $years = $yearsQuery
                     ->orderByDesc('downloads.year')
                     ->pluck('downloads.year')
-                    ->map(fn($y) => (int) $y)
-                    ->filter(fn($y) => $y > 0)
+                    ->map(fn ($y) => (int) $y)
+                    ->filter(fn ($y) => $y > 0)
                     ->values()
                     ->toArray();
 
                 if (empty($years)) {
                     $data['years'] = [];
                     $data['year_range_label'] = null;
+
                     return response()->json($data);
                 }
 
@@ -716,7 +722,7 @@ class DownloadExportController extends Controller
             $devices = [];
             foreach ($rows as $r) {
                 $did = $r->device_id;
-                if (!isset($devices[$did])) {
+                if (! isset($devices[$did])) {
                     $devices[$did] = [
                         'id' => $did,
                         'name' => $r->name,
@@ -727,7 +733,7 @@ class DownloadExportController extends Controller
                 $monthKey = sprintf('%04d-%02d', (int) $r->year, (int) $r->month);
                 $index = $monthIndexMap[$monthKey] ?? null;
                 if ($index !== null) {
-                    $devices[$did]['months'][$index] = (int)$r->total;
+                    $devices[$did]['months'][$index] = (int) $r->total;
                 }
             }
 
@@ -760,22 +766,24 @@ class DownloadExportController extends Controller
             foreach ($devicesList as &$dev) {
                 $counts = $dev['counts'];
                 $max = max($counts) ?: 1;
-                $w = 260; $h = 48; $pad = 6;
+                $w = 260;
+                $h = 48;
+                $pad = 6;
                 $pts = [];
                 $n = count($counts);
                 for ($i = 0; $i < $n; $i++) {
                     $x = $pad + ($i * ($w - $pad * 2) / max(1, $n - 1));
                     $y = $h - $pad - (($counts[$i] / $max) * ($h - $pad * 2));
-                    $pts[] = round($x,1) . ',' . round($y,1);
+                    $pts[] = round($x, 1).','.round($y, 1);
                 }
                 $points = implode(' ', $pts);
-                $dev['sparkline'] = '<svg width="' . $w . '" height="' . $h . '" xmlns="http://www.w3.org/2000/svg">'
-                    . '<polyline fill="none" stroke="#0f6fec" stroke-width="2" points="' . $points . '"/>'
-                    . '</svg>';
+                $dev['sparkline'] = '<svg width="'.$w.'" height="'.$h.'" xmlns="http://www.w3.org/2000/svg">'
+                    .'<polyline fill="none" stroke="#0f6fec" stroke-width="2" points="'.$points.'"/>'
+                    .'</svg>';
             }
             unset($dev);
 
-            $overallTotal = array_sum(array_map(fn($d) => $d['total'], $devicesList));
+            $overallTotal = array_sum(array_map(fn ($d) => $d['total'], $devicesList));
             $monthsCount = count($months) ?: 1;
             $overallAvg = round($overallTotal / $monthsCount, 2);
 
@@ -793,7 +801,10 @@ class DownloadExportController extends Controller
             if (empty($deviceId)) {
                 $hasWeb = false;
                 foreach ($data['devices'] as $d) {
-                    if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) { $hasWeb = true; break; }
+                    if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) {
+                        $hasWeb = true;
+                        break;
+                    }
                 }
                 if (! $hasWeb) {
                     $data['devices'][] = [
@@ -815,6 +826,7 @@ class DownloadExportController extends Controller
             $data['period_labels'] = array_map(function ($m) {
                 $lbl = Carbon::createFromFormat('Y-m', $m)->locale('es')->isoFormat('MMM YYYY');
                 $lbl = preg_replace('/\.$/u', '', $lbl);
+
                 return mb_convert_case($lbl, MB_CASE_TITLE, 'UTF-8');
             }, $months);
             $data['summary'] = [
@@ -922,7 +934,7 @@ class DownloadExportController extends Controller
         ];
 
         $prefetched = $request->input('data');
-        if (!$prefetched && $allYearsMode) {
+        if (! $prefetched && $allYearsMode) {
             try {
                 $prefetchedResponse = $this->historyData($request);
                 $prefetched = $prefetchedResponse->getContent();
@@ -938,7 +950,7 @@ class DownloadExportController extends Controller
                     $data['devices'] = $pd['devices'] ?? [];
                     $data['period_labels'] = $pd['period_labels'] ?? [];
                     $data['summary'] = $pd['summary'] ?? $data['summary'];
-                    $data['is_multi_year'] = !empty($pd['is_multi_year']) || $allYearsMode;
+                    $data['is_multi_year'] = ! empty($pd['is_multi_year']) || $allYearsMode;
                     $data['years'] = $pd['years'] ?? $this->parseYearsFromRows($data['download_rows'] ?? []);
                     $data['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($data['years']);
                     $data['month'] = $pd['month'] ?? $data['month'];
@@ -952,11 +964,11 @@ class DownloadExportController extends Controller
                         'device_id' => $deviceId,
                         'download_rows_count' => count($data['download_rows']),
                         'devices_count' => count($data['devices']),
-                        'has_summary' => !empty($data['summary']),
-                        'has_period_labels' => !empty($data['period_labels']),
+                        'has_summary' => ! empty($data['summary']),
+                        'has_period_labels' => ! empty($data['period_labels']),
                     ]);
                     if (empty($deviceId)) {
-                        if (!$this->deviceHasRecords($data['devices'], 'Web Client')) {
+                        if (! $this->deviceHasRecords($data['devices'], 'Web Client')) {
                             $monthsCount = count($data['period_labels'] ?? []);
                             $data['devices'][] = [
                                 'id' => null,
@@ -976,7 +988,7 @@ class DownloadExportController extends Controller
                         $reportYear = $allYearsMode ? null : ($data['year'] ?? null);
                         $reportMonth = $data['month'] ?? null;
                         if ($this->shouldShowLgNoRecordsCard()
-                            && !$this->lgHasAnyRecords($data['devices'])) {
+                            && ! $this->lgHasAnyRecords($data['devices'])) {
                             $monthsCount = count($data['period_labels'] ?? []);
                             $data['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
                         }
@@ -1076,7 +1088,7 @@ class DownloadExportController extends Controller
                 $devices = [];
                 foreach ($rows as $r) {
                     $did = $r->device_id;
-                    if (!isset($devices[$did])) {
+                    if (! isset($devices[$did])) {
                         $devices[$did] = [
                             'id' => $did,
                             'name' => $r->name,
@@ -1088,7 +1100,7 @@ class DownloadExportController extends Controller
                     $monthNum = intval($r->month);
                     $index = $monthNum - 1;
                     if ($index >= 0 && $index < count($months)) {
-                        $devices[$did]['months'][$index] = (int)$r->total;
+                        $devices[$did]['months'][$index] = (int) $r->total;
                     }
                 }
 
@@ -1096,18 +1108,20 @@ class DownloadExportController extends Controller
                 foreach ($devices as $dev) {
                     $counts = $dev['months'];
                     $max = max($counts) ?: 1;
-                    $w = 260; $h = 48; $pad = 6;
+                    $w = 260;
+                    $h = 48;
+                    $pad = 6;
                     $pts = [];
                     $n = count($counts);
                     for ($i = 0; $i < $n; $i++) {
                         $x = $pad + ($i * ($w - $pad * 2) / max(1, $n - 1));
                         $y = $h - $pad - (($counts[$i] / $max) * ($h - $pad * 2));
-                        $pts[] = round($x,1) . ',' . round($y,1);
+                        $pts[] = round($x, 1).','.round($y, 1);
                     }
                     $points = implode(' ', $pts);
-                    $svg = '<svg width="' . $w . '" height="' . $h . '" xmlns="http://www.w3.org/2000/svg">'
-                        . '<polyline fill="none" stroke="#0f6fec" stroke-width="2" points="' . $points . '"/>'
-                        . '</svg>';
+                    $svg = '<svg width="'.$w.'" height="'.$h.'" xmlns="http://www.w3.org/2000/svg">'
+                        .'<polyline fill="none" stroke="#0f6fec" stroke-width="2" points="'.$points.'"/>'
+                        .'</svg>';
 
                     $total = array_sum($counts);
                     $avg = $n ? round($total / $n, 2) : 0;
@@ -1136,8 +1150,10 @@ class DownloadExportController extends Controller
 
                 $grouped = [];
                 foreach ($devicesList as $d) {
-                    $p = trim(strtoupper((string)($d['protocol'] ?? '')));
-                    if ($p === '') $p = 'UNKNOWN';
+                    $p = trim(strtoupper((string) ($d['protocol'] ?? '')));
+                    if ($p === '') {
+                        $p = 'UNKNOWN';
+                    }
                     $grouped[$p][] = $d;
                 }
 
@@ -1145,10 +1161,16 @@ class DownloadExportController extends Controller
                 natcasesort($protocols);
                 $protocols = array_values($protocols);
                 $ordered = [];
-                if (in_array('HLS', $protocols, true)) { $ordered[] = 'HLS'; }
-                if (in_array('DASH', $protocols, true)) { $ordered[] = 'DASH'; }
+                if (in_array('HLS', $protocols, true)) {
+                    $ordered[] = 'HLS';
+                }
+                if (in_array('DASH', $protocols, true)) {
+                    $ordered[] = 'DASH';
+                }
                 foreach ($protocols as $p) {
-                    if ($p === 'HLS' || $p === 'DASH') continue;
+                    if ($p === 'HLS' || $p === 'DASH') {
+                        continue;
+                    }
                     $ordered[] = $p;
                 }
 
@@ -1163,7 +1185,8 @@ class DownloadExportController extends Controller
                     $webClientIndex = null;
                     foreach ($orderedDevices as $i => $d) {
                         if (mb_strtolower($d['name'] ?? '') === mb_strtolower('Web Client')) {
-                            $webClientIndex = $i; break;
+                            $webClientIndex = $i;
+                            break;
                         }
                     }
                     if ($webClientIndex !== null) {
@@ -1190,14 +1213,14 @@ class DownloadExportController extends Controller
                         ];
                     }
 
-                    if ($this->shouldShowLgNoRecordsCard() && !$this->lgHasAnyRecords($orderedDevices)) {
+                    if ($this->shouldShowLgNoRecordsCard() && ! $this->lgHasAnyRecords($orderedDevices)) {
                         $orderedDevices[] = $this->buildLgNoRecordsEntry(0);
                     }
                 }
 
                 $devicesList = $orderedDevices;
 
-                $overallTotal = array_sum(array_map(fn($d) => $d['total'], $devicesList));
+                $overallTotal = array_sum(array_map(fn ($d) => $d['total'], $devicesList));
                 $monthsCount = count($months) ?: 1;
                 $overallAvg = round($overallTotal / $monthsCount, 2);
 
@@ -1215,6 +1238,7 @@ class DownloadExportController extends Controller
                 $data['period_labels'] = array_map(function ($m) {
                     $lbl = Carbon::createFromFormat('Y-m', $m)->locale('es')->isoFormat('MMM YYYY');
                     $lbl = preg_replace('/\.$/u', '', $lbl);
+
                     return mb_convert_case($lbl, MB_CASE_TITLE, 'UTF-8');
                 }, $months);
                 $data['summary'] = [
@@ -1254,7 +1278,7 @@ class DownloadExportController extends Controller
                 $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
                 $contents = @file_get_contents($logoPath);
                 if ($contents !== false) {
-                    $data['logo'] = 'data:image/' . $type . ';base64,' . base64_encode($contents);
+                    $data['logo'] = 'data:image/'.$type.';base64,'.base64_encode($contents);
                 } else {
                     $data['logo'] = null;
                 }
@@ -1267,9 +1291,9 @@ class DownloadExportController extends Controller
 
         \Log::info('historyPDF: Data before view render', [
             'download_rows_count' => count($data['download_rows'] ?? []),
-            'download_rows_sample_first' => !empty($data['download_rows']) ? $data['download_rows'][0] : null,
+            'download_rows_sample_first' => ! empty($data['download_rows']) ? $data['download_rows'][0] : null,
             'devices_count' => count($data['devices'] ?? []),
-            'has_download_rows' => !empty($data['download_rows']),
+            'has_download_rows' => ! empty($data['download_rows']),
         ]);
 
         $data['competitor_ranking'] = $this->getCompetitorRankingForPdf();
@@ -1277,17 +1301,17 @@ class DownloadExportController extends Controller
 
         $html = view('admin.devices.monthly-downloads.download-history', $data)->render();
 
-        $dompdf = new \Dompdf\Dompdf();
+        $dompdf = new \Dompdf\Dompdf;
         $dompdf->loadHtml($html);
         $dompdf->setPaper('a4', 'portrait');
         $dompdf->render();
 
         $pdf = $dompdf->output();
-        $filename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+        $filename = __('Download History').' - '.now()->format(format: 'dmY His').'.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -1307,224 +1331,224 @@ class DownloadExportController extends Controller
         $xlsxTempPath = null;
 
         try {
-        $prefetched = $request->input('data');
-        if ($prefetched) {
-            $pd = is_string($prefetched) ? json_decode($prefetched, true) : $prefetched;
-        } else {
-            $resp = $this->historyData($request);
-            $pd = json_decode($resp->getContent(), true);
-        }
+            $prefetched = $request->input('data');
+            if ($prefetched) {
+                $pd = is_string($prefetched) ? json_decode($prefetched, true) : $prefetched;
+            } else {
+                $resp = $this->historyData($request);
+                $pd = json_decode($resp->getContent(), true);
+            }
 
-        if (!is_array($pd)) {
-            return response()->json(['message' => 'Invalid data'], 422);
-        }
+            if (! is_array($pd)) {
+                return response()->json(['message' => 'Invalid data'], 422);
+            }
 
-        $allYearsMode = $this->isAllYearsRequest($request) || !empty($pd['is_multi_year']);
-        if ($allYearsMode) {
-            $pd['is_multi_year'] = true;
-            $pd['years'] = $pd['years'] ?? $this->parseYearsFromRows($pd['download_rows'] ?? []);
-            $pd['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($pd['years']);
-        }
+            $allYearsMode = $this->isAllYearsRequest($request) || ! empty($pd['is_multi_year']);
+            if ($allYearsMode) {
+                $pd['is_multi_year'] = true;
+                $pd['years'] = $pd['years'] ?? $this->parseYearsFromRows($pd['download_rows'] ?? []);
+                $pd['year_range_label'] = $pd['year_range_label'] ?? $this->buildYearRangeLabel($pd['years']);
+            }
 
-        $deviceIdParam = $request->input('device_id') ?? $pd['device_id'] ?? null;
-        if (empty($deviceIdParam)) {
-            if (!$this->deviceHasRecords($pd['devices'] ?? [], 'Web Client')) {
-                $monthsCount = count($pd['period_labels'] ?? []);
-                $pd['devices'][] = [
-                    'id' => null,
-                    'name' => 'Web Client',
-                    'protocol' => 'WEB',
-                    'image' => null,
-                    'counts' => array_fill(0, $monthsCount, 0),
+            $deviceIdParam = $request->input('device_id') ?? $pd['device_id'] ?? null;
+            if (empty($deviceIdParam)) {
+                if (! $this->deviceHasRecords($pd['devices'] ?? [], 'Web Client')) {
+                    $monthsCount = count($pd['period_labels'] ?? []);
+                    $pd['devices'][] = [
+                        'id' => null,
+                        'name' => 'Web Client',
+                        'protocol' => 'WEB',
+                        'image' => null,
+                        'counts' => array_fill(0, $monthsCount, 0),
+                        'total' => 0,
+                        'average' => 0,
+                        'top_month_label' => null,
+                        'top_month_value' => 0,
+                        'sparkline' => '',
+                        'no_aplica' => true,
+                    ];
+                }
+
+                if ($this->shouldShowLgNoRecordsCard() && ! $this->lgHasAnyRecords($pd['devices'] ?? [])) {
+                    $monthsCount = count($pd['period_labels'] ?? []);
+                    $pd['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
+                }
+            } else {
+                $pd['devices'] = array_values(array_filter($pd['devices'] ?? [], function ($d) {
+                    return mb_strtolower($d['name'] ?? '') !== mb_strtolower('Web Client');
+                }));
+                \Log::debug('historyEmail: Removed Web Client from prefetched devices because device_id param is provided', ['device_id' => $deviceIdParam]);
+            }
+
+            $monthly = $request->input('charts.monthly');
+            $pie = $request->input('charts.pie');
+
+            $monthValue = $pd['month'] ?? $request->input('month');
+            if ($monthValue !== null && $monthValue !== '' && trim((string) $monthValue) !== '') {
+                $monthInt = intval($monthValue);
+                if ($monthInt >= 1 && $monthInt <= 12) {
+                    $monthValue = $monthInt;
+                } else {
+                    $monthValue = null;
+                }
+            } else {
+                $monthValue = null;
+            }
+
+            if ($allYearsMode) {
+                $monthValue = null;
+            }
+
+            $pdfData = [
+                'monthlyImage' => $monthly,
+                'pieImage' => $pie,
+                'charts_by_year' => is_array($request->input('charts_by_year', [])) ? $request->input('charts_by_year', []) : [],
+                'chart_global_bar' => $request->input('chart_global_bar'),
+                'year' => $allYearsMode ? 'all' : ($pd['year'] ?? $request->input('year') ?? date('Y')),
+                'years' => $pd['years'] ?? [],
+                'is_multi_year' => $allYearsMode,
+                'year_range_label' => $pd['year_range_label'] ?? null,
+                'month' => $monthValue,
+                'device_id' => $deviceIdParam,
+                'devices' => $pd['devices'] ?? [],
+                'period_labels' => $pd['period_labels'] ?? [],
+                'download_rows' => $pd['download_rows'] ?? [],
+                'summary' => $pd['summary'] ?? [
                     'total' => 0,
                     'average' => 0,
                     'top_month_label' => null,
                     'top_month_value' => 0,
-                    'sparkline' => '',
-                    'no_aplica' => true,
-                ];
-            }
+                ],
+                'protocol_device_summary_global' => null,
+                'competitor_ranking' => [
+                    'snapshot_date' => null,
+                    'rows' => [],
+                ],
+            ];
 
-            if ($this->shouldShowLgNoRecordsCard() && !$this->lgHasAnyRecords($pd['devices'] ?? [])) {
-                $monthsCount = count($pd['period_labels'] ?? []);
-                $pd['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
-            }
-        } else {
-            $pd['devices'] = array_values(array_filter($pd['devices'] ?? [], function ($d) {
-                return mb_strtolower($d['name'] ?? '') !== mb_strtolower('Web Client');
-            }));
-            \Log::debug('historyEmail: Removed Web Client from prefetched devices because device_id param is provided', ['device_id' => $deviceIdParam]);
-        }
+            if (! empty($pdfData['month'])) {
+                $deviceIdFilter = $pdfData['device_id'] ?? null;
 
-        $monthly = $request->input('charts.monthly');
-        $pie = $request->input('charts.pie');
+                if (! empty($deviceIdFilter)) {
+                    $daysWithData = [];
+                    $totalDownloads = 0;
 
-        $monthValue = $pd['month'] ?? $request->input('month');
-        if ($monthValue !== null && $monthValue !== '' && trim((string)$monthValue) !== '') {
-            $monthInt = intval($monthValue);
-            if ($monthInt >= 1 && $monthInt <= 12) {
-                $monthValue = $monthInt;
-            } else {
-                $monthValue = null;
-            }
-        } else {
-            $monthValue = null;
-        }
+                    foreach (($pdfData['download_rows'] ?? []) as $row) {
+                        $day = (int) ($row['day'] ?? 0);
+                        $count = (int) ($row['count'] ?? 0);
 
-        if ($allYearsMode) {
-            $monthValue = null;
-        }
-
-        $pdfData = [
-            'monthlyImage' => $monthly,
-            'pieImage' => $pie,
-            'charts_by_year' => is_array($request->input('charts_by_year', [])) ? $request->input('charts_by_year', []) : [],
-            'chart_global_bar' => $request->input('chart_global_bar'),
-            'year' => $allYearsMode ? 'all' : ($pd['year'] ?? $request->input('year') ?? date('Y')),
-            'years' => $pd['years'] ?? [],
-            'is_multi_year' => $allYearsMode,
-            'year_range_label' => $pd['year_range_label'] ?? null,
-            'month' => $monthValue,
-            'device_id' => $deviceIdParam,
-            'devices' => $pd['devices'] ?? [],
-            'period_labels' => $pd['period_labels'] ?? [],
-            'download_rows' => $pd['download_rows'] ?? [],
-            'summary' => $pd['summary'] ?? [
-                'total' => 0,
-                'average' => 0,
-                'top_month_label' => null,
-                'top_month_value' => 0,
-            ],
-            'protocol_device_summary_global' => null,
-            'competitor_ranking' => [
-                'snapshot_date' => null,
-                'rows' => [],
-            ],
-        ];
-
-        if (!empty($pdfData['month'])) {
-            $deviceIdFilter = $pdfData['device_id'] ?? null;
-
-            if (!empty($deviceIdFilter)) {
-                $daysWithData = [];
-                $totalDownloads = 0;
-
-                foreach (($pdfData['download_rows'] ?? []) as $row) {
-                    $day = (int)($row['day'] ?? 0);
-                    $count = (int)($row['count'] ?? 0);
-
-                    if ($day > 0) {
-                        $daysWithData[$day] = true;
-                    }
-                    $totalDownloads += $count;
-                }
-
-                $daysCount = count($daysWithData);
-                $averagePerDay = $daysCount > 0 ? round($totalDownloads / $daysCount, 2) : 0;
-
-                $dayTotals = [];
-                foreach (($pdfData['download_rows'] ?? []) as $row) {
-                    $day = (int)($row['day'] ?? 0);
-                    $count = (int)($row['count'] ?? 0);
-                    if ($day > 0) {
-                        if (!isset($dayTotals[$day])) {
-                            $dayTotals[$day] = 0;
+                        if ($day > 0) {
+                            $daysWithData[$day] = true;
                         }
-                        $dayTotals[$day] += $count;
+                        $totalDownloads += $count;
                     }
-                }
 
-                $topDay = 0;
-                $topDayValue = 0;
-                if (!empty($dayTotals)) {
-                    arsort($dayTotals);
-                    $topDay = (int)array_key_first($dayTotals);
-                    $topDayValue = (int)reset($dayTotals);
-                }
+                    $daysCount = count($daysWithData);
+                    $averagePerDay = $daysCount > 0 ? round($totalDownloads / $daysCount, 2) : 0;
 
-                $pdfData['summary']['total'] = $totalDownloads;
-                $pdfData['summary']['average'] = $averagePerDay;
-                $pdfData['summary']['top_month_label'] = $topDay > 0 ? 'Día ' . $topDay : '—';
-                $pdfData['summary']['top_month_value'] = $topDayValue;
-                $pdfData['summary']['is_monthly_email'] = true;
-                $pdfData['summary']['is_device_month_mode'] = true;
-
-            } else {
-                $deviceTotals = [];
-                foreach (($pdfData['download_rows'] ?? []) as $row) {
-                    $deviceName = trim((string)($row['device_name'] ?? ''));
-                    if ($deviceName === '') {
-                        continue;
+                    $dayTotals = [];
+                    foreach (($pdfData['download_rows'] ?? []) as $row) {
+                        $day = (int) ($row['day'] ?? 0);
+                        $count = (int) ($row['count'] ?? 0);
+                        if ($day > 0) {
+                            if (! isset($dayTotals[$day])) {
+                                $dayTotals[$day] = 0;
+                            }
+                            $dayTotals[$day] += $count;
+                        }
                     }
-                    $count = (int)($row['count'] ?? 0);
-                    if (!isset($deviceTotals[$deviceName])) {
-                        $deviceTotals[$deviceName] = 0;
+
+                    $topDay = 0;
+                    $topDayValue = 0;
+                    if (! empty($dayTotals)) {
+                        arsort($dayTotals);
+                        $topDay = (int) array_key_first($dayTotals);
+                        $topDayValue = (int) reset($dayTotals);
                     }
-                    $deviceTotals[$deviceName] += $count;
+
+                    $pdfData['summary']['total'] = $totalDownloads;
+                    $pdfData['summary']['average'] = $averagePerDay;
+                    $pdfData['summary']['top_month_label'] = $topDay > 0 ? 'Día '.$topDay : '—';
+                    $pdfData['summary']['top_month_value'] = $topDayValue;
+                    $pdfData['summary']['is_monthly_email'] = true;
+                    $pdfData['summary']['is_device_month_mode'] = true;
+
+                } else {
+                    $deviceTotals = [];
+                    foreach (($pdfData['download_rows'] ?? []) as $row) {
+                        $deviceName = trim((string) ($row['device_name'] ?? ''));
+                        if ($deviceName === '') {
+                            continue;
+                        }
+                        $count = (int) ($row['count'] ?? 0);
+                        if (! isset($deviceTotals[$deviceName])) {
+                            $deviceTotals[$deviceName] = 0;
+                        }
+                        $deviceTotals[$deviceName] += $count;
+                    }
+
+                    $totalDownloads = array_sum($deviceTotals);
+                    $devicesWithData = count($deviceTotals);
+                    $averagePerDevice = $devicesWithData > 0 ? round($totalDownloads / $devicesWithData, 2) : 0;
+
+                    $topDeviceName = '—';
+                    $topDeviceValue = 0;
+                    if (! empty($deviceTotals)) {
+                        arsort($deviceTotals);
+                        $topDeviceName = (string) array_key_first($deviceTotals);
+                        $topDeviceValue = (int) reset($deviceTotals);
+                    }
+
+                    $pdfData['summary']['total'] = $totalDownloads;
+                    $pdfData['summary']['average'] = $averagePerDevice;
+                    $pdfData['summary']['top_month_label'] = $topDeviceName;
+                    $pdfData['summary']['top_month_value'] = $topDeviceValue;
+                    $pdfData['summary']['is_monthly_email'] = true;
+                    $pdfData['summary']['is_device_month_mode'] = false;
                 }
-
-                $totalDownloads = array_sum($deviceTotals);
-                $devicesWithData = count($deviceTotals);
-                $averagePerDevice = $devicesWithData > 0 ? round($totalDownloads / $devicesWithData, 2) : 0;
-
-                $topDeviceName = '—';
-                $topDeviceValue = 0;
-                if (!empty($deviceTotals)) {
-                    arsort($deviceTotals);
-                    $topDeviceName = (string)array_key_first($deviceTotals);
-                    $topDeviceValue = (int)reset($deviceTotals);
-                }
-
-                $pdfData['summary']['total'] = $totalDownloads;
-                $pdfData['summary']['average'] = $averagePerDevice;
-                $pdfData['summary']['top_month_label'] = $topDeviceName;
-                $pdfData['summary']['top_month_value'] = $topDeviceValue;
-                $pdfData['summary']['is_monthly_email'] = true;
-                $pdfData['summary']['is_device_month_mode'] = false;
             }
-        }
 
             $pdfData['protocol_summary'] = $this->buildProtocolSummary($pdfData['download_rows'] ?? []);
-        $pdfData['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
-            $pdfData['download_rows'] ?? [],
-            $pdfData['years'] ?? []
-        );
-        $pdfData['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($pdfData['download_rows'] ?? []);
-        $pdfData['competitor_ranking'] = $this->getCompetitorRankingForPdf();
-        $pdfData['cdn_stats'] = $this->getCdnConsumptionStats();
+            $pdfData['protocol_summary_by_year'] = $this->buildProtocolSummaryByYear(
+                $pdfData['download_rows'] ?? [],
+                $pdfData['years'] ?? []
+            );
+            $pdfData['protocol_device_summary_global'] = $this->buildProtocolDeviceSummary($pdfData['download_rows'] ?? []);
+            $pdfData['competitor_ranking'] = $this->getCompetitorRankingForPdf();
+            $pdfData['cdn_stats'] = $this->getCdnConsumptionStats();
 
-        \Log::info('historyEmail: PDF data before render', [
-            'download_rows_count' => count($pdfData['download_rows'] ?? []),
-            'download_rows_sample_first' => !empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
-            'devices_count' => count($pdfData['devices'] ?? []),
-            'has_download_rows' => !empty($pdfData['download_rows']),
-            'has_monthly_image' => !empty($pdfData['monthlyImage']),
-            'has_pie_image' => !empty($pdfData['pieImage']),
-        ]);
+            \Log::info('historyEmail: PDF data before render', [
+                'download_rows_count' => count($pdfData['download_rows'] ?? []),
+                'download_rows_sample_first' => ! empty($pdfData['download_rows']) ? $pdfData['download_rows'][0] : null,
+                'devices_count' => count($pdfData['devices'] ?? []),
+                'has_download_rows' => ! empty($pdfData['download_rows']),
+                'has_monthly_image' => ! empty($pdfData['monthlyImage']),
+                'has_pie_image' => ! empty($pdfData['pieImage']),
+            ]);
 
             try {
                 $logoPath = public_path('img/startv-stream-logo.png');
-            if ($logoPath && file_exists($logoPath)) {
-                $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
-                $contents = @file_get_contents($logoPath);
-                $pdfData['logo'] = $contents !== false
-                    ? 'data:image/' . $type . ';base64,' . base64_encode($contents)
-                    : null;
-            } else {
-                $pdfData['logo'] = null;
-            }
+                if ($logoPath && file_exists($logoPath)) {
+                    $type = pathinfo($logoPath, PATHINFO_EXTENSION) ?: 'png';
+                    $contents = @file_get_contents($logoPath);
+                    $pdfData['logo'] = $contents !== false
+                        ? 'data:image/'.$type.';base64,'.base64_encode($contents)
+                        : null;
+                } else {
+                    $pdfData['logo'] = null;
+                }
             } catch (\Throwable $_e) {
                 $pdfData['logo'] = null;
             }
 
             try {
                 $pdfHtml = view('admin.devices.monthly-downloads.download-history', $pdfData)->render();
-                $dompdf = new \Dompdf\Dompdf();
+                $dompdf = new \Dompdf\Dompdf;
                 $dompdf->loadHtml($pdfHtml);
                 $dompdf->setPaper('a4', 'portrait');
                 $dompdf->render();
                 $pdfBytes = $dompdf->output();
-                $pdfFilename = __('Download History') . ' - ' . now()->format(format: 'dmY His') . '.pdf';
+                $pdfFilename = __('Download History').' - '.now()->format(format: 'dmY His').'.pdf';
             } catch (\Throwable $pdfException) {
                 \Log::error('historyEmail: PDF generation failed', [
                     'error' => $pdfException->getMessage(),
@@ -1536,14 +1560,14 @@ class DownloadExportController extends Controller
                 $pdfFilename = null;
             }
 
-            $spreadsheet = new Spreadsheet();
+            $spreadsheet = new Spreadsheet;
             $year = $pd['year'] ?? $request->input('year') ?? date('Y');
 
             $month = $pdfData['month'] ?? null;
 
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
 
-            $monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            $monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
             $auth = Auth::user();
             $areaFilter = null;
@@ -1585,7 +1609,7 @@ class DownloadExportController extends Controller
                             return false;
                         }
 
-                        if (!empty($deviceId) && (string) ($r['device_id'] ?? '') !== (string) $deviceId) {
+                        if (! empty($deviceId) && (string) ($r['device_id'] ?? '') !== (string) $deviceId) {
                             return false;
                         }
 
@@ -1600,9 +1624,9 @@ class DownloadExportController extends Controller
                         $protocol = (string) ($r['protocol'] ?? '—');
                         $count = (int) ($r['count'] ?? 0);
                         $dateStr = sprintf('%04d-%02d-%02d', (int) $yr, max(1, $monthN), max(1, $dayN));
-                        $key = $dateStr . '|' . $deviceName;
+                        $key = $dateStr.'|'.$deviceName;
 
-                        if (!isset($groupedRows[$key])) {
+                        if (! isset($groupedRows[$key])) {
                             $groupedRows[$key] = [
                                 'date' => $dateStr,
                                 'month' => $monthN,
@@ -1654,44 +1678,44 @@ class DownloadExportController extends Controller
                     ->pluck('month')
                     ->toArray();
 
-            if ($month) {
-                $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
-                    return intval($m) === intval($month);
-                });
-            }
-
-            if ($areaFilter) {
-                $monthsWithData = DB::table('downloads')
-                    ->join('devices', 'downloads.device_id', '=', 'devices.id')
-                    ->select('downloads.month')
-                    ->where('downloads.year', $year)
-                    ->where('devices.area', $areaFilter)
-                    ->distinct()
-                    ->pluck('downloads.month')
-                    ->toArray();
-
                 if ($month) {
-                    $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
+                    $monthsWithData = array_filter($monthsWithData, function ($m) use ($month) {
                         return intval($m) === intval($month);
                     });
                 }
-            }
 
-            if ($deviceId) {
-                $monthsWithData = DB::table('downloads')
-                    ->select('month')
-                    ->where('downloads.year', $year)
-                    ->where('downloads.device_id', $deviceId)
-                    ->distinct()
-                    ->pluck('month')
-                    ->toArray();
+                if ($areaFilter) {
+                    $monthsWithData = DB::table('downloads')
+                        ->join('devices', 'downloads.device_id', '=', 'devices.id')
+                        ->select('downloads.month')
+                        ->where('downloads.year', $year)
+                        ->where('devices.area', $areaFilter)
+                        ->distinct()
+                        ->pluck('downloads.month')
+                        ->toArray();
 
-                if ($month) {
-                    $monthsWithData = array_filter($monthsWithData, function($m) use ($month) {
-                        return intval($m) === intval($month);
-                    });
+                    if ($month) {
+                        $monthsWithData = array_filter($monthsWithData, function ($m) use ($month) {
+                            return intval($m) === intval($month);
+                        });
+                    }
                 }
-            }
+
+                if ($deviceId) {
+                    $monthsWithData = DB::table('downloads')
+                        ->select('month')
+                        ->where('downloads.year', $year)
+                        ->where('downloads.device_id', $deviceId)
+                        ->distinct()
+                        ->pluck('month')
+                        ->toArray();
+
+                    if ($month) {
+                        $monthsWithData = array_filter($monthsWithData, function ($m) use ($month) {
+                            return intval($m) === intval($month);
+                        });
+                    }
+                }
 
                 $monthsWithData = array_map('intval', $monthsWithData);
                 sort($monthsWithData);
@@ -1737,18 +1761,18 @@ class DownloadExportController extends Controller
 
                     $downloadsByDay = [];
                     foreach ($dailyDownloads as $download) {
-                        $day = (int)$download->day;
+                        $day = (int) $download->day;
                         $deviceName = $download->device_name ?? '—';
 
-                        if (!isset($downloadsByDay[$day])) {
+                        if (! isset($downloadsByDay[$day])) {
                             $downloadsByDay[$day] = [];
                         }
 
-                        if (!isset($downloadsByDay[$day][$deviceName])) {
+                        if (! isset($downloadsByDay[$day][$deviceName])) {
                             $downloadsByDay[$day][$deviceName] = 0;
                         }
 
-                        $downloadsByDay[$day][$deviceName] += (int)($download->total ?? 0);
+                        $downloadsByDay[$day][$deviceName] += (int) ($download->total ?? 0);
                     }
 
                     $row = 2;
@@ -1781,10 +1805,10 @@ class DownloadExportController extends Controller
             $spreadsheet->disconnectWorksheets();
             unset($writer, $spreadsheet);
 
-            $filename = 'Download History - ' . now()->format('Ymd His') . '.xlsx';
+            $filename = 'Download History - '.now()->format('Ymd His').'.xlsx';
 
             $to = $auth->email ?? config('mail.from.address');
-            $subject = __('Download History') . ' - ' . ($allYearsMode ? ($pdfData['year_range_label'] ?? __('Multiple years')) : ($pd['year'] ?? date('Y')));
+            $subject = __('Download History').' - '.($allYearsMode ? ($pdfData['year_range_label'] ?? __('Multiple years')) : ($pd['year'] ?? date('Y')));
             $body = '';
 
             $meta = [];
@@ -1792,7 +1816,7 @@ class DownloadExportController extends Controller
             $meta['is_multi_year'] = $allYearsMode;
 
             if ($month !== null && $month >= 1 && $month <= 12) {
-                $meta['year'] = $monthNames[$month - 1] . ' ' . $year;
+                $meta['year'] = $monthNames[$month - 1].' '.$year;
             }
 
             $deviceId = $request->input('device_id') ?? $pd['device_id'] ?? null;
@@ -1801,12 +1825,17 @@ class DownloadExportController extends Controller
                 try {
                     $devName = DB::table('devices')->where('id', $deviceId)->value('name');
                     $meta['device_name'] = $devName ?: null;
-                } catch (\Throwable $_e) { }
+                } catch (\Throwable $_e) {
+                }
             }
             $meta['devices_count'] = is_array($pd['devices'] ?? null) ? count($pd['devices']) : 0;
             $meta['selected_all'] = empty($deviceId);
-            if ($request->filled('title')) $meta['title'] = $request->input('title');
-            if ($request->filled('description')) $meta['description'] = $request->input('description');
+            if ($request->filled('title')) {
+                $meta['title'] = $request->input('title');
+            }
+            if ($request->filled('description')) {
+                $meta['description'] = $request->input('description');
+            }
 
             Mail::to($to)->send(new DownloadsExcelMail(
                 $subject,
@@ -1827,24 +1856,24 @@ class DownloadExportController extends Controller
             session()->flash('swal', [
                 'icon' => 'success',
                 'title' => __('Well done!'),
-                'text' => __('Email sent successfully.')
+                'text' => __('Email sent successfully.'),
             ]);
 
             return response()->json(['message' => __('Email sent successfully.')]);
         } catch (\Throwable $e) {
-                if ($xlsxTempPath && is_file($xlsxTempPath)) {
-                    @unlink($xlsxTempPath);
-                    $xlsxTempPath = null;
-                }
-                \Log::error('historyEmail error', [
-                    'error' => $e->getMessage(),
-                    'exception' => get_class($e),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString(),
-                    'user_id' => Auth::id(),
-                    'pdf_bytes_null' => isset($pdfBytes) ? ($pdfBytes === null) : 'never_initialized',
-                ]);
+            if ($xlsxTempPath && is_file($xlsxTempPath)) {
+                @unlink($xlsxTempPath);
+                $xlsxTempPath = null;
+            }
+            \Log::error('historyEmail error', [
+                'error' => $e->getMessage(),
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'pdf_bytes_null' => isset($pdfBytes) ? ($pdfBytes === null) : 'never_initialized',
+            ]);
             try {
                 $csv = fopen('php://temp', 'r+');
                 fputcsv($csv, ['id', 'device_id', 'device_name', 'protocol', 'device_area', 'year', 'month', 'count', 'created_at']);
@@ -1866,7 +1895,7 @@ class DownloadExportController extends Controller
                 $csvData = stream_get_contents($csv);
                 fclose($csv);
 
-                $filename = 'Download History' . ' - ' . now()->format('Ymd His') . '.csv';
+                $filename = 'Download History'.' - '.now()->format('Ymd His').'.csv';
                 $metaFallback = $meta ?? [];
                 $fallbackSubject = isset($subject) ? $subject : __('Download History Export');
                 $fallbackBody = isset($body) ? $body : '';
@@ -1885,22 +1914,23 @@ class DownloadExportController extends Controller
                 session()->flash('swal', [
                     'icon' => 'success',
                     'title' => __('Well done!'),
-                    'text' => __('Email sent with CSV fallback')
+                    'text' => __('Email sent with CSV fallback'),
                 ]);
 
                 return response()->json(['message' => __('Email sent with CSV fallback')]);
             } catch (\Throwable $_e) {
-                    \Log::error('historyEmail fallback error', [
-                        'error' => $_e->getMessage(),
-                        'exception' => get_class($_e),
-                        'file' => $_e->getFile(),
-                        'line' => $_e->getLine(),
-                        'trace' => $_e->getTraceAsString(),
-                    ]);
-                    return response()->json([
-                        'error' => __('Error sending email export'),
-                        'message' => config('app.debug') ? $_e->getMessage() : __('Email export failed. Please try again later.'),
-                    ], 500);
+                \Log::error('historyEmail fallback error', [
+                    'error' => $_e->getMessage(),
+                    'exception' => get_class($_e),
+                    'file' => $_e->getFile(),
+                    'line' => $_e->getLine(),
+                    'trace' => $_e->getTraceAsString(),
+                ]);
+
+                return response()->json([
+                    'error' => __('Error sending email export'),
+                    'message' => config('app.debug') ? $_e->getMessage() : __('Email export failed. Please try again later.'),
+                ], 500);
             }
         }
     }

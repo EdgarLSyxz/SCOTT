@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GrafanaPanel;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class GrafanaController extends Controller
 {
@@ -26,7 +26,7 @@ class GrafanaController extends Controller
             if ($user->area === 'DTH') {
                 $query->where(function ($q) {
                     $q->where('area', 'DTH')
-                      ->orWhereIn('id', [1, 3]);
+                        ->orWhereIn('id', [1, 3]);
                 });
             } else {
                 $query->where('area', $user->area);
@@ -42,6 +42,7 @@ class GrafanaController extends Controller
             if ($panel->id == 3) {
                 return 2;
             }
+
             return $panel->id;
         })->values();
 
@@ -84,7 +85,7 @@ class GrafanaController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('New Grafana panel created successfully.')
+            'text' => __('New Grafana panel created successfully.'),
         ]);
 
         return redirect()->route('admin.grafana.show', $panel);
@@ -129,6 +130,7 @@ class GrafanaController extends Controller
                 'title' => __('Invalid action!'),
                 'text' => __('You are not allowed to change the area of a shared panel.'),
             ]);
+
             return redirect()->back()->withInput();
         }
 
@@ -163,7 +165,7 @@ class GrafanaController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Grafana panel updated successfully.')
+            'text' => __('Grafana panel updated successfully.'),
         ]);
 
         return redirect()->route('admin.grafana.show', $panel);
@@ -183,7 +185,7 @@ class GrafanaController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Grafana panel deleted successfully.')
+            'text' => __('Grafana panel deleted successfully.'),
         ]);
 
         return redirect()->route('admin.grafana.index');

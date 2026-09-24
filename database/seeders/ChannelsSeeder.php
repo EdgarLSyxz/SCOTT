@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
 use App\Models\Channel;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class ChannelsSeeder extends Seeder
 {
@@ -14,7 +14,7 @@ class ChannelsSeeder extends Seeder
         $sourcePath = database_path('seeders/assets/channels');
         $destinationPath = 'channels';
 
-        if (!Storage::disk('public')->exists($destinationPath)) {
+        if (! Storage::disk('public')->exists($destinationPath)) {
             Storage::disk('public')->makeDirectory($destinationPath);
         }
 
@@ -1427,10 +1427,11 @@ class ChannelsSeeder extends Seeder
 
         foreach ($channels as $channel) {
             $filename = basename($channel['image_url']);
-            $sourceFile = $sourcePath . '/' . $filename;
+            $sourceFile = $sourcePath.'/'.$filename;
 
-            if (!File::exists($sourceFile)) {
+            if (! File::exists($sourceFile)) {
                 $this->command->warn("Image not found: $filename — This channel will be skipped.");
+
                 continue;
             }
 

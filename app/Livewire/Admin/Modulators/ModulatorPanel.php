@@ -8,8 +8,8 @@ use App\Models\TransponderStateEvent;
 use App\Models\User;
 use App\Services\RainEventDetector;
 use App\Services\WeatherService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +30,7 @@ class ModulatorPanel extends Component
 
         /** @var User|null $user */
         $user = Auth::user();
-        $allowed = [1,2,3,5,7,8];
+        $allowed = [1, 2, 3, 5, 7, 8];
         $this->canManagePin = (bool) ($user && in_array((int) $user->id, $allowed, true));
     }
 
@@ -142,7 +142,7 @@ class ModulatorPanel extends Component
 
         /** @var User|null $user */
         $user = Auth::user();
-        $allowed = [1,2,3,5,7,8];
+        $allowed = [1, 2, 3, 5, 7, 8];
         if (! $user || ! in_array((int) $user->id, $allowed, true)) {
             abort(403);
         }
@@ -204,6 +204,7 @@ class ModulatorPanel extends Component
                 'provided_sanitized' => $provided,
                 'expected_length' => $length,
             ]);
+
             return false;
         }
 
@@ -223,10 +224,7 @@ class ModulatorPanel extends Component
     }
 
     #[On('modulator-refresh')]
-    public function refreshData(): void
-    {
-
-    }
+    public function refreshData(): void {}
 
     public function refreshWeather(bool $force = false): void
     {
@@ -322,6 +320,7 @@ class ModulatorPanel extends Component
             $ev->previous_duration_human = $ev->previous_duration_seconds !== null
                 ? $this->humanDuration((int) $ev->previous_duration_seconds)
                 : null;
+
             return $ev;
         });
 
@@ -430,8 +429,9 @@ class ModulatorPanel extends Component
             \Illuminate\Support\Facades\Log::error('Failed to run modulators:switch', [
                 'error' => $e->getMessage(),
             ]);
+
             return sprintf('TX %s POWER OFF @ %s', $code, $fromSite)
-                . "\n" . sprintf('TX %s POWER ON  @ %s', $code, $toSite);
+                ."\n".sprintf('TX %s POWER ON  @ %s', $code, $toSite);
         }
     }
 }

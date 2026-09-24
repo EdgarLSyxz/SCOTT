@@ -16,7 +16,7 @@ class UserGrowth extends Model
 
     protected $casts = [
         'recorded_at' => 'date',
-        'customers'   => 'integer',
-        'devices'     => 'integer',
+        'customers' => 'integer',
+        'devices' => 'integer',
     ];
 }

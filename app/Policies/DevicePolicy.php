@@ -36,6 +36,7 @@ class DevicePolicy
         if (! $user->can('devices.create')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'ott';
     }
 
@@ -44,6 +45,7 @@ class DevicePolicy
         if (! $user->can('devices.edit')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'ott';
     }
 
@@ -52,6 +54,7 @@ class DevicePolicy
         if (! $user->can('devices.delete')) {
             return false;
         }
+
         return strtolower(trim($user->area ?? '')) === 'ott';
     }
 }

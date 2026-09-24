@@ -25,6 +25,8 @@
                 {{ __('Report channel issues') }}
             </button>
 
+            @livewire('app.solar-interferences.solar-interferences-dashboard-card', key('solar-interferences-widget-dashboard'))
+
             {{-- <button type="button" data-modal-target="create-hourly-report-modal"
                 data-modal-toggle="create-hourly-report-modal"
                 class="w-full bg-green-600 text-white rounded-lg py-3 flex items-center justify-center font-semibold shadow-md hover:shadow-2xl transform transition-all hover:scale-105">

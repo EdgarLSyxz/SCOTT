@@ -5,12 +5,12 @@ namespace App\Livewire\Admin\Devices\Logs;
 use App\Models\LogAnalytic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 use Livewire\WithFileUploads;
 
 class LogReportManager extends Component
@@ -18,35 +18,65 @@ class LogReportManager extends Component
     use WithFileUploads;
 
     public $uploads = [];
+
     public $selectedUploadId = null;
+
     public $categories = [];
+
     public $totalRecords = 0;
+
     public $searchTerm = '';
+
     public $selectedCategory = null;
+
     public $modalOpen = false;
+
     public $allRecordsCount = 0;
+
     public $filteredRecords = [];
+
     public $currentCategoryKey = null;
+
     public $currentUploadId = null;
+
     public $recordPage = 1;
+
     public $recordPageSize = 200;
+
     public $modalHasMore = false;
+
     public $modalSearchTerm = '';
+
     public $currentReportDate = null;
+
     public $expandedCategoryKey = null;
+
     public $accordionSearchTerm = '';
+
     public $analyticsMode = 'top';
+
     public $analyticsYear = '';
+
     public $analyticsMonth = '';
+
     public $selectedFileIds = [];
+
     public $topLimit = 10;
+
     public $selectedCategoryForTop = null;
+
     public $selectedCategoryForChart = null;
+
     public $consolidatedData = [];
+
     public $compareFileA = null;
+
     public $compareFileB = null;
+
     public $comparisonResults = [];
+
     public $auditApiUrl;
+
     public $auditApiToken;
 
     public function mount()
@@ -68,7 +98,7 @@ class LogReportManager extends Component
     public function loadUploads()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -84,12 +114,12 @@ class LogReportManager extends Component
                 $rd = $m->report_date;
                 if ($rd instanceof \DateTimeInterface) {
                     $reportDateFormatted = $rd->format('Y-m-d');
-                } elseif (!empty($rd)) {
+                } elseif (! empty($rd)) {
                     try {
                         $reportDateFormatted = \Carbon\Carbon::parse($rd)->format('Y-m-d');
                     } catch (\Exception $e) {
                         $formats = [
-                            'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d'
+                            'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d',
                         ];
                         foreach ($formats as $fmt) {
                             try {
@@ -115,7 +145,7 @@ class LogReportManager extends Component
             try {
                 if ($m->created_at instanceof \DateTimeInterface) {
                     $createdAtDisplay = $m->created_at->format('d/m/Y H:i');
-                } elseif (!empty($attrs['created_at'])) {
+                } elseif (! empty($attrs['created_at'])) {
                     try {
                         $createdAtDisplay = \Carbon\Carbon::parse($attrs['created_at'])->format('d/m/Y H:i');
                     } catch (\Exception $_) {
@@ -137,7 +167,7 @@ class LogReportManager extends Component
             ];
         })->toArray();
 
-        if (!empty($this->uploads)) {
+        if (! empty($this->uploads)) {
             $this->selectedUploadId = $this->uploads[0]['id'];
             $this->loadSelectedUpload();
         }
@@ -148,7 +178,7 @@ class LogReportManager extends Component
     public function loadSelectedUpload()
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return;
         }
 
@@ -195,14 +225,14 @@ class LogReportManager extends Component
         $availableCategoryKeys = array_column($categories, 'key');
         if (empty($availableCategoryKeys)) {
             $this->selectedCategoryForChart = null;
-        } elseif (!in_array($this->selectedCategoryForChart, $availableCategoryKeys, true)) {
+        } elseif (! in_array($this->selectedCategoryForChart, $availableCategoryKeys, true)) {
             $this->selectedCategoryForChart = $availableCategoryKeys[0];
         }
 
         $grouped = $this->getChartCategoriesForSelectedFile();
-        if (!empty($grouped)) {
+        if (! empty($grouped)) {
             $groupKeys = array_column($grouped, 'key');
-            if (!in_array($this->selectedCategoryForChart, $groupKeys, true)) {
+            if (! in_array($this->selectedCategoryForChart, $groupKeys, true)) {
                 foreach ($grouped as $g) {
                     if (in_array($this->selectedCategoryForChart, $g['sourceKeys'] ?? [], true)) {
                         $this->selectedCategoryForChart = $g['key'];
@@ -210,7 +240,7 @@ class LogReportManager extends Component
                     }
                 }
 
-                if (!in_array($this->selectedCategoryForChart, $groupKeys, true)) {
+                if (! in_array($this->selectedCategoryForChart, $groupKeys, true)) {
                     $this->selectedCategoryForChart = $grouped[0]['key'] ?? $this->selectedCategoryForChart;
                 }
             }
@@ -221,6 +251,7 @@ class LogReportManager extends Component
     {
         $formatted = str_replace(['_', '-'], ' ', (string) $key);
         $formatted = preg_replace('/\s+/', ' ', trim($formatted));
+
         return ucfirst($formatted);
     }
 
@@ -262,8 +293,8 @@ class LogReportManager extends Component
         }
 
         if ($isUrl) {
-            if (!preg_match('/^https?:\/\//i', $url)) {
-                $url = 'https://' . ltrim($url, '/');
+            if (! preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://'.ltrim($url, '/');
             }
 
             $parts = parse_url($url);
@@ -272,7 +303,8 @@ class LogReportManager extends Component
                 $path = $parts['path'] ?? '';
                 $path = rtrim($path, '/');
                 $path = rawurldecode($path);
-                $canon = $host . ($path !== '' ? '/' . ltrim($path, '/') : '');
+                $canon = $host.($path !== '' ? '/'.ltrim($path, '/') : '');
+
                 return Str::of($canon)->ascii()->squish()->lower()->value();
             }
         }
@@ -307,7 +339,7 @@ class LogReportManager extends Component
             'd.m.Y H:i:s', 'd.m.Y H:i', 'd.m.Y',
             'Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d',
             'm/d/Y H:i:s', 'm/d/Y',
-            'Y/m/d H:i:s', 'Y/m/d'
+            'Y/m/d H:i:s', 'Y/m/d',
         ];
 
         foreach ($formats as $fmt) {
@@ -328,15 +360,21 @@ class LogReportManager extends Component
         $agg = [];
 
         foreach ($items as $item) {
-            if (!is_array($item)) continue;
+            if (! is_array($item)) {
+                continue;
+            }
             $label = $item['label'] ?? $item['name'] ?? null;
-            if (!$label) continue;
+            if (! $label) {
+                continue;
+            }
             $value = (float) ($item['value'] ?? $item['count'] ?? 0);
 
             $key = $this->normalizeLabelKey($label);
-            if ($key === '') continue;
+            if ($key === '') {
+                continue;
+            }
 
-            if (!isset($agg[$key])) {
+            if (! isset($agg[$key])) {
                 $agg[$key] = [
                     'label' => $label,
                     'value' => 0.0,
@@ -353,18 +391,19 @@ class LogReportManager extends Component
         }
 
         $rows = array_values($agg);
-        usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+        usort($rows, fn ($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
         foreach ($rows as $i => &$r) {
             $r['rank'] = $i + 1;
         }
         unset($r);
+
         return $rows;
     }
 
     public function deleteUpload()
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return;
         }
 
@@ -392,12 +431,12 @@ class LogReportManager extends Component
     public function openModal($categoryKey)
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $uploadId = $this->selectedUploadId;
-        if (!$uploadId) {
+        if (! $uploadId) {
             return;
         }
 
@@ -405,17 +444,17 @@ class LogReportManager extends Component
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$upload) {
+        if (! $upload) {
             return;
         }
 
         $items = $upload->getCategory($categoryKey) ?? [];
 
-        $cacheKey = 'log_records_' . $uploadId . '_' . $categoryKey . '_' . $user->id;
+        $cacheKey = 'log_records_'.$uploadId.'_'.$categoryKey.'_'.$user->id;
         Cache::put($cacheKey, $items, now()->addMinutes(10));
 
         $agg = $this->aggregateRecords($items);
-        $cacheAggKey = $cacheKey . '_agg';
+        $cacheAggKey = $cacheKey.'_agg';
         Cache::put($cacheAggKey, $agg, now()->addMinutes(10));
 
         $this->currentCategoryKey = $categoryKey;
@@ -437,9 +476,9 @@ class LogReportManager extends Component
     {
         if ($this->currentCategoryKey && $this->currentUploadId) {
             $user = Auth::user();
-            $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . ($user?->id ?? '');
+            $cacheKey = 'log_records_'.$this->currentUploadId.'_'.$this->currentCategoryKey.'_'.($user?->id ?? '');
             Cache::forget($cacheKey);
-            Cache::forget($cacheKey . '_agg');
+            Cache::forget($cacheKey.'_agg');
         }
 
         $this->modalOpen = false;
@@ -458,25 +497,28 @@ class LogReportManager extends Component
         $this->modalSearchTerm = $term;
         $term = strtolower($term);
 
-        if (!$this->currentCategoryKey || !$this->currentUploadId) {
+        if (! $this->currentCategoryKey || ! $this->currentUploadId) {
             $this->filteredRecords = [];
+
             return;
         }
 
         $user = Auth::user();
-        $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . $user->id;
-        $cacheAggKey = $cacheKey . '_agg';
+        $cacheKey = 'log_records_'.$this->currentUploadId.'_'.$this->currentCategoryKey.'_'.$user->id;
+        $cacheAggKey = $cacheKey.'_agg';
         $records = Cache::get($cacheAggKey, []);
 
         if ($term === '') {
             $this->recordPage = 1;
             $this->modalHasMore = count($records) > $this->recordPageSize;
             $this->filteredRecords = array_slice($records, 0, $this->recordPageSize);
+
             return;
         }
 
         $filtered = array_values(array_filter($records, function ($record) use ($term) {
             $searchable = json_encode($record);
+
             return strpos(strtolower($searchable), $term) !== false;
         }));
 
@@ -491,16 +533,20 @@ class LogReportManager extends Component
 
     public function loadMoreRecords()
     {
-        if (!$this->currentCategoryKey || !$this->currentUploadId) return;
+        if (! $this->currentCategoryKey || ! $this->currentUploadId) {
+            return;
+        }
         $user = Auth::user();
-        $cacheKey = 'log_records_' . $this->currentUploadId . '_' . $this->currentCategoryKey . '_' . $user->id;
-        $records = Cache::get($cacheKey . '_agg', []);
-        if (empty($records)) return;
+        $cacheKey = 'log_records_'.$this->currentUploadId.'_'.$this->currentCategoryKey.'_'.$user->id;
+        $records = Cache::get($cacheKey.'_agg', []);
+        if (empty($records)) {
+            return;
+        }
 
         $this->recordPage++;
         $offset = ($this->recordPage - 1) * $this->recordPageSize;
         $next = array_slice($records, $offset, $this->recordPageSize);
-        if (!empty($next)) {
+        if (! empty($next)) {
             $this->filteredRecords = array_merge($this->filteredRecords, $next);
         }
         $this->modalHasMore = count($records) > ($this->recordPage * $this->recordPageSize);
@@ -509,13 +555,15 @@ class LogReportManager extends Component
     public function getFilteredCategories()
     {
         $term = strtolower($this->searchTerm);
+
         return collect($this->categories)
             ->filter(function ($cat) use ($term) {
                 $nameMatch = strpos(strtolower($cat['name'] ?? ''), $term) !== false;
                 $keyMatch = strpos(strtolower($cat['key'] ?? ''), $term) !== false;
+
                 return $nameMatch || $keyMatch;
             })
-            ->sortBy(fn($cat) => $cat['name'] ?? '', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy(fn ($cat) => $cat['name'] ?? '', SORT_NATURAL | SORT_FLAG_CASE)
             ->values()
             ->toArray();
     }
@@ -534,7 +582,7 @@ class LogReportManager extends Component
     public function getAccordionRecords($categoryKey)
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return [];
         }
 
@@ -542,7 +590,7 @@ class LogReportManager extends Component
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$upload) {
+        if (! $upload) {
             return [];
         }
 
@@ -556,6 +604,7 @@ class LogReportManager extends Component
 
         return array_values(array_filter($aggregated, function ($record) use ($term) {
             $searchable = json_encode($record);
+
             return strpos(strtolower($searchable), $term) !== false;
         }));
     }
@@ -563,7 +612,7 @@ class LogReportManager extends Component
     public function getAccordionRawRecords($categoryKey)
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return [];
         }
 
@@ -571,7 +620,7 @@ class LogReportManager extends Component
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$upload) {
+        if (! $upload) {
             return [];
         }
 
@@ -583,10 +632,11 @@ class LogReportManager extends Component
         }
 
         return array_values(array_filter($items, function ($record) use ($term) {
-            if (!is_array($record)) {
+            if (! is_array($record)) {
                 return strpos(strtolower((string) $record), $term) !== false;
             }
             $searchable = json_encode($record, JSON_UNESCAPED_UNICODE);
+
             return strpos(strtolower($searchable), $term) !== false;
         }));
     }
@@ -645,7 +695,7 @@ class LogReportManager extends Component
                 }
 
                 $date = $this->safeParseDateToCarbon($upload['report_date']);
-                if (!$date) {
+                if (! $date) {
                     return false;
                 }
 
@@ -667,9 +717,10 @@ class LogReportManager extends Component
     {
         return collect($this->uploads)
             ->pluck('report_date')
-            ->filter(fn($d) => !empty($d) && $d !== 'N/A')
+            ->filter(fn ($d) => ! empty($d) && $d !== 'N/A')
             ->map(function ($d) {
                 $date = $this->safeParseDateToCarbon($d);
+
                 return $date ? (int) $date->year : null;
             })
             ->filter()
@@ -692,7 +743,7 @@ class LogReportManager extends Component
                 }
 
                 $date = $this->safeParseDateToCarbon($upload['report_date']);
-                if (!$date) {
+                if (! $date) {
                     return false;
                 }
 
@@ -701,6 +752,7 @@ class LogReportManager extends Component
             ->pluck('report_date')
             ->map(function ($d) {
                 $date = $this->safeParseDateToCarbon($d);
+
                 return $date ? (int) $date->month : null;
             })
             ->filter()
@@ -731,7 +783,7 @@ class LogReportManager extends Component
                 continue;
             }
 
-            if (!isset($unique[$fingerprint])) {
+            if (! isset($unique[$fingerprint])) {
                 $unique[$fingerprint] = [
                     'key' => $categoryKey,
                     'name' => $displayName,
@@ -739,7 +791,7 @@ class LogReportManager extends Component
             }
         }
 
-        uasort($unique, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        uasort($unique, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return array_values($unique);
     }
@@ -752,7 +804,7 @@ class LogReportManager extends Component
             $categoryKey = $category['key'] ?? null;
             $categoryName = $category['name'] ?? null;
             $count = (int) ($category['unique_count'] ?? $category['count'] ?? 0);
-            if (!$categoryKey || !$categoryName) {
+            if (! $categoryKey || ! $categoryName) {
                 continue;
             }
 
@@ -761,7 +813,7 @@ class LogReportManager extends Component
                 continue;
             }
 
-            if (!isset($unique[$fingerprint])) {
+            if (! isset($unique[$fingerprint])) {
                 $unique[$fingerprint] = [
                     'key' => $categoryKey,
                     'name' => $categoryName,
@@ -774,7 +826,7 @@ class LogReportManager extends Component
             }
         }
 
-        uasort($unique, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        uasort($unique, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return array_values($unique);
     }
@@ -805,7 +857,7 @@ class LogReportManager extends Component
     public function consolidateData()
     {
         $user = Auth::user();
-        if (!$user || empty($this->selectedFileIds)) {
+        if (! $user || empty($this->selectedFileIds)) {
             return [];
         }
 
@@ -823,28 +875,32 @@ class LogReportManager extends Component
                     continue;
                 }
 
-                if (!isset($consolidated[$normalizedCategoryKey])) {
+                if (! isset($consolidated[$normalizedCategoryKey])) {
                     $consolidated[$normalizedCategoryKey] = [];
                 }
 
                 foreach ($items as $item) {
-                    if (!is_array($item)) continue;
+                    if (! is_array($item)) {
+                        continue;
+                    }
 
                     $label = $item['label'] ?? $item['name'] ?? null;
                     $value = floatval($item['value'] ?? $item['count'] ?? 0);
 
-                    if (!$label) continue;
+                    if (! $label) {
+                        continue;
+                    }
 
                     $normalizedLabelKey = $this->normalizeLabelKey($label);
                     if ($normalizedLabelKey === '') {
                         continue;
                     }
 
-                    if (!isset($consolidated[$normalizedCategoryKey][$normalizedLabelKey])) {
+                    if (! isset($consolidated[$normalizedCategoryKey][$normalizedLabelKey])) {
                         $consolidated[$normalizedCategoryKey][$normalizedLabelKey] = [
                             'label' => $label,
                             'value' => 0,
-                            'sources' => []
+                            'sources' => [],
                         ];
                     }
 
@@ -857,14 +913,16 @@ class LogReportManager extends Component
         foreach ($consolidated as $catKey => $items) {
             $items = array_values(array_map(function ($item) {
                 $item['sources'] = array_values($item['sources']);
+
                 return $item;
             }, $items));
 
-            usort($items, fn($a, $b) => $b['value'] <=> $a['value']);
+            usort($items, fn ($a, $b) => $b['value'] <=> $a['value']);
             $consolidated[$catKey] = $items;
         }
 
         $this->consolidatedData = $consolidated;
+
         return $consolidated;
     }
 
@@ -876,21 +934,21 @@ class LogReportManager extends Component
 
         $totalsByCategory = [];
         foreach ($this->consolidatedData as $categoryKey => $items) {
-            $totalsByCategory[$categoryKey] = collect($items)->sum(fn($item) => (float) ($item['value'] ?? 0));
+            $totalsByCategory[$categoryKey] = collect($items)->sum(fn ($item) => (float) ($item['value'] ?? 0));
         }
 
         arsort($totalsByCategory);
         $top = array_slice($totalsByCategory, 0, (int) $limit, true);
 
         return [
-            'labels' => array_map(fn($key) => $this->formatCategoryName($key), array_keys($top)),
+            'labels' => array_map(fn ($key) => $this->formatCategoryName($key), array_keys($top)),
             'values' => array_values($top),
         ];
     }
 
     public function getSelectedCategoryChartData()
     {
-        if (!$this->selectedCategoryForChart || empty($this->categories)) {
+        if (! $this->selectedCategoryForChart || empty($this->categories)) {
             return [
                 'labels' => [],
                 'values' => [],
@@ -905,16 +963,24 @@ class LogReportManager extends Component
 
         $aggregated = [];
         foreach ($this->categories as $cat) {
-            if (!in_array($cat['key'] ?? null, $sourceKeys, true)) continue;
+            if (! in_array($cat['key'] ?? null, $sourceKeys, true)) {
+                continue;
+            }
             foreach (($cat['items'] ?? []) as $item) {
-                if (!is_array($item)) continue;
+                if (! is_array($item)) {
+                    continue;
+                }
                 $label = $item['label'] ?? $item['name'] ?? null;
-                if (!$label) continue;
+                if (! $label) {
+                    continue;
+                }
                 $value = (float) ($item['value'] ?? $item['count'] ?? 0);
                 $normalizedLabelKey = $this->normalizeLabelKey($label);
-                if ($normalizedLabelKey === '') continue;
+                if ($normalizedLabelKey === '') {
+                    continue;
+                }
 
-                if (!isset($aggregated[$normalizedLabelKey])) {
+                if (! isset($aggregated[$normalizedLabelKey])) {
                     $aggregated[$normalizedLabelKey] = ['label' => $label, 'value' => 0];
                 }
                 $aggregated[$normalizedLabelKey]['value'] += $value;
@@ -922,11 +988,11 @@ class LogReportManager extends Component
         }
 
         $rows = array_values($aggregated);
-        usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+        usort($rows, fn ($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
 
         return [
-            'labels' => array_map(fn($row) => $row['label'], $rows),
-            'values' => array_map(fn($row) => (float) ($row['value'] ?? 0), $rows),
+            'labels' => array_map(fn ($row) => $row['label'], $rows),
+            'values' => array_map(fn ($row) => (float) ($row['value'] ?? 0), $rows),
             'categoryName' => $categoryName,
         ];
     }
@@ -940,6 +1006,7 @@ class LogReportManager extends Component
         }
 
         $categoryData = $this->consolidatedData[$categoryKey] ?? [];
+
         return array_slice($categoryData, 0, $limit);
     }
 
@@ -958,14 +1025,15 @@ class LogReportManager extends Component
             }
         }
 
-        usort($allItems, fn($a, $b) => $b['value'] <=> $a['value']);
+        usort($allItems, fn ($a, $b) => $b['value'] <=> $a['value']);
+
         return array_slice($allItems, 0, $limit);
     }
 
     public function compareFiles()
     {
         $user = Auth::user();
-        if (!$user || !$this->compareFileA || !$this->compareFileB) {
+        if (! $user || ! $this->compareFileA || ! $this->compareFileB) {
             return;
         }
 
@@ -977,7 +1045,7 @@ class LogReportManager extends Component
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$fileA || !$fileB) {
+        if (! $fileA || ! $fileB) {
             return;
         }
 
@@ -994,7 +1062,9 @@ class LogReportManager extends Component
 
             $indexA = [];
             foreach ($itemsA as $item) {
-                if (!is_array($item)) continue;
+                if (! is_array($item)) {
+                    continue;
+                }
                 $label = $item['label'] ?? $item['name'] ?? null;
                 if ($label) {
                     $indexA[$label] = floatval($item['value'] ?? $item['count'] ?? 0);
@@ -1003,7 +1073,9 @@ class LogReportManager extends Component
 
             $indexB = [];
             foreach ($itemsB as $item) {
-                if (!is_array($item)) continue;
+                if (! is_array($item)) {
+                    continue;
+                }
                 $label = $item['label'] ?? $item['name'] ?? null;
                 if ($label) {
                     $indexB[$label] = floatval($item['value'] ?? $item['count'] ?? 0);
@@ -1014,17 +1086,17 @@ class LogReportManager extends Component
                 'new' => [],
                 'removed' => [],
                 'changed' => [],
-                'unchanged' => []
+                'unchanged' => [],
             ];
 
             foreach ($indexB as $label => $valueB) {
-                if (!isset($indexA[$label])) {
+                if (! isset($indexA[$label])) {
                     $categoryResults['new'][] = ['label' => $label, 'value' => $valueB];
                 }
             }
 
             foreach ($indexA as $label => $valueA) {
-                if (!isset($indexB[$label])) {
+                if (! isset($indexB[$label])) {
                     $categoryResults['removed'][] = ['label' => $label, 'value' => $valueA];
                 }
             }
@@ -1041,20 +1113,20 @@ class LogReportManager extends Component
                             'valueA' => $valueA,
                             'valueB' => $valueB,
                             'diff' => $diff,
-                            'percentChange' => $percentChange
+                            'percentChange' => $percentChange,
                         ];
                     } else {
                         $categoryResults['unchanged'][] = [
                             'label' => $label,
-                            'value' => $valueA
+                            'value' => $valueA,
                         ];
                     }
                 }
             }
 
-            usort($categoryResults['changed'], fn($a, $b) => abs($b['diff']) <=> abs($a['diff']));
-            usort($categoryResults['new'], fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
-            usort($categoryResults['removed'], fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+            usort($categoryResults['changed'], fn ($a, $b) => abs($b['diff']) <=> abs($a['diff']));
+            usort($categoryResults['new'], fn ($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+            usort($categoryResults['removed'], fn ($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
 
             $results[$categoryKey] = $categoryResults;
         }
@@ -1062,7 +1134,7 @@ class LogReportManager extends Component
         $this->comparisonResults = [
             'fileA' => ['id' => $fileA->id, 'filename' => $fileA->filename, 'date' => $fileA->report_date],
             'fileB' => ['id' => $fileB->id, 'filename' => $fileB->filename, 'date' => $fileB->report_date],
-            'categories' => $results
+            'categories' => $results,
         ];
     }
 
@@ -1072,9 +1144,13 @@ class LogReportManager extends Component
         $data = is_array($upload->data) ? $upload->data : [];
 
         foreach ($data as $cat => $items) {
-            if (!is_array($items)) continue;
+            if (! is_array($items)) {
+                continue;
+            }
             foreach ($items as $item) {
-                if (!is_array($item)) continue;
+                if (! is_array($item)) {
+                    continue;
+                }
                 $serviceId = $item['service_id'] ?? $item['channel_id'] ?? $item['id'] ?? null;
                 if ($serviceId) {
                     $manifest[$serviceId] = url('/storage/logos/'.$serviceId.'.png');
@@ -1099,16 +1175,24 @@ class LogReportManager extends Component
                 public_path('storage/uploads/'.$filename),
             ];
             foreach ($candidates as $p) {
-                if ($p && file_exists($p)) return $p;
+                if ($p && file_exists($p)) {
+                    return $p;
+                }
             }
 
-            foreach (['local','public'] as $disk) {
+            foreach (['local', 'public'] as $disk) {
                 if (Storage::disk($disk)->exists($filename)) {
-                    try { return Storage::disk($disk)->path($filename); } catch (\Throwable $_) { }
+                    try {
+                        return Storage::disk($disk)->path($filename);
+                    } catch (\Throwable $_) {
+                    }
                 }
                 $candidate = 'logs/'.$filename;
                 if (Storage::disk($disk)->exists($candidate)) {
-                    try { return Storage::disk($disk)->path($candidate); } catch (\Throwable $_) {}
+                    try {
+                        return Storage::disk($disk)->path($candidate);
+                    } catch (\Throwable $_) {
+                    }
                 }
             }
         }
@@ -1120,6 +1204,7 @@ class LogReportManager extends Component
         if ($raw) {
             $tmp = tempnam(sys_get_temp_dir(), 'audit_txt_');
             file_put_contents($tmp, $raw);
+
             return $tmp;
         }
 
@@ -1129,7 +1214,7 @@ class LogReportManager extends Component
     protected function extractServiceIdsFromTxtUsingPython(string $localPath): array
     {
         $result = [];
-        if (empty($localPath) || !file_exists($localPath) || empty($this->auditApiUrl)) {
+        if (empty($localPath) || ! file_exists($localPath) || empty($this->auditApiUrl)) {
             return $result;
         }
 
@@ -1137,9 +1222,9 @@ class LogReportManager extends Component
             $baseUrl = rtrim($this->auditApiUrl, '/');
 
             if (str_contains($baseUrl, '/api/audit-report')) {
-                $url = preg_replace('#/pdf$#', '', $baseUrl) . '/extract-service-ids';
+                $url = preg_replace('#/pdf$#', '', $baseUrl).'/extract-service-ids';
             } else {
-                $url = $baseUrl . '/api/audit-report/extract-service-ids';
+                $url = $baseUrl.'/api/audit-report/extract-service-ids';
             }
 
             $client = Http::timeout(60);
@@ -1150,14 +1235,15 @@ class LogReportManager extends Component
             $response = $client->attach('txt_file', fopen($localPath, 'r'), basename($localPath))->post($url);
             if (! $response->successful()) {
                 Log::warning('extractServiceIdsFromTxtUsingPython: non-success response', ['status' => $response->status(), 'body' => $response->body()]);
+
                 return [];
             }
 
             $json = $response->json();
             if (is_array($json)) {
-                if (!empty($json['service_ids']) && is_array($json['service_ids'])) {
+                if (! empty($json['service_ids']) && is_array($json['service_ids'])) {
                     $result = array_map('strval', $json['service_ids']);
-                } elseif (!empty($json['ids']) && is_array($json['ids'])) {
+                } elseif (! empty($json['ids']) && is_array($json['ids'])) {
                     $result = array_map('strval', $json['ids']);
                 }
             }
@@ -1171,13 +1257,15 @@ class LogReportManager extends Component
     public function generatePdfForSelectedUpload()
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             $this->dispatch('notify', type: 'error', message: 'No hay archivo seleccionado');
+
             return;
         }
 
         if (empty($this->auditApiUrl)) {
             $this->dispatch('notify', type: 'error', message: 'No se ha configurado AUDIT_API_URL');
+
             return;
         }
 
@@ -1187,11 +1275,12 @@ class LogReportManager extends Component
 
         if (! $upload) {
             $this->dispatch('notify', type: 'error', message: 'Upload no encontrado');
+
             return;
         }
 
         $localPath = $this->locateUploadTxtFile($upload);
-        $canAttachTxt = !empty($localPath) && file_exists($localPath);
+        $canAttachTxt = ! empty($localPath) && file_exists($localPath);
 
         $serviceIds = [];
         if ($canAttachTxt) {
@@ -1201,11 +1290,17 @@ class LogReportManager extends Component
         if (empty($serviceIds)) {
             $data = is_array($upload->data) ? $upload->data : [];
             foreach ($data as $cat => $items) {
-                if (!is_array($items)) continue;
+                if (! is_array($items)) {
+                    continue;
+                }
                 foreach ($items as $item) {
-                    if (!is_array($item)) continue;
+                    if (! is_array($item)) {
+                        continue;
+                    }
                     $sid = $item['service_id'] ?? $item['channel_id'] ?? $item['id'] ?? null;
-                    if ($sid) $serviceIds[] = (string)$sid;
+                    if ($sid) {
+                        $serviceIds[] = (string) $sid;
+                    }
                 }
             }
         }
@@ -1231,13 +1326,14 @@ class LogReportManager extends Component
 
         if (empty($manifest)) {
             $this->dispatch('notify', type: 'error', message: 'No se encontraron imagenes de canales para este reporte.');
+
             return;
         }
 
-        $imageManifestJson = !empty($manifest) ? json_encode($manifest) : null;
+        $imageManifestJson = ! empty($manifest) ? json_encode($manifest) : null;
         $reportDataJson = json_encode(is_array($upload->data) ? $upload->data : []);
 
-        $tempCreated = $canAttachTxt && (strpos((string)$localPath, sys_get_temp_dir()) === 0);
+        $tempCreated = $canAttachTxt && (strpos((string) $localPath, sys_get_temp_dir()) === 0);
 
         try {
             $baseUrl = rtrim($this->auditApiUrl, '/');
@@ -1272,6 +1368,7 @@ class LogReportManager extends Component
 
             if (! $response->successful()) {
                 $this->dispatch('notify', type: 'error', message: 'Error Python generando PDF: '.$response->status());
+
                 return;
             }
 
@@ -1282,22 +1379,25 @@ class LogReportManager extends Component
                 Storage::disk('public')->put($outName, $response->body());
                 $publicUrl = asset('storage/'.$outName);
                 $this->dispatch('report-generated', url: $publicUrl, message: 'PDF generado correctamente por Python');
+
                 return;
             }
 
             $json = $response->json();
-            if (is_array($json) && !empty($json['pdf_base64'])) {
+            if (is_array($json) && ! empty($json['pdf_base64'])) {
                 $decoded = base64_decode((string) $json['pdf_base64'], true);
                 if ($decoded !== false) {
                     Storage::disk('public')->put($outName, $decoded);
                     $publicUrl = asset('storage/'.$outName);
                     $this->dispatch('report-generated', url: $publicUrl, message: 'PDF generado correctamente por Python');
+
                     return;
                 }
             }
 
-            if (is_array($json) && !empty($json['pdf_url'])) {
+            if (is_array($json) && ! empty($json['pdf_url'])) {
                 $this->dispatch('report-generated', url: (string) $json['pdf_url'], message: 'PDF generado correctamente por Python');
+
                 return;
             }
 

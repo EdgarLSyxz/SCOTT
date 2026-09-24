@@ -16,7 +16,7 @@ return new class extends Migration
             $table->index(['rack_id', 'position', 'size_u']);
         });
 
-        \DB::statement("UPDATE rack_equipment SET size_u = 1 WHERE size_u IS NULL OR size_u < 1");
+        \DB::statement('UPDATE rack_equipment SET size_u = 1 WHERE size_u IS NULL OR size_u < 1');
     }
 
     public function down(): void

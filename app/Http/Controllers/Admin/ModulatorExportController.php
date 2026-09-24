@@ -11,8 +11,8 @@ class ModulatorExportController extends Controller
 {
     public function export(Request $request)
     {
-        $fileName = 'transponder-switches-' . date('Ymd_His') . '.xlsx';
+        $fileName = 'transponder-switches-'.date('Ymd_His').'.xlsx';
 
-        return Excel::download(new TransponderSwitchesExport(), $fileName);
+        return Excel::download(new TransponderSwitchesExport, $fileName);
     }
 }

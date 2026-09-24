@@ -9,13 +9,13 @@ class ChannelTest extends Model
     protected $table = 'video_profile_tests';
 
     protected $fillable = [
-        "report_id",
-        "channel_id",
-        "user_id",
-        "high",
-        "medium",
-        "low",
-        "profile_data",
+        'report_id',
+        'channel_id',
+        'user_id',
+        'high',
+        'medium',
+        'low',
+        'profile_data',
     ];
 
     protected $casts = [

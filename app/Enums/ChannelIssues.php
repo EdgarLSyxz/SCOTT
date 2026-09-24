@@ -5,7 +5,7 @@ namespace App\Enums;
 enum ChannelIssues: string
 {
     case CORRECT = 'correct';
-     case LIGHT_PAUSES_AUDIO = 'light_pauses_audio';
+    case LIGHT_PAUSES_AUDIO = 'light_pauses_audio';
     case LIGHT_PAUSES_VIDEO = 'light_pauses_video';
     case LIGHT_PAUSES_AV = 'light_pauses_av';
     case CONSTANT_PAUSES_AUDIO = 'constant_pauses_audio';

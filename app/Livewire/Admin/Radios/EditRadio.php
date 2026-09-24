@@ -2,23 +2,30 @@
 
 namespace App\Livewire\Admin\Radios;
 
+use App\Models\Radio;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Radio;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
 
 class EditRadio extends Component
 {
     use WithFileUploads;
 
     public $radioId;
+
     public $name;
+
     public $url;
+
     public $image_url;
+
     public $existingImage;
+
     public $existingImagePath;
+
     public $status = '';
+
     public $area = 'DTH';
 
     public function mount(Radio $radio)
@@ -47,7 +54,7 @@ class EditRadio extends Component
                 $this->dispatchBrowserEvent('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your changes contain the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your changes contain the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -74,14 +81,15 @@ class EditRadio extends Component
 
         $imagePath = $this->existingImagePath;
         if ($this->image_url) {
-            $imageName = time() . '_' . $this->image_url->getClientOriginalName();
+            $imageName = time().'_'.$this->image_url->getClientOriginalName();
             $this->image_url->storeAs('radios', $imageName, 'public');
-            $imagePath = 'radios/' . $imageName;
+            $imagePath = 'radios/'.$imageName;
 
             if ($this->existingImagePath) {
                 try {
                     Storage::disk('public')->delete($this->existingImagePath);
-                } catch (\Throwable $e) { }
+                } catch (\Throwable $e) {
+                }
             }
         }
 

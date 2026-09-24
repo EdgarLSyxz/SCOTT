@@ -55,13 +55,14 @@ class RackEquipment extends Model
     protected function image(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->image_url ? Storage::url($this->image_url) : null,
+            get: fn () => $this->image_url ? Storage::url($this->image_url) : null,
         );
     }
 
     public function getSizeUAttribute($value): int
     {
         $size = (int) ($value ?? 1);
+
         return $size < 1 ? 1 : $size;
     }
 
@@ -76,6 +77,7 @@ class RackEquipment extends Model
         for ($i = (int) $this->position; $i <= $this->end_position; $i++) {
             $positions[] = $i;
         }
+
         return $positions;
     }
 
@@ -83,8 +85,9 @@ class RackEquipment extends Model
     {
         $parts = array_filter([
             $this->equipment_name,
-            $this->equipment_role ? '(' . $this->equipment_role . ')' : null,
+            $this->equipment_role ? '('.$this->equipment_role.')' : null,
         ]);
+
         return $parts ? implode(' ', $parts) : '—';
     }
 
@@ -94,6 +97,7 @@ class RackEquipment extends Model
             $this->equipment_model,
             $this->ip_address,
         ]);
+
         return $parts ? implode(' · ', $parts) : '';
     }
 }

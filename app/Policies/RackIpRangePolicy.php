@@ -14,6 +14,7 @@ class RackIpRangePolicy
         if (in_array((int) $user->id, $allowedIds, true)) {
             return true;
         }
+
         return null;
     }
 

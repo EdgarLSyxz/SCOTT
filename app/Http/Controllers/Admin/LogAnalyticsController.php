@@ -6,10 +6,10 @@ use App\Models\LogAnalytic;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -23,7 +23,7 @@ class LogAnalyticsController extends Controller
             ]);
 
             $user = Auth::user();
-            if (!$user) {
+            if (! $user) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
 
@@ -33,7 +33,7 @@ class LogAnalyticsController extends Controller
             $storagePath = Storage::disk('local')->putFileAs(
                 'log_uploads',
                 $file,
-                time() . '_' . $originalName
+                time().'_'.$originalName
             );
 
             $fullPath = Storage::disk('local')->path($storagePath);
@@ -43,19 +43,19 @@ class LogAnalyticsController extends Controller
             if (isset($result['error'])) {
                 Storage::disk('local')->delete($storagePath);
                 throw ValidationException::withMessages([
-                    'file' => $result['error']
+                    'file' => $result['error'],
                 ]);
             }
 
             $rawReportDate = $result['report_date'] ?? null;
             $normalizedReportDate = null;
-            if (!empty($rawReportDate)) {
+            if (! empty($rawReportDate)) {
                 try {
                     $dt = \Carbon\Carbon::parse($rawReportDate);
                     $normalizedReportDate = $dt->format('Y-m-d');
                 } catch (\Exception $e) {
                     $formats = [
-                        'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d'
+                        'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y', 'd.m.Y H:i:s', 'd.m.Y', 'Y-m-d H:i:s', 'Y-m-d',
                     ];
                     foreach ($formats as $fmt) {
                         try {
@@ -64,7 +64,8 @@ class LogAnalyticsController extends Controller
                                 $normalizedReportDate = $dt->format('Y-m-d');
                                 break;
                             }
-                        } catch (\Exception $_) {}
+                        } catch (\Exception $_) {
+                        }
                     }
                 }
             }
@@ -117,7 +118,7 @@ class LogAnalyticsController extends Controller
             $apiUrl = env('LOG_PARSER_URL') ?: env('PYTHON_LOG_ANALYTICS_API_URL') ?: config('services.python_log_analytics_api.url') ?: config('services.log_parser.url') ?: null;
             if ($apiUrl) {
                 if (stripos($apiUrl, '/extract') === false && stripos($apiUrl, '/api/process-txt') === false) {
-                    $apiUrl = rtrim($apiUrl, '/') . '/extract';
+                    $apiUrl = rtrim($apiUrl, '/').'/extract';
                 }
 
                 try {
@@ -133,18 +134,19 @@ class LogAnalyticsController extends Controller
                                 ->attach('txt_file', fopen($filePath, 'r'), basename($filePath))
                                 ->post($apiUrl);
                         } catch (\Exception $innerEx) {
-                            \Log::debug('Parser API fallback attempt failed: ' . $innerEx->getMessage());
+                            \Log::debug('Parser API fallback attempt failed: '.$innerEx->getMessage());
                         }
                     }
 
                     if ($response->successful()) {
                         $parsed = $response->json();
+
                         return $this->normalizeParserPayload($parsed);
                     }
 
-                    \Log::warning('Parser API returned non-success (' . ($response->status() ?? 'n/a') . '): ' . ($response->body() ?? ''));
+                    \Log::warning('Parser API returned non-success ('.($response->status() ?? 'n/a').'): '.($response->body() ?? ''));
                 } catch (\Exception $ex) {
-                    \Log::warning('Parser API call failed, falling back to local parser: ' . $ex->getMessage());
+                    \Log::warning('Parser API call failed, falling back to local parser: '.$ex->getMessage());
                 }
             }
 
@@ -165,7 +167,8 @@ class LogAnalyticsController extends Controller
 
             if (! $result->successful()) {
                 $errorMsg = $result->errorOutput();
-                return ['error' => 'Failed to parse log file: ' . ($errorMsg ?: 'Unknown error')];
+
+                return ['error' => 'Failed to parse log file: '.($errorMsg ?: 'Unknown error')];
             }
 
             $output = trim($result->output());
@@ -173,14 +176,14 @@ class LogAnalyticsController extends Controller
             $parsed = json_decode($output, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return ['error' => 'Invalid JSON response from parser: ' . json_last_error_msg()];
+                return ['error' => 'Invalid JSON response from parser: '.json_last_error_msg()];
             }
 
             return $this->normalizeParserPayload($parsed);
         } catch (ProcessFailedException $e) {
-            return ['error' => 'Process failed: ' . $e->getMessage()];
+            return ['error' => 'Process failed: '.$e->getMessage()];
         } catch (\Exception $e) {
-            return ['error' => 'Parsing error: ' . $e->getMessage()];
+            return ['error' => 'Parsing error: '.$e->getMessage()];
         }
     }
 
@@ -193,7 +196,7 @@ class LogAnalyticsController extends Controller
             'data' => [],
         ];
 
-        if (!is_array($parsed)) {
+        if (! is_array($parsed)) {
             return $normalized;
         }
 
@@ -215,7 +218,7 @@ class LogAnalyticsController extends Controller
 
         if (isset($parsed['categories']) && is_array($parsed['categories'])) {
             foreach ($parsed['categories'] as $cat) {
-                if (!is_array($cat)) {
+                if (! is_array($cat)) {
                     continue;
                 }
 
@@ -256,7 +259,7 @@ class LogAnalyticsController extends Controller
 
     private function normalizeCategoryPayloadToRows($payload): array
     {
-        if (!is_array($payload)) {
+        if (! is_array($payload)) {
             return [];
         }
 
@@ -265,7 +268,7 @@ class LogAnalyticsController extends Controller
         }
 
         if (isset($payload['raw_lines']) && is_array($payload['raw_lines'])) {
-            return array_map(fn($line) => ['raw' => (string) $line], $payload['raw_lines']);
+            return array_map(fn ($line) => ['raw' => (string) $line], $payload['raw_lines']);
         }
 
         return array_values($payload) === $payload ? $payload : [];
@@ -278,9 +281,9 @@ class LogAnalyticsController extends Controller
             $normalized[(string) $categoryName] = $this->normalizeCategoryPayloadToRows($items);
         }
 
-        if (!$this->hasTopChannelsByTrafficPerHourCategory($normalized)) {
+        if (! $this->hasTopChannelsByTrafficPerHourCategory($normalized)) {
             $derived = $this->buildTopChannelsByTrafficPerHourCategory($normalized);
-            if (!empty($derived)) {
+            if (! empty($derived)) {
                 $normalized['TOP CANALES POR TRAFICO POR HORA'] = $derived;
             }
         }
@@ -310,11 +313,11 @@ class LogAnalyticsController extends Controller
                 continue;
             }
 
-            if (!str_contains($name, 'TRAFICO') || !str_contains($name, 'HORA')) {
+            if (! str_contains($name, 'TRAFICO') || ! str_contains($name, 'HORA')) {
                 continue;
             }
 
-            if (!is_array($items) || empty($items)) {
+            if (! is_array($items) || empty($items)) {
                 continue;
             }
 
@@ -342,11 +345,11 @@ class LogAnalyticsController extends Controller
             $hourKey = (string) $hour;
             $channelKey = mb_strtolower(trim($label));
 
-            if (!isset($byHourAndChannel[$hourKey])) {
+            if (! isset($byHourAndChannel[$hourKey])) {
                 $byHourAndChannel[$hourKey] = [];
             }
 
-            if (!isset($byHourAndChannel[$hourKey][$channelKey])) {
+            if (! isset($byHourAndChannel[$hourKey][$channelKey])) {
                 $byHourAndChannel[$hourKey][$channelKey] = [
                     'hour' => $hourKey,
                     'label' => $label,
@@ -366,7 +369,7 @@ class LogAnalyticsController extends Controller
 
         foreach ($byHourAndChannel as $hour => $channels) {
             $rows = array_values($channels);
-            usort($rows, fn($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
+            usort($rows, fn ($a, $b) => ($b['value'] ?? 0) <=> ($a['value'] ?? 0));
 
             foreach (array_slice($rows, 0, 10) as $index => $row) {
                 $result[] = [
@@ -388,7 +391,7 @@ class LogAnalyticsController extends Controller
         ];
 
         foreach ($candidates as $key) {
-            if (!array_key_exists($key, $row)) {
+            if (! array_key_exists($key, $row)) {
                 continue;
             }
 
@@ -408,7 +411,7 @@ class LogAnalyticsController extends Controller
         ];
 
         foreach ($candidates as $key) {
-            if (!array_key_exists($key, $row)) {
+            if (! array_key_exists($key, $row)) {
                 continue;
             }
 
@@ -428,7 +431,7 @@ class LogAnalyticsController extends Controller
         ];
 
         foreach ($candidates as $key) {
-            if (!array_key_exists($key, $row)) {
+            if (! array_key_exists($key, $row)) {
                 continue;
             }
 
@@ -444,7 +447,7 @@ class LogAnalyticsController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$user) {
+            if (! $user) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
 
@@ -452,7 +455,7 @@ class LogAnalyticsController extends Controller
                 ->where('user_id', $user->id)
                 ->first();
 
-            if (!$logAnalytic) {
+            if (! $logAnalytic) {
                 return response()->json(['error' => 'Report not found'], 404);
             }
 

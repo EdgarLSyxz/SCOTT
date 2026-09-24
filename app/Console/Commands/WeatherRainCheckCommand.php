@@ -18,6 +18,7 @@ class WeatherRainCheckCommand extends Command
     {
         if (! Schema::hasTable('weather_rain_events')) {
             $this->warn('weather_rain_events table is missing; skipping rain notifications.');
+
             return self::SUCCESS;
         }
 
@@ -27,8 +28,8 @@ class WeatherRainCheckCommand extends Command
         $results = $detector->processAllSites($payloadBySite);
 
         foreach ($results as $site => $result) {
-            $startedId = $result['started'] ? '#' . $result['started']->id : '-';
-            $endedId = $result['ended'] ? '#' . $result['ended']->id : '-';
+            $startedId = $result['started'] ? '#'.$result['started']->id : '-';
+            $endedId = $result['ended'] ? '#'.$result['ended']->id : '-';
 
             $this->line(sprintf(
                 '[%s] %s | started=%s ended=%s',

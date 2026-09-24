@@ -8,11 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PackageController extends Controller
@@ -90,7 +90,7 @@ class PackageController extends Controller
         }
 
         try {
-            $upload = new Package();
+            $upload = new Package;
             $upload->user_id = Auth::id();
             $upload->filename = $request->input('filename');
             $upload->data = $payload;
@@ -99,6 +99,7 @@ class PackageController extends Controller
             return response()->json(['ok' => true, 'id' => $upload->id], 201);
         } catch (\Throwable $e) {
             Log::error('PdfUpload store error: '.$e->getMessage());
+
             return response()->json(['ok' => false, 'error' => 'Server error'], 500);
         }
     }
@@ -149,9 +150,9 @@ class PackageController extends Controller
                 $ids = [];
             }
             $packages[] = [
-                'id'        => $item['id'] ?? $item['service_id'] ?? (string) $idx,
-                'name'      => $item['name'] ?? $item['title'] ?? '',
-                'count'     => count($ids),
+                'id' => $item['id'] ?? $item['service_id'] ?? (string) $idx,
+                'name' => $item['name'] ?? $item['title'] ?? '',
+                'count' => count($ids),
                 'customers' => $ids,
             ];
         }
@@ -160,19 +161,20 @@ class PackageController extends Controller
             if (is_numeric($a['id']) && is_numeric($b['id'])) {
                 return (int) $a['id'] - (int) $b['id'];
             }
+
             return strcmp((string) $a['id'], (string) $b['id']);
         });
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
 
         $summary = $spreadsheet->getActiveSheet();
         $summary->setTitle('Resumen');
 
         $headerStyle = [
-            'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E40AF']],
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E40AF']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFBFDBFE']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFBFDBFE']]],
         ];
 
         $summary->fromArray(['#', 'ID Paquete', 'Nombre del paquete', 'Total clientes'], null, 'A1');
@@ -195,7 +197,7 @@ class PackageController extends Controller
         $totalRow = $rowNum;
         $totalCustomers = array_sum(array_column($packages, 'count'));
         $summary->setCellValue("A{$totalRow}", 'TOTAL');
-        $summary->setCellValue("C{$totalRow}", count($packages) . ' paquetes');
+        $summary->setCellValue("C{$totalRow}", count($packages).' paquetes');
         $summary->setCellValue("D{$totalRow}", $totalCustomers);
         $summary->getStyle("A{$totalRow}:D{$totalRow}")->applyFromArray([
             'font' => ['bold' => true],
@@ -228,7 +230,7 @@ class PackageController extends Controller
 
         $spreadsheet->setActiveSheetIndex(0);
 
-        $filename = 'paquetes_' . Str::slug($upload->filename ?? 'export') . '_' . now()->format('Ymd_His') . '.xlsx';
+        $filename = 'paquetes_'.Str::slug($upload->filename ?? 'export').'_'.now()->format('Ymd_His').'.xlsx';
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 

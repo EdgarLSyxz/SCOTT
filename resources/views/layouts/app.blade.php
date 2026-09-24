@@ -114,6 +114,8 @@
 
     </div>
 
+    @livewire('app.solar-interferences.solar-interferences-modal')
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.1/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -134,6 +136,8 @@
             Swal.fire(data[0]);
         });
     </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 </body>
 
 </html>

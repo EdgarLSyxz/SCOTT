@@ -11,6 +11,7 @@ class Transponder extends Model
     use HasFactory;
 
     public const SITE_ZACATECAS = 'Zacatecas';
+
     public const SITE_TOLUCA = 'Toluca';
 
     public const ALLOWED_SITES = [
@@ -57,6 +58,7 @@ class Transponder extends Model
             $totals[$this->active_site] = $this->created_at
                 ? $this->created_at->diffInSeconds($now)
                 : 0;
+
             return $totals;
         }
 

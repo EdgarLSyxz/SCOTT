@@ -9,6 +9,7 @@ class Report extends Model
     public $timestamps = true;
 
     public const AREA_OTT = 'OTT';
+
     public const AREA_DTH = 'DTH';
 
     public static function getAreas(): array

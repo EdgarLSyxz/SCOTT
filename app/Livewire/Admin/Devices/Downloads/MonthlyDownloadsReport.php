@@ -2,22 +2,30 @@
 
 namespace App\Livewire\Admin\Devices\Downloads;
 
-use Livewire\Component;
 use App\Models\Device;
 use App\Models\Download;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class MonthlyDownloadsReport extends Component
 {
     public $year;
+
     public $month;
+
     public $day;
+
     public $years = [];
+
     public $months = [];
+
     public $days = [];
+
     public $devices;
+
     public $counts = [];
+
     public $successMessage = null;
 
     protected $rules = [
@@ -90,6 +98,7 @@ class MonthlyDownloadsReport extends Component
     public function getAverageProperty()
     {
         $n = count($this->counts) ?: 1;
+
         return (int) round($this->total / $n);
     }
 
@@ -210,7 +219,10 @@ class MonthlyDownloadsReport extends Component
         $this->buildDays();
         $this->loadCounts();
 
-        try { $this->dispatch('close-monthly-report-modal'); } catch (\Exception $e) {}
+        try {
+            $this->dispatch('close-monthly-report-modal');
+        } catch (\Exception $e) {
+        }
     }
 
     public function render()

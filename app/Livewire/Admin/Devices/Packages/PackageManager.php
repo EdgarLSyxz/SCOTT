@@ -5,47 +5,67 @@ namespace App\Livewire\Admin\Devices\Packages;
 use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class PackageManager extends Component
 {
     private const FILTER_ALL = 'all';
+
     private const FILTER_SERVICE = 'service';
+
     private const FILTER_CONCURRENCY = 'concurrency';
+
     private const FILTER_OTHER = 'other';
 
     private const CONCURRENCY_PACKAGE_NAMES = [
         'CONCURRENT_STREAM_LIMIT_3',
         'CONCURRENT_STREAM_LIMIT_2',
         'CONCURRENT_STREAM_LIMIT_1',
-        'CONCURRENCY TEST SERVICE'
+        'CONCURRENCY TEST SERVICE',
     ];
 
     private const OTHER_SERVICE_NAMES = [
         'OTT CHROMECAST',
         'PREROLL ADVERTISEMENT',
         'PRE-ROLL VISIBILITY TEST',
-        'STARTV STREAM ANONYMOUS BROWSE'
+        'STARTV STREAM ANONYMOUS BROWSE',
     ];
 
     public $uploads = [];
+
     public $selectedUploadId = null;
+
     public $packages = [];
+
     public $totalPackages = 0;
+
     public $totalCustomers = 0;
+
     public $searchTerm = '';
+
     public $selectedPackage = null;
+
     public $modalOpen = false;
+
     public $allCustomerIdsCount = 0;
+
     public $filteredCustomerIds = [];
+
     public $currentPackageId = null;
+
     public $currentUploadId = null;
+
     public $customerPage = 1;
+
     public $customerPageSize = 200;
+
     public $modalHasMore = false;
+
     public $modalSearchTerm = '';
+
     public $globalFilter = self::FILTER_ALL;
+
     protected $allowedIds = [1, 2, 3, 5, 7, 8];
 
     public function mount()
@@ -62,7 +82,7 @@ class PackageManager extends Component
     public function loadUploads()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -76,6 +96,7 @@ class PackageManager extends Component
 
         $this->uploads = $models->map(function ($m) {
             $attrs = $m->getAttributes();
+
             return [
                 'id' => $m->id,
                 'user_id' => $m->user_id,
@@ -85,7 +106,7 @@ class PackageManager extends Component
             ];
         })->toArray();
 
-        if (!empty($this->uploads)) {
+        if (! empty($this->uploads)) {
             $this->selectedUploadId = $this->uploads[0]['id'];
             $this->loadSelectedUpload();
         }
@@ -94,7 +115,7 @@ class PackageManager extends Component
     public function loadSelectedUpload()
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return;
         }
 
@@ -124,8 +145,8 @@ class PackageManager extends Component
                         $preview = array_slice($ids, 0, 5);
                     }
                     $packages[] = [
-                        'id' => $item['id'] ?? $item['service_id'] ?? (string)$idx,
-                        'data_key' => (string)$idx,
+                        'id' => $item['id'] ?? $item['service_id'] ?? (string) $idx,
+                        'data_key' => (string) $idx,
                         'name' => $item['name'] ?? $item['title'] ?? '',
                         'customers' => $count,
                         'customers_preview' => $preview,
@@ -133,13 +154,13 @@ class PackageManager extends Component
                 }
             }
         } elseif (is_object($raw)) {
-            foreach ((array)$raw as $key => $item) {
+            foreach ((array) $raw as $key => $item) {
                 if (is_array($item)) {
                     $ids = $item['customers'] ?? $item['customers_list'] ?? $item['customer_ids'] ?? [];
                     $count = $item['customers_count'] ?? (is_array($ids) ? count($ids) : ($item['customers'] ?? 0));
                     $packages[] = [
-                        'id' => $item['id'] ?? $item['service_id'] ?? (string)$key,
-                        'data_key' => (string)$key,
+                        'id' => $item['id'] ?? $item['service_id'] ?? (string) $key,
+                        'data_key' => (string) $key,
                         'name' => $item['name'] ?? $item['title'] ?? '',
                         'customers' => $count,
                         'customers_list' => is_array($ids) ? $ids : [],
@@ -159,10 +180,11 @@ class PackageManager extends Component
         $this->totalCustomers = array_reduce($packages, function ($carry, $p) {
             $count = 0;
             if (isset($p['customers']) && is_numeric($p['customers'])) {
-                $count = (int)$p['customers'];
-            } elseif (!empty($p['customers_list']) && is_array($p['customers_list'])) {
+                $count = (int) $p['customers'];
+            } elseif (! empty($p['customers_list']) && is_array($p['customers_list'])) {
                 $count = count($p['customers_list']);
             }
+
             return $carry + $count;
         }, 0);
     }
@@ -170,7 +192,7 @@ class PackageManager extends Component
     public function deleteUpload()
     {
         $user = Auth::user();
-        if (!$user || !$this->selectedUploadId) {
+        if (! $user || ! $this->selectedUploadId) {
             return;
         }
 
@@ -212,8 +234,8 @@ class PackageManager extends Component
 
         $data = $upload->data;
         $item = null;
-        if (is_array($data) && array_key_exists((string)$dataKey, $data)) {
-            $item = $data[(string)$dataKey];
+        if (is_array($data) && array_key_exists((string) $dataKey, $data)) {
+            $item = $data[(string) $dataKey];
         }
 
         if (! $item) {
@@ -228,7 +250,7 @@ class PackageManager extends Component
             $ids = [];
         }
 
-        $cacheKey = 'pkg_customers_' . $uploadId . '_' . ($packageId ?? $dataKey) . '_' . $user->id;
+        $cacheKey = 'pkg_customers_'.$uploadId.'_'.($packageId ?? $dataKey).'_'.$user->id;
         Cache::put($cacheKey, $ids, now()->addMinutes(10));
 
         $this->currentPackageId = $packageId ?? $dataKey;
@@ -250,7 +272,7 @@ class PackageManager extends Component
     {
         if ($this->currentPackageId && $this->currentUploadId) {
             $user = Auth::user();
-            $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . ($user?->id ?? '');
+            $cacheKey = 'pkg_customers_'.$this->currentUploadId.'_'.$this->currentPackageId.'_'.($user?->id ?? '');
             Cache::forget($cacheKey);
         }
 
@@ -272,22 +294,24 @@ class PackageManager extends Component
 
         if (! $this->currentPackageId || ! $this->currentUploadId) {
             $this->filteredCustomerIds = [];
+
             return;
         }
 
         $user = Auth::user();
-        $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . $user->id;
+        $cacheKey = 'pkg_customers_'.$this->currentUploadId.'_'.$this->currentPackageId.'_'.$user->id;
         $ids = Cache::get($cacheKey, []);
 
         if ($term === '') {
             $this->customerPage = 1;
             $this->modalHasMore = count($ids) > $this->customerPageSize;
             $this->filteredCustomerIds = array_slice($ids, 0, $this->customerPageSize);
+
             return;
         }
 
         $filtered = array_values(array_filter($ids, function ($id) use ($term) {
-            return strpos(strtolower((string)$id), $term) !== false;
+            return strpos(strtolower((string) $id), $term) !== false;
         }));
 
         $this->filteredCustomerIds = $filtered;
@@ -301,11 +325,15 @@ class PackageManager extends Component
 
     public function loadMoreCustomers()
     {
-        if (! $this->currentPackageId || ! $this->currentUploadId) return;
+        if (! $this->currentPackageId || ! $this->currentUploadId) {
+            return;
+        }
         $user = Auth::user();
-        $cacheKey = 'pkg_customers_' . $this->currentUploadId . '_' . $this->currentPackageId . '_' . $user->id;
+        $cacheKey = 'pkg_customers_'.$this->currentUploadId.'_'.$this->currentPackageId.'_'.$user->id;
         $ids = Cache::get($cacheKey, []);
-        if (empty($ids)) return;
+        if (empty($ids)) {
+            return;
+        }
 
         $this->customerPage++;
         $offset = ($this->customerPage - 1) * $this->customerPageSize;
@@ -322,15 +350,22 @@ class PackageManager extends Component
             if (is_array($node)) {
                 foreach ($node as $idx => $item) {
                     if (is_array($item) || is_object($item)) {
-                        $arr = is_array($item) ? $item : (array)$item;
+                        $arr = is_array($item) ? $item : (array) $item;
                         $id = $arr['id'] ?? $arr['service_id'] ?? null;
-                        if ((string)$id === (string)$packageId) return $arr;
-                        if ((string)$idx === (string)$packageId) return is_array($item) ? $item : (array)$item;
+                        if ((string) $id === (string) $packageId) {
+                            return $arr;
+                        }
+                        if ((string) $idx === (string) $packageId) {
+                            return is_array($item) ? $item : (array) $item;
+                        }
                         $res = $search($item);
-                        if ($res !== null) return $res;
+                        if ($res !== null) {
+                            return $res;
+                        }
                     }
                 }
             }
+
             return null;
         };
 
@@ -340,15 +375,16 @@ class PackageManager extends Component
     public function getFilteredPackages()
     {
         $term = strtolower($this->searchTerm);
+
         return collect($this->getGloballyFilteredPackages())
             ->filter(function ($pkg) use ($term) {
                 $nameMatch = strpos(strtolower($pkg['name'] ?? ''), $term) !== false;
-                $idMatch = strpos(strtolower((string)($pkg['id'] ?? '')), $term) !== false;
+                $idMatch = strpos(strtolower((string) ($pkg['id'] ?? '')), $term) !== false;
                 $customers = $pkg['customers_list'] ?? $pkg['customers_preview'] ?? [];
                 $customerMatch = false;
                 if (! empty($customers) && is_array($customers)) {
                     foreach ($customers as $cid) {
-                        if (strpos(strtolower((string)$cid), $term) !== false) {
+                        if (strpos(strtolower((string) $cid), $term) !== false) {
                             $customerMatch = true;
                             break;
                         }

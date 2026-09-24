@@ -12,7 +12,9 @@ class ReportGeneralCreatedMail extends Mailable
     use Queueable, SerializesModels;
 
     public $report;
+
     public $categories;
+
     public $reportedBy;
 
     /**

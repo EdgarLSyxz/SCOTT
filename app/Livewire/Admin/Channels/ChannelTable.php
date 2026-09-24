@@ -2,23 +2,30 @@
 
 namespace App\Livewire\Admin\Channels;
 
+use App\Enums\ChannelCategory;
+use App\Enums\ChannelOrigin;
+use App\Models\Channel;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Channel;
-use App\Enums\ChannelOrigin;
-use App\Enums\ChannelCategory;
 
 class ChannelTable extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $showInactive = false;
+
     public $showActive = false;
+
     public $showDualAudio = false;
+
     public $originFilter = null;
+
     public $categoryFilter = null;
+
     public $areaFilter = 'all';
+
     protected $queryString = ['search', 'showInactive', 'showActive', 'showDualAudio', 'originFilter', 'categoryFilter', 'areaFilter' => ['except' => 'all']];
 
     public function updatingSearch()
@@ -51,7 +58,7 @@ class ChannelTable extends Component
 
     public function toggleOriginFilter()
     {
-        $origins = collect(ChannelOrigin::cases())->map(fn($case) => $case->value)->all();
+        $origins = collect(ChannelOrigin::cases())->map(fn ($case) => $case->value)->all();
 
         if ($this->originFilter === null) {
             $this->originFilter = $origins[0];
@@ -65,7 +72,7 @@ class ChannelTable extends Component
 
     public function toggleCategoryFilter()
     {
-        $categories = collect(ChannelCategory::cases())->map(fn($case) => $case->value)->all();
+        $categories = collect(ChannelCategory::cases())->map(fn ($case) => $case->value)->all();
 
         if ($this->categoryFilter === null) {
             $this->categoryFilter = $categories[0];
@@ -109,8 +116,8 @@ class ChannelTable extends Component
             $query->where(function ($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function ($subQuery) use ($term) {
-                        $subQuery->where('name', 'like', '%' . $term . '%')
-                            ->orWhere('number', 'like', '%' . $term . '%');
+                        $subQuery->where('name', 'like', '%'.$term.'%')
+                            ->orWhere('number', 'like', '%'.$term.'%');
                     });
                 }
             });

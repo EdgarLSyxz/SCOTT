@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -44,6 +44,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'grafana.create',
             'grafana.edit',
             'grafana.delete',
+            'solar-interferences.view',
+            'solar-interferences.create',
+            'solar-interferences.edit',
+            'solar-interferences.delete',
             'roles.edit',
             'permissions.assign',
         ];
@@ -61,6 +65,25 @@ class RolesAndPermissionsSeeder extends Seeder
         $user = User::find(1);
         if ($user) {
             $user->syncPermissions(Permission::pluck('name')->toArray());
+        }
+
+        $masterUsers = User::role('master')->get();
+        $solarPermissions = [
+            'solar-interferences.view',
+            'solar-interferences.create',
+            'solar-interferences.edit',
+            'solar-interferences.delete',
+        ];
+
+        foreach ($masterUsers as $masterUser) {
+            if ($masterUser->id === 1) {
+                continue;
+            }
+            foreach ($solarPermissions as $permission) {
+                if (! $masterUser->hasPermissionTo($permission)) {
+                    $masterUser->givePermissionTo($permission);
+                }
+            }
         }
     }
 }

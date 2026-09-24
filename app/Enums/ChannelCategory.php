@@ -8,6 +8,6 @@ enum ChannelCategory: string
     case RADIO = 'Radio TV Channel';
     case LEARNING = 'Learning TV Channel';
     case STINGRAY = 'Stingray Music';
-    case FAST = "FAST";
+    case FAST = 'FAST';
     case RESTART_CUTV = 'RESTART/CUTV';
 }

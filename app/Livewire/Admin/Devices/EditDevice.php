@@ -2,25 +2,32 @@
 
 namespace App\Livewire\Admin\Devices;
 
+use App\Enums\DeviceDRM;
+use App\Enums\DeviceProtocol;
+use App\Models\Device;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Device;
-use App\Enums\DeviceProtocol;
-use App\Enums\DeviceDRM;
-use Illuminate\Validation\Rule;
 
 class EditDevice extends Component
 {
     use WithFileUploads;
 
     public Device $device;
+
     public $name;
+
     public $image_url;
+
     public $status = '';
+
     public $protocol = '';
+
     public $drm = '';
+
     public $area = 'OTT';
+
     public $store_url;
 
     public function mount(Device $device)
@@ -49,7 +56,7 @@ class EditDevice extends Component
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your update contains the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your update contains the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -63,17 +70,17 @@ class EditDevice extends Component
             'name' => 'required|string|max:255',
             'status' => 'required|in:1,0',
             'area' => 'required|string|in:OTT,DTH,DTH/OTT',
-            'protocol' => ['nullable','string', Rule::in(array_map(fn($c) => $c->value, DeviceProtocol::cases()))],
-            'drm' => ['nullable','string', Rule::in(array_map(fn($c) => $c->value, DeviceDRM::cases()))],
+            'protocol' => ['nullable', 'string', Rule::in(array_map(fn ($c) => $c->value, DeviceProtocol::cases()))],
+            'drm' => ['nullable', 'string', Rule::in(array_map(fn ($c) => $c->value, DeviceDRM::cases()))],
             'store_url' => 'nullable|url|max:2048',
             'image_url' => 'nullable|image|max:2048',
         ]);
 
         $imagePath = $this->device->image_url;
         if ($this->image_url && is_object($this->image_url)) {
-            $imageName = time() . '_' . $this->image_url->getClientOriginalName();
+            $imageName = time().'_'.$this->image_url->getClientOriginalName();
             $this->image_url->storeAs('devices', $imageName, 'public');
-            $newPath = 'devices/' . $imageName;
+            $newPath = 'devices/'.$imageName;
             if ($imagePath && $imagePath !== $newPath && Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }

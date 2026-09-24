@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Radio;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RadioController extends Controller
 {
@@ -41,10 +41,7 @@ class RadioController extends Controller
         return view('admin.radios.create');
     }
 
-    public function store(Request $request)
-    {
-
-    }
+    public function store(Request $request) {}
 
     public function show(Radio $radio)
     {
@@ -72,10 +69,7 @@ class RadioController extends Controller
         return view('admin.radios.edit', compact('radio'));
     }
 
-    public function update(Request $request, string $id)
-    {
-
-    }
+    public function update(Request $request, string $id) {}
 
     public function destroy(Radio $radio)
     {
@@ -93,6 +87,7 @@ class RadioController extends Controller
         }
 
         $radio->delete();
+
         return redirect()->route('admin.devices.index')->with('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),

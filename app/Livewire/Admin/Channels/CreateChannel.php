@@ -11,16 +11,27 @@ class CreateChannel extends Component
     use WithFileUploads;
 
     public $image_url;
+
     public $number;
+
     public $area = '';
+
     public $origin = '';
+
     public $name;
+
     public $url;
+
     public $category = '';
+
     public $audio_spanish_enabled;
+
     public $audio_english_enabled;
+
     public $subtitles_enabled;
+
     public $status = '';
+
     public $profiles = [];
 
     public function boot()
@@ -38,7 +49,7 @@ class CreateChannel extends Component
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => '¡Error!',
-                    'html' => '<b>' . __('Your registration for a new channel contains the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your registration for a new channel contains the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -76,12 +87,12 @@ class CreateChannel extends Component
             'status' => __('channel status'),
         ]);
 
-        $imageName = time() . '_' . $this->image_url->getClientOriginalName();
+        $imageName = time().'_'.$this->image_url->getClientOriginalName();
 
         $this->image_url->storeAs('channels', $imageName, 'public');
 
         $channel = Channel::create([
-            'image_url' => 'channels/' . $imageName,
+            'image_url' => 'channels/'.$imageName,
             'number' => $this->number,
             'area' => $this->area,
             'origin' => $this->origin,
@@ -92,13 +103,13 @@ class CreateChannel extends Component
             'audio_english_enabled' => $this->audio_english_enabled,
             'subtitles_enabled' => $this->subtitles_enabled,
             'status' => $this->status,
-            'profiles' => $this->profiles ?: null
+            'profiles' => $this->profiles ?: null,
         ]);
 
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('New channel created successfully.')
+            'text' => __('New channel created successfully.'),
         ]);
 
         return redirect()->route('admin.channels.show', $channel);

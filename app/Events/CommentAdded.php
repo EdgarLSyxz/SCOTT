@@ -3,10 +3,9 @@
 namespace App\Events;
 
 use App\Models\Comment;
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Queue\SerializesModels;
 
 class CommentAdded implements ShouldBroadcast
 {
@@ -21,6 +20,6 @@ class CommentAdded implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PrivateChannel('report.' . $this->comment->report_id);
+        return new PrivateChannel('report.'.$this->comment->report_id);
     }
 }

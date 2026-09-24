@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('radios')) {
+        if (! Schema::hasTable('radios')) {
             Schema::create('radios', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('name');
@@ -22,7 +22,7 @@ return new class extends Migration
                 $table->timestamps();
             });
         } else {
-            if (!Schema::hasColumn('radios', 'image_url')) {
+            if (! Schema::hasColumn('radios', 'image_url')) {
                 Schema::table('radios', function (Blueprint $table) {
                     $table->string('image_url')->nullable()->after('url');
                 });

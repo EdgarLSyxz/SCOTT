@@ -10,11 +10,17 @@ use Livewire\Component;
 class GrafanaRadios extends Component
 {
     public ?int $dashboardId = null;
+
     public string $mode = 'relative';
+
     public string $preset = '1h';
+
     public ?string $absoluteFrom = null;
+
     public ?string $absoluteTo = null;
+
     public string $theme = 'dark';
+
     public int $iframeRefreshKey = 0;
 
     public function mount(?int $dashboardId = null): void
@@ -43,24 +49,24 @@ class GrafanaRadios extends Component
         $urlWithoutQuery = 'http://172.16.126.169:3000/d-solo/adjqd2b/radio-stations';
 
         $params = [
-            'orgId'    => 3,
-            'from'     => $from,
-            'to'       => $to,
+            'orgId' => 3,
+            'from' => $from,
+            'to' => $to,
             'timezone' => 'browser',
-            'refresh'  => '5s',
-            'panelId'  => 'panel-1',
-            'theme'    => $this->theme,
+            'refresh' => '5s',
+            'panelId' => 'panel-1',
+            'theme' => $this->theme,
             '__feature.dashboardSceneSolo' => 'true',
         ];
 
         $params['_k'] = substr(md5(json_encode([$from, $to, $this->theme])), 0, 10);
 
-        return $urlWithoutQuery . '?' . http_build_query($params);
+        return $urlWithoutQuery.'?'.http_build_query($params);
     }
 
     public function getIframeKeyProperty(): string
     {
-        return 'grafana-radios-' . substr(md5($this->grafanaUrl), 0, 12) . '-' . $this->iframeRefreshKey;
+        return 'grafana-radios-'.substr(md5($this->grafanaUrl), 0, 12).'-'.$this->iframeRefreshKey;
     }
 
     public function updatedPreset(): void
@@ -82,7 +88,7 @@ class GrafanaRadios extends Component
 
     protected function toMillis(?string $dt): ?int
     {
-        if (!$dt) {
+        if (! $dt) {
             return null;
         }
 
@@ -111,5 +117,4 @@ class GrafanaRadios extends Component
             ->orderBy('id')
             ->first();
     }
-
 }

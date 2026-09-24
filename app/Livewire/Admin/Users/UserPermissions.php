@@ -3,23 +3,32 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
-use Livewire\Component;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Component;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserPermissions extends Component
 {
     public User $user;
+
     public $role;
+
     public $permissions = [];
+
     public $forbiddenPermissions = [];
+
     public $allRoles;
+
     public $allPermissions;
+
     public $canEditRoles;
+
     public $canEditPermissions;
+
     public $reportMails = [];
+
     public $hasSwitchAdmin = false;
 
     public function mount(User $user)
@@ -70,8 +79,8 @@ class UserPermissions extends Component
         $isTargetUser = $user->hasRole('user');
         $isSelf = $auth->id === $user->id;
 
-        $this->canEditRoles = $isAuthMaster && !$isSelf;
-        $this->canEditPermissions = ($isAuthMaster && !$isSelf) || ($isAuthAdmin && $isTargetUser && !$isSelf);
+        $this->canEditRoles = $isAuthMaster && ! $isSelf;
+        $this->canEditPermissions = ($isAuthMaster && ! $isSelf) || ($isAuthAdmin && $isTargetUser && ! $isSelf);
 
         $switchPerm = Permission::where('name', 'switches.admin')->first();
         $this->hasSwitchAdmin = $switchPerm ? $user->hasPermissionTo('switches.admin') : false;
@@ -103,18 +112,19 @@ class UserPermissions extends Component
 
         $canEditPreferences =
             ($isFirstMaster && $isSelf) ||
-            (!$isFirstMaster && (
+            (! $isFirstMaster && (
                 ($isAuthMaster) ||
                 ($isAuthAdmin && ($isTargetUser || $isSelf)) ||
                 ($isAuthUser && $isSelf)
             ));
 
-        if (!$canEditPreferences) {
+        if (! $canEditPreferences) {
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to update these preferences.'),
             ]);
+
             return;
         }
 
@@ -163,16 +173,17 @@ class UserPermissions extends Component
     public function toggleStatus()
     {
         $auth = auth()->user();
-        if (!($auth->id === 1 && $auth->hasRole('master'))) {
+        if (! ($auth->id === 1 && $auth->hasRole('master'))) {
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to change this status.'),
             ]);
+
             return;
         }
 
-        $this->user->status = !$this->user->status;
+        $this->user->status = ! $this->user->status;
         $this->user->remember_token = null;
         $this->user->save();
 
@@ -180,7 +191,8 @@ class UserPermissions extends Component
             if (Schema::hasTable('sessions')) {
                 DB::table('sessions')->where('user_id', $this->user->id)->delete();
             }
-        } catch (\Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
         $this->dispatch('swal', [
             'icon' => 'success',
@@ -191,8 +203,9 @@ class UserPermissions extends Component
 
     public function updatedRole($value)
     {
-        if (!$this->canEditPermissions)
+        if (! $this->canEditPermissions) {
             return;
+        }
 
         $this->applyRoleBasedPermissions($value);
     }
@@ -210,7 +223,7 @@ class UserPermissions extends Component
             $this->permissions = $this->allPermissions->pluck('name')->toArray();
         } else {
             $allowed = $this->allPermissions->filter(function ($perm) {
-                return !in_array($perm->name, $this->forbiddenPermissions);
+                return ! in_array($perm->name, $this->forbiddenPermissions);
             });
             $this->permissions = $allowed->pluck('name')->toArray();
         }
@@ -241,12 +254,13 @@ class UserPermissions extends Component
     {
         $auth = auth()->user();
 
-        if (!$this->canEditRoles && !$this->canEditPermissions) {
+        if (! $this->canEditRoles && ! $this->canEditPermissions) {
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Access denied'),
-                'text' => __('You are not authorized to perform this action.')
+                'text' => __('You are not authorized to perform this action.'),
             ]);
+
             return;
         }
 
@@ -283,11 +297,11 @@ class UserPermissions extends Component
             $this->dispatch('swal', [
                 'icon' => 'success',
                 'title' => __('Well done!'),
-                'text' => __('Permissions updated successfully.')
+                'text' => __('Permissions updated successfully.'),
             ]);
         } elseif ($auth->hasRole('admin') && $this->user->hasRole('user')) {
             $blocked = collect($forbidden['user']);
-            $filtered = $requestedPermissions->reject(fn($perm) => $blocked->contains($perm));
+            $filtered = $requestedPermissions->reject(fn ($perm) => $blocked->contains($perm));
 
             $this->user->syncPermissions($filtered);
 
@@ -308,6 +322,7 @@ class UserPermissions extends Component
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to send a password reset email to this user.'),
             ]);
+
             return;
         }
 
@@ -337,6 +352,7 @@ class UserPermissions extends Component
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to change this user area.'),
             ]);
+
             return;
         }
 
@@ -349,7 +365,7 @@ class UserPermissions extends Component
         $this->dispatch('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('User area changed to') . ' ' . $new . '.',
+            'text' => __('User area changed to').' '.$new.'.',
         ]);
 
         $this->dispatch('userAreaChanged', ['userId' => $this->user->id, 'area' => $new]);
@@ -365,6 +381,7 @@ class UserPermissions extends Component
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to change this setting.'),
             ]);
+
             return;
         }
 
@@ -388,6 +405,7 @@ class UserPermissions extends Component
                 'title' => __('Access denied'),
                 'text' => __('You are not authorized to change this setting.'),
             ]);
+
             return;
         }
 

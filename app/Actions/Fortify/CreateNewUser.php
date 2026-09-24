@@ -5,9 +5,9 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
-use Illuminate\Validation\ValidationException;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -22,7 +22,7 @@ class CreateNewUser implements CreatesNewUsers
     {
         $errors = [];
 
-        if (!str_ends_with($input['email'], '@stargroup.com.mx')) {
+        if (! str_ends_with($input['email'], '@stargroup.com.mx')) {
             $errors[] = __('Only emails with the @stargroup.com.mx domain are allowed.');
         }
 
@@ -37,7 +37,7 @@ class CreateNewUser implements CreatesNewUsers
             $errors = array_merge($errors, $validator->errors()->all());
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $errorMessages = '<ul style="list-style-type: disc; padding-left: 20px;">';
 
             foreach ($errors as $error) {
@@ -49,7 +49,7 @@ class CreateNewUser implements CreatesNewUsers
             session()->flash('swal', [
                 'icon' => 'error',
                 'title' => '¡Error!',
-                'html' => '<b>' . __('Your registration contains the following errors:') . '</b><br><br>' . $errorMessages,
+                'html' => '<b>'.__('Your registration contains the following errors:').'</b><br><br>'.$errorMessages,
             ]);
 
             throw ValidationException::withMessages(['errors' => $errors]);

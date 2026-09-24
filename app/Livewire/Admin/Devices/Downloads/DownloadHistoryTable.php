@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Admin\Devices\Downloads;
 
-use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\Download;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class DownloadHistoryTable extends Component
 {
@@ -17,10 +17,15 @@ class DownloadHistoryTable extends Component
     ];
 
     public $startDate;
+
     public $endDate;
+
     public $showDetailsModal = false;
+
     public $detailsYear;
+
     public $detailsMonth;
+
     public $detailsGrouped = [];
 
     public function resetFilters()
@@ -79,7 +84,7 @@ class DownloadHistoryTable extends Component
 
         if ($auth && $auth->id !== 1) {
             if ($viewerArea = $auth->area) {
-                $query->whereHas('device', fn($d) => $d->where('area', $viewerArea));
+                $query->whereHas('device', fn ($d) => $d->where('area', $viewerArea));
             } else {
                 $query->whereRaw('1 = 0');
             }
@@ -98,6 +103,7 @@ class DownloadHistoryTable extends Component
 
             $arr = $byDevice->map(function ($group, $deviceId) {
                 $first = $group->first();
+
                 return [
                     'device_id' => $deviceId,
                     'id' => $first->id,
@@ -124,8 +130,11 @@ class DownloadHistoryTable extends Component
                 }
                 if ($ra === 2 && $pa !== $pb) {
                     $cmp = strcmp($pa, $pb);
-                    if ($cmp !== 0) return $cmp;
+                    if ($cmp !== 0) {
+                        return $cmp;
+                    }
                 }
+
                 return strcmp($a['device_name'] ?? '', $b['device_name'] ?? '');
             });
 

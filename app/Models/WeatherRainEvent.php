@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class WeatherRainEvent extends Model
@@ -10,8 +9,11 @@ class WeatherRainEvent extends Model
     protected $table = 'weather_rain_events';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_SKIPPED = 'skipped';
 
     protected $fillable = [
@@ -52,6 +54,7 @@ class WeatherRainEvent extends Model
         if (! $this->rain_ended_at) {
             return null;
         }
+
         return (int) max(0, $this->rain_started_at->diffInMinutes($this->rain_ended_at));
     }
 
@@ -62,14 +65,15 @@ class WeatherRainEvent extends Model
             return '—';
         }
         if ($minutes < 60) {
-            return $minutes . ' min';
+            return $minutes.' min';
         }
         $hours = intdiv($minutes, 60);
         $remaining = $minutes % 60;
         if ($remaining === 0) {
-            return $hours . ' h';
+            return $hours.' h';
         }
-        return $hours . ' h ' . $remaining . ' min';
+
+        return $hours.' h '.$remaining.' min';
     }
 
     public static function getOpenEventForSite(string $site): ?self

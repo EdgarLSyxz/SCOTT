@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
@@ -20,7 +20,7 @@ class GoogleAuthController extends Controller
             $user_google = Socialite::driver('google')->user();
             $email = $user_google->getEmail();
 
-            if (!str_ends_with($email, '@stargroup.com.mx')) {
+            if (! str_ends_with($email, '@stargroup.com.mx')) {
                 return "<script>
                     window.opener.postMessage({ error: 'Only emails with the @stargroup.com.mx domain are allowed.' }, '*');
                     window.close();
@@ -37,7 +37,7 @@ class GoogleAuthController extends Controller
 
             if (
                 $user instanceof MustVerifyEmail &&
-                !$user->hasVerifiedEmail()
+                ! $user->hasVerifiedEmail()
             ) {
                 $user->sendEmailVerificationNotification();
             }
@@ -50,7 +50,7 @@ class GoogleAuthController extends Controller
             </script>";
         } catch (\Exception $e) {
             return "<script>
-                window.opener.postMessage({ error: 'An error occurred during Google authentication: " . $e->getMessage() . "' }, '*');
+                window.opener.postMessage({ error: 'An error occurred during Google authentication: ".$e->getMessage()."' }, '*');
                 window.close();
             </script>";
         }

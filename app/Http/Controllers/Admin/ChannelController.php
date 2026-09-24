@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ChannelController extends Controller
 {
@@ -19,9 +19,9 @@ class ChannelController extends Controller
     {
         $this->authorize('viewAny', Channel::class);
 
-        $channels = Channel::orderBy("id", "desc")->paginate(10);
+        $channels = Channel::orderBy('id', 'desc')->paginate(10);
 
-        return view("admin.channels.index", compact("channels"));
+        return view('admin.channels.index', compact('channels'));
     }
 
     /**
@@ -31,7 +31,7 @@ class ChannelController extends Controller
     {
         $this->authorize('create', Channel::class);
 
-        return view("admin.channels.create");
+        return view('admin.channels.create');
     }
 
     /**
@@ -47,7 +47,7 @@ class ChannelController extends Controller
      */
     public function show(Channel $channel)
     {
-        return view("admin.channels.show", compact("channel"));
+        return view('admin.channels.show', compact('channel'));
     }
 
     /**
@@ -57,7 +57,7 @@ class ChannelController extends Controller
     {
         $this->authorize('edit', $channel);
 
-        return view("admin.channels.edit", compact("channel"));
+        return view('admin.channels.edit', compact('channel'));
     }
 
     /**
@@ -84,7 +84,7 @@ class ChannelController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Channel deleted successfully.')
+            'text' => __('Channel deleted successfully.'),
         ]);
 
         return redirect()->route('admin.channels.index');

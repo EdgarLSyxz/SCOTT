@@ -66,7 +66,7 @@ class WeatherService
             return null;
         }
 
-        $cacheKey = 'weather:forecast:' . $site;
+        $cacheKey = 'weather:forecast:'.$site;
         $cacheTtl = self::CACHE_TTL_SECONDS;
 
         if ($forceRefresh) {
@@ -84,6 +84,7 @@ class WeatherService
         foreach ($sites as $site) {
             $result[$site] = $this->getForecast($site, $forceRefresh);
         }
+
         return $result;
     }
 
@@ -112,6 +113,7 @@ class WeatherService
                     'site' => $site,
                     'status' => $response->status(),
                 ]);
+
                 return null;
             }
 
@@ -121,6 +123,7 @@ class WeatherService
                     'site' => $site,
                     'payload' => $data,
                 ]);
+
                 return null;
             }
 
@@ -130,6 +133,7 @@ class WeatherService
                 'site' => $site,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -388,6 +392,7 @@ class WeatherService
         if ($precipSum < 10.0) {
             return 'moderate';
         }
+
         return 'heavy';
     }
 
@@ -402,6 +407,7 @@ class WeatherService
         if ($probability < 60) {
             return 'moderate';
         }
+
         return 'high';
     }
 
@@ -454,6 +460,7 @@ class WeatherService
         if ($radiation < 500) {
             return 'moderate';
         }
+
         return 'high';
     }
 
@@ -474,6 +481,7 @@ class WeatherService
         if ($uv < 11) {
             return 'very_high';
         }
+
         return 'extreme';
     }
 
@@ -494,6 +502,7 @@ class WeatherService
         if ($uv < 11) {
             return 'very_high';
         }
+
         return 'extreme';
     }
 

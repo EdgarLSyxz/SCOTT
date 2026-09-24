@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Admin\Users;
 
-use Livewire\Component;
 use App\Models\User;
+use Livewire\Component;
 
 class UserTable extends Component
 {
     public $areaFilter = 'all';
+
     public $statusFilter = 'active';
 
     protected $queryString = [
@@ -61,7 +62,7 @@ class UserTable extends Component
                 $filter = $this->areaFilter;
                 $query->where(function ($q) use ($filter) {
                     $q->where('default_area', $filter)
-                      ->orWhere('area', $filter);
+                        ->orWhere('area', $filter);
                 });
             }
 

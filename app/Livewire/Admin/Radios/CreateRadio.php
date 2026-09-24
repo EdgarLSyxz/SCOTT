@@ -2,19 +2,23 @@
 
 namespace App\Livewire\Admin\Radios;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use App\Models\Radio;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class CreateRadio extends Component
 {
     use WithFileUploads;
 
     public $name;
+
     public $url;
+
     public $image_url;
+
     public $status = '';
+
     public $area = 'DTH';
 
     public function boot()
@@ -32,7 +36,7 @@ class CreateRadio extends Component
                 $this->dispatchBrowserEvent('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your registration for a new radio contains the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your registration for a new radio contains the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -57,9 +61,9 @@ class CreateRadio extends Component
 
         $imagePath = null;
         if ($this->image_url) {
-            $imageName = time() . '_' . $this->image_url->getClientOriginalName();
+            $imageName = time().'_'.$this->image_url->getClientOriginalName();
             $this->image_url->storeAs('radios', $imageName, 'public');
-            $imagePath = 'radios/' . $imageName;
+            $imagePath = 'radios/'.$imageName;
         }
 
         $radio = Radio::create([

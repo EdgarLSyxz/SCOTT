@@ -44,6 +44,12 @@
             'active' => request()->routeIs('admin.radios.*'),
         ],
         [
+            'name' => __('Solar interferences'),
+            'icon' => 'fa-solid fa-sun',
+            'route' => route('admin.solar-interferences.index'),
+            'active' => request()->routeIs('admin.solar-interferences.*'),
+        ],
+        [
             'name' => __('modulators.modulators'),
             'icon' => 'fa-solid fa-right-left',
             'route' => route('admin.modulators.index'),

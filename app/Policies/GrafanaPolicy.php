@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\GrafanaPanel;
+use App\Models\User;
 
 class GrafanaPolicy
 {
@@ -16,7 +16,7 @@ class GrafanaPolicy
             'grafana.view',
             'grafana.create',
             'grafana.edit',
-            'grafana.delete'
+            'grafana.delete',
         ]) || $user->hasRole('admin');
     }
 

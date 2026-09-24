@@ -3,7 +3,6 @@
 namespace App\Enums;
 
 enum ChannelOrigin: string
-
 {
     case KU_01 = 'KU 01';
     case KU_03 = 'KU 03';

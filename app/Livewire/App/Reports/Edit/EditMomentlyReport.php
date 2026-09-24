@@ -2,24 +2,28 @@
 
 namespace App\Livewire\App\Reports\Edit;
 
+use App\Enums\MediaIssue;
 use App\Mail\Reports\ReportUpdatedMail;
+use App\Models\Channel;
 use App\Models\Report;
 use App\Models\ReportDetail;
 use App\Models\Stage;
-use App\Models\Channel;
-use Livewire\Component;
-use Illuminate\Validation\ValidationException;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use App\Models\User;
-use App\Enums\MediaIssue;
+use Illuminate\Validation\ValidationException;
+use Livewire\Component;
 
 class EditMomentlyReport extends Component
 {
     public $report;
+
     public $reportData = [];
+
     public $stages;
+
     public $protocols = ['HLS', 'DASH', 'HLS/DASH'];
+
     public $mediaOptions = [];
 
     public function mount(Report $report)
@@ -38,7 +42,7 @@ class EditMomentlyReport extends Component
         $userArea = $report->area ?? Report::AREA_OTT;
 
         $this->stages = Stage::where('status', '1')
-            ->when($userArea, fn($q) => $q->where('area', $userArea))
+            ->when($userArea, fn ($q) => $q->where('area', $userArea))
             ->get();
 
         $this->reportData = [
@@ -46,6 +50,7 @@ class EditMomentlyReport extends Component
             'reviewed_by' => $report->reviewed_by,
             'channels' => $report->reportDetails->map(function ($detail) {
                 $channel = $detail->channel;
+
                 return [
                     'channel_id' => $detail->channel_id,
                     'stage' => $detail->stage_id,
@@ -137,7 +142,7 @@ class EditMomentlyReport extends Component
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => __('Error'),
-                'html' => '<b>' . __('Your report update contains errors:') . '</b><br><br>' . $errorMessages,
+                'html' => '<b>'.__('Your report update contains errors:').'</b><br><br>'.$errorMessages,
             ]);
         }
     }
@@ -156,14 +161,14 @@ class EditMomentlyReport extends Component
         $conflictingChannels = ReportDetail::where('status', 'Revision')
             ->whereNot('report_id', $this->report->id)
             ->whereIn('channel_id', $channelIds)
-            ->whereHas('report', fn($q) => $q->where('area', $userArea))
+            ->whereHas('report', fn ($q) => $q->where('area', $userArea))
             ->pluck('channel_id')
             ->unique();
 
         if ($conflictingChannels->isNotEmpty()) {
             $conflictNames = Channel::whereIn('id', $conflictingChannels)->pluck('name')->implode(', ');
             throw ValidationException::withMessages([
-                'reportData.channels' => [__('These channels are already in revision: ') . $conflictNames],
+                'reportData.channels' => [__('These channels are already in revision: ').$conflictNames],
             ]);
         }
 
@@ -174,7 +179,7 @@ class EditMomentlyReport extends Component
         ], [], [
             'reportData.category' => __('category name'),
             'reportData.reviewed_by' => __('reviewed by'),
-            'reportData.channels' => __('channels')
+            'reportData.channels' => __('channels'),
         ]);
 
         $userArea = $this->report->area ?? Report::AREA_OTT;
@@ -182,18 +187,18 @@ class EditMomentlyReport extends Component
         foreach ($this->reportData['channels'] as $index => $channel) {
             $protocolRule = $userArea === Report::AREA_DTH
                 ? 'nullable'
-                : 'required|in:' . implode(',', $this->protocols);
+                : 'required|in:'.implode(',', $this->protocols);
 
             $this->validate([
                 "reportData.channels.$index.channel_id" => 'required|exists:channels,id',
                 "reportData.channels.$index.stage" => [
                     'required',
                     Rule::exists('stages', 'id')->where(function ($query) use ($userArea) {
-                        $query->where('status', '1')->when($userArea, fn($q) => $q->where('area', $userArea));
+                        $query->where('status', '1')->when($userArea, fn ($q) => $q->where('area', $userArea));
                     }),
                 ],
                 "reportData.channels.$index.protocol" => $protocolRule,
-                "reportData.channels.$index.media" => 'required|in:' . implode(',', array_keys($this->mediaOptions)),
+                "reportData.channels.$index.media" => 'required|in:'.implode(',', array_keys($this->mediaOptions)),
                 "reportData.channels.$index.description" => 'required|string',
             ], [], [
                 "reportData.channels.$index.channel_id" => __('channel'),

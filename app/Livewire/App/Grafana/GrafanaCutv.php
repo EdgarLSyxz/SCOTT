@@ -1,21 +1,30 @@
 <?php
+
 namespace App\Livewire\App\Grafana;
 
-use Livewire\Component;
 use App\Models\Channel;
 use App\Models\GrafanaPanel;
 use Carbon\Carbon;
+use Livewire\Component;
 
 class GrafanaCutv extends Component
 {
     public $channels = [];
+
     public $selectedChannel = null;
+
     public $mode = 'relative';
+
     public $preset = '1h';
+
     public $absoluteFrom = null;
+
     public $absoluteTo = null;
+
     public $theme = 'dark';
+
     public $iframeRefreshKey = 0;
+
     public $channelPanelIds = [];
 
     public function mount()
@@ -83,28 +92,28 @@ class GrafanaCutv extends Component
         }
 
         $params = [
-            "orgId" => 3,
-            "timezone" => "browser",
-            "refresh" => "5s",
-            "theme" => $this->theme,
-            "panelId" => $panelId,
-            "from" => $from,
-            "to" => $to,
-            "__feature.dashboardSceneSolo" => "true",
+            'orgId' => 3,
+            'timezone' => 'browser',
+            'refresh' => '5s',
+            'theme' => $this->theme,
+            'panelId' => $panelId,
+            'from' => $from,
+            'to' => $to,
+            '__feature.dashboardSceneSolo' => 'true',
         ];
 
         if ($this->selectedChannel) {
-            $params["var-canal"] = $this->selectedChannel;
+            $params['var-canal'] = $this->selectedChannel;
         }
 
-        $params["_k"] = substr(md5(json_encode([$from, $to, $this->selectedChannel, $panelId])), 0, 10);
+        $params['_k'] = substr(md5(json_encode([$from, $to, $this->selectedChannel, $panelId])), 0, 10);
 
-        return $base . "?" . http_build_query($params);
+        return $base.'?'.http_build_query($params);
     }
 
     public function getIframeKeyProperty()
     {
-        return 'grafana-' . substr(md5($this->grafanaUrl), 0, 12) . '-' . $this->iframeRefreshKey;
+        return 'grafana-'.substr(md5($this->grafanaUrl), 0, 12).'-'.$this->iframeRefreshKey;
     }
 
     public function updatedPreset()
@@ -115,7 +124,7 @@ class GrafanaCutv extends Component
     protected function resolveTimeParams(): array
     {
         if ($this->mode === 'relative') {
-            return ["now-{$this->preset}", "now"];
+            return ["now-{$this->preset}", 'now'];
         }
 
         $fromMs = $this->toMillis($this->absoluteFrom) ?? now()->subHour()->getTimestampMs();
@@ -126,8 +135,9 @@ class GrafanaCutv extends Component
 
     protected function toMillis(?string $dt): ?int
     {
-        if (!$dt)
+        if (! $dt) {
             return null;
+        }
         try {
             return Carbon::parse($dt)->getTimestampMs();
         } catch (\Throwable $e) {

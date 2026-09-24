@@ -11,12 +11,19 @@ class DownloadsExcelMail extends Mailable
     use Queueable, SerializesModels;
 
     public $subjectText;
+
     public $bodyText;
+
     protected $attachment;
+
     protected $filename;
+
     public $meta;
+
     protected $pdfAttachment;
+
     protected $pdfFilename;
+
     protected $attachmentIsPath;
 
     public function __construct(
@@ -28,8 +35,7 @@ class DownloadsExcelMail extends Mailable
         ?string $pdfAttachment = null,
         ?string $pdfFilename = null,
         bool $attachmentIsPath = false
-    )
-    {
+    ) {
         $this->subjectText = $subjectText;
         $this->bodyText = $bodyText;
         $this->attachment = $attachment;

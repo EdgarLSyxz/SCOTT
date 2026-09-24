@@ -14,9 +14,13 @@ class ReportResolvedMail extends Mailable
     use Queueable, SerializesModels;
 
     public $report;
+
     public $channels;
+
     public $reportedBy;
+
     public $resolvedBy;
+
     public $attendedBy;
 
     /**
@@ -39,7 +43,7 @@ class ReportResolvedMail extends Mailable
         $area = strtoupper($this->report->area ?? '');
         $prefix = $area ? "[{$area}] " : '';
 
-        $subject = '✅ ' . $prefix . __('Report Resolved Notification');
+        $subject = '✅ '.$prefix.__('Report Resolved Notification');
 
         return new Envelope(
             subject: $subject,

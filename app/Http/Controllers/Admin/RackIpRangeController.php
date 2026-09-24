@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Rack;
 use App\Models\RackIpRange;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RackIpRangeController extends Controller
 {
@@ -161,6 +161,7 @@ class RackIpRangeController extends Controller
         ];
         $validated = $request->validate($rules, [], $attrs);
         $validated['is_active'] = $request->boolean('is_active', true);
+
         return $validated;
     }
 }

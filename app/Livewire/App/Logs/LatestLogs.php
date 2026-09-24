@@ -2,13 +2,14 @@
 
 namespace App\Livewire\App\Logs;
 
-use Livewire\Component;
-use App\Models\Issue;
 use App\Models\Channel;
+use App\Models\Issue;
+use Livewire\Component;
 
 class LatestLogs extends Component
 {
     public $logs = [];
+
     public $latestIssueId = 0;
 
     public function mount()
@@ -31,6 +32,7 @@ class LatestLogs extends Component
             if (is_string($originalChannel) && preg_match('/^(\d+)/', $originalChannel, $matches)) {
                 return $matches[1];
             }
+
             return null;
         })->filter()->unique()->values()->all();
 
@@ -47,10 +49,10 @@ class LatestLogs extends Component
             $channelImage = null;
             if ($channelNumber && $channels->has($channelNumber)) {
                 $channel = $channels->get($channelNumber);
-                if (!empty($channel->image)) {
+                if (! empty($channel->image)) {
                     $channelImage = $channel->image;
                 }
-                if (!empty($channel->name)) {
+                if (! empty($channel->name)) {
                     $channelName = $channel->name;
                 }
             }
@@ -71,6 +73,7 @@ class LatestLogs extends Component
                     return false;
                 }
             }
+
             return true;
         })->values()->toArray();
     }
@@ -123,7 +126,7 @@ class LatestLogs extends Component
 
         $type = strtoupper((string) ($issue->issueType ?? ''));
 
-        return !in_array($type, ['CUTV_EU', 'CUTV_OR'], true);
+        return ! in_array($type, ['CUTV_EU', 'CUTV_OR'], true);
     }
 
     public function render()

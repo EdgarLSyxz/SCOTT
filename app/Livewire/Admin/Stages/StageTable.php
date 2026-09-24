@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Admin\Stages;
 
+use App\Models\Stage;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Stage;
 
 class StageTable extends Component
 {

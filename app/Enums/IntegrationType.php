@@ -9,7 +9,7 @@ enum IntegrationType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::Grafana => __('Grafana'),
             self::API => __('API'),
         };

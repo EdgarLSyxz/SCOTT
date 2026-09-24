@@ -10,7 +10,9 @@ use Livewire\Component;
 class EmergencyPowerTracker extends Component
 {
     public string $powerSource = 'CFE';
+
     public string $notes = '';
+
     private const FUEL_ALERT_HOURS = 8;
 
     public function mount(): void

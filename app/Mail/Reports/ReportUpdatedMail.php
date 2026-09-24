@@ -2,18 +2,19 @@
 
 namespace App\Mail\Reports;
 
+use App\Models\Report;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Report;
 
 class ReportUpdatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $report;
+
     public $reportedBy;
 
     /**
@@ -33,7 +34,7 @@ class ReportUpdatedMail extends Mailable
         $area = strtoupper($this->report->area ?? '');
         $prefix = $area ? "[{$area}] " : '';
 
-        $subject = '📢 ' . $prefix . __('Report Updated');
+        $subject = '📢 '.$prefix.__('Report Updated');
 
         return new Envelope(
             subject: $subject,

@@ -56,7 +56,7 @@ class LogAnalytic extends Model
                 'd-m-Y H:i:s', 'd-m-Y H:i', 'd-m-Y',
                 'd.m.Y H:i:s', 'd.m.Y H:i', 'd.m.Y',
                 'Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d',
-                'm/d/Y H:i:s', 'm/d/Y', 'Y/m/d H:i:s', 'Y/m/d'
+                'm/d/Y H:i:s', 'm/d/Y', 'Y/m/d H:i:s', 'Y/m/d',
             ];
 
             foreach ($formats as $fmt) {

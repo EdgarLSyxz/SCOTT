@@ -2,23 +2,29 @@
 
 namespace App\Livewire\Admin\Devices;
 
+use App\Enums\DeviceDRM;
+use App\Enums\DeviceProtocol;
+use App\Models\Device;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Device;
-use App\Enums\DeviceProtocol;
-use App\Enums\DeviceDRM;
-use Illuminate\Validation\Rule;
 
 class CreateDevice extends Component
 {
     use WithFileUploads;
 
     public $name;
+
     public $image_url;
+
     public $status = '';
+
     public $protocol = '';
+
     public $drm = '';
+
     public $area = 'OTT';
+
     public $store_url;
 
     public function boot()
@@ -36,7 +42,7 @@ class CreateDevice extends Component
                 $this->dispatch('swal', [
                     'icon' => 'error',
                     'title' => __('Error'),
-                    'html' => '<b>' . __('Your registration for a new device contains the following errors:') . '</b><br><br>' . $errorMessages,
+                    'html' => '<b>'.__('Your registration for a new device contains the following errors:').'</b><br><br>'.$errorMessages,
                 ]);
             }
         });
@@ -50,8 +56,8 @@ class CreateDevice extends Component
             'name' => 'required|string|max:255',
             'status' => 'required|in:1,0',
             'area' => 'required|string|in:OTT,DTH,DTH/OTT',
-            'protocol' => ['nullable','string', Rule::in(array_map(fn($c) => $c->value, DeviceProtocol::cases()))],
-            'drm' => ['nullable','string', Rule::in(array_map(fn($c) => $c->value, DeviceDRM::cases()))],
+            'protocol' => ['nullable', 'string', Rule::in(array_map(fn ($c) => $c->value, DeviceProtocol::cases()))],
+            'drm' => ['nullable', 'string', Rule::in(array_map(fn ($c) => $c->value, DeviceDRM::cases()))],
             'store_url' => 'nullable|url|max:2048',
             'image_url' => 'nullable|image|max:2048',
         ], [], [
@@ -64,9 +70,9 @@ class CreateDevice extends Component
 
         $imagePath = null;
         if ($this->image_url) {
-            $imageName = time() . '_' . $this->image_url->getClientOriginalName();
+            $imageName = time().'_'.$this->image_url->getClientOriginalName();
             $this->image_url->storeAs('devices', $imageName, 'public');
-            $imagePath = 'devices/' . $imageName;
+            $imagePath = 'devices/'.$imageName;
         }
 
         $device = Device::create([
@@ -93,4 +99,3 @@ class CreateDevice extends Component
         return view('livewire.admin.devices.create-device');
     }
 }
-

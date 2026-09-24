@@ -2,17 +2,22 @@
 
 namespace App\Livewire\Admin\Devices\Downloads;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\DB;
 use App\Models\Device;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class DownloadGraph extends Component
 {
     public $selectedYear;
+
     public $monthlyData = [];
+
     public $kpis = [];
+
     public $monthlyDeviceData = [];
+
     public $devices;
+
     public $selectedDevice = null;
 
     public function render()
@@ -27,7 +32,7 @@ class DownloadGraph extends Component
             : (strtolower((string) $year) === 'all' ? 'all' : (int) $year);
         try {
             $this->devices = DB::table('devices')
-                ->select('id','name')
+                ->select('id', 'name')
                 ->whereNotIn('name', ['Web Client', 'Android Mobile', 'Android TV'])
                 ->orderBy('name')
                 ->get();
@@ -54,7 +59,9 @@ class DownloadGraph extends Component
                 ->selectRaw('month, SUM(`count`) as total')
                 ->groupBy('month')
                 ->get()
-                ->keyBy(function ($item) { return (int) $item->month; });
+                ->keyBy(function ($item) {
+                    return (int) $item->month;
+                });
         } catch (\Exception $e) {
             $rows = collect();
         }
@@ -83,16 +90,17 @@ class DownloadGraph extends Component
 
         try {
             $this->loadDeviceData();
-        } catch (\Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
-        if (!empty($this->monthlyDeviceData) && is_iterable($this->monthlyDeviceData)) {
+        if (! empty($this->monthlyDeviceData) && is_iterable($this->monthlyDeviceData)) {
             $top = collect($this->monthlyDeviceData)->sortByDesc('total')->first();
             if ($top) {
                 $deviceName = $top->name ?? ($top->device_id ?? '—');
                 $deviceTotal = isset($top->total) ? (int) $top->total : 0;
                 $topDeviceImage = null;
                 try {
-                    if (!empty($top->device_id)) {
+                    if (! empty($top->device_id)) {
                         $dev = Device::find($top->device_id);
                         if ($dev) {
                             $topDeviceImage = $dev->image ?? null;
@@ -218,7 +226,7 @@ class DownloadGraph extends Component
             $devices = [];
             foreach ($rows as $r) {
                 $did = $r->device_id;
-                if (!isset($devices[$did])) {
+                if (! isset($devices[$did])) {
                     $devices[$did] = [
                         'id' => $did,
                         'name' => $r->name,
@@ -227,7 +235,9 @@ class DownloadGraph extends Component
                     ];
                 }
                 $idx = intval($r->month) - 1;
-                if ($idx >= 0 && $idx < 12) $devices[$did]['months'][$idx] = (int)$r->total;
+                if ($idx >= 0 && $idx < 12) {
+                    $devices[$did]['months'][$idx] = (int) $r->total;
+                }
             }
 
             $devicesList = [];
@@ -244,16 +254,18 @@ class DownloadGraph extends Component
                 $topValue = $counts[$topIndex] ?? 0;
 
                 $max = max($counts) ?: 1;
-                $w = 260; $h = 48; $pad = 6;
+                $w = 260;
+                $h = 48;
+                $pad = 6;
                 $pts = [];
                 $n = count($counts);
                 for ($i = 0; $i < $n; $i++) {
                     $x = $pad + ($i * ($w - $pad * 2) / max(1, $n - 1));
                     $y = $h - $pad - (($counts[$i] / $max) * ($h - $pad * 2));
-                    $pts[] = round($x,1) . ',' . round($y,1);
+                    $pts[] = round($x, 1).','.round($y, 1);
                 }
                 $points = implode(' ', $pts);
-                $svg = '<svg width="' . $w . '" height="' . $h . '" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#0f6fec" stroke-width="2" points="' . $points . '"/></svg>';
+                $svg = '<svg width="'.$w.'" height="'.$h.'" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#0f6fec" stroke-width="2" points="'.$points.'"/></svg>';
 
                 $devicesList[] = [
                     'id' => $dev['id'],
@@ -357,9 +369,13 @@ class DownloadGraph extends Component
 
             $payload['grouped_by_device'] = $groupedByDevice;
             $payload['grouped_by_month'] = $groupedByMonth;
-        } catch (\Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
-        try { $this->dispatch('downloads-updated', $payload); } catch (\Exception $e) {}
+        try {
+            $this->dispatch('downloads-updated', $payload);
+        } catch (\Exception $e) {
+        }
     }
 
     public function loadDeviceData()

@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Rack;
 use App\Models\RackEquipment;
 use App\Models\RackEquipmentHistory;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RackLayoutController extends Controller
 {
@@ -92,7 +92,7 @@ class RackLayoutController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Rack created successfully.')
+            'text' => __('Rack created successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.show', $rack);
@@ -175,7 +175,7 @@ class RackLayoutController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Rack updated successfully.')
+            'text' => __('Rack updated successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.show', $rack);
@@ -217,7 +217,7 @@ class RackLayoutController extends Controller
             'installation_date' => 'nullable|date',
             'notes' => 'nullable|string|max:2000',
             'color' => ['nullable', Rule::in(array_keys($this->getColorChoices()))],
-            'size_u' => 'required|integer|min:1|max:' . $rack->total_units,
+            'size_u' => 'required|integer|min:1|max:'.$rack->total_units,
             'image_url' => 'nullable|image',
             'remove_image' => 'nullable|boolean',
         ], [], [
@@ -306,12 +306,12 @@ class RackLayoutController extends Controller
             $finalImagePath = null;
         } elseif ($request->hasFile('image_url')) {
             $file = $request->file('image_url');
-            $imageName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $imageName = time().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
             if ($equipment->image_url && Storage::disk('public')->exists($equipment->image_url)) {
                 Storage::disk('public')->delete($equipment->image_url);
             }
             $file->storeAs('rack_equipment', $imageName, 'public');
-            $finalImagePath = 'rack_equipment/' . $imageName;
+            $finalImagePath = 'rack_equipment/'.$imageName;
         }
 
         if ($finalImagePath !== $equipment->image_url) {
@@ -322,7 +322,7 @@ class RackLayoutController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Equipment updated successfully.')
+            'text' => __('Equipment updated successfully.'),
         ]);
 
         return redirect()->route('admin.rack-layout.show', $rack);
@@ -347,7 +347,7 @@ class RackLayoutController extends Controller
         session()->flash('swal', [
             'icon' => 'success',
             'title' => __('Well done!'),
-            'text' => __('Equipment cleared from position.')
+            'text' => __('Equipment cleared from position.'),
         ]);
 
         return redirect()->route('admin.rack-layout.show', $rack);
@@ -448,16 +448,16 @@ class RackLayoutController extends Controller
             'positions' => $positions,
         ])->render();
 
-        $dompdf = new \Dompdf\Dompdf();
+        $dompdf = new \Dompdf\Dompdf;
         $dompdf->loadHtml($html);
         $dompdf->setPaper('a4', 'portrait');
         $dompdf->render();
 
-        $filename = 'Rack-' . preg_replace('/\s+/', '-', $rack->name) . '-' . now()->format('Ymd') . '.pdf';
+        $filename = 'Rack-'.preg_replace('/\s+/', '-', $rack->name).'-'.now()->format('Ymd').'.pdf';
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 

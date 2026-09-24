@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Device;
 use App\Models\Package;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class DeviceController extends Controller
 {
@@ -43,10 +42,7 @@ class DeviceController extends Controller
         return view('admin.devices.create');
     }
 
-    public function store(Request $request)
-    {
-
-    }
+    public function store(Request $request) {}
 
     public function show(Device $device)
     {
@@ -66,10 +62,7 @@ class DeviceController extends Controller
         return view('admin.devices.edit', compact('device'));
     }
 
-    public function update(Request $request, string $id)
-    {
-
-    }
+    public function update(Request $request, string $id) {}
 
     public function destroy(Device $device)
     {
@@ -153,7 +146,7 @@ class DeviceController extends Controller
             'php_files_info' => $phpFilesInfo,
             'php_ini_upload_max' => ini_get('upload_max_filesize'),
             'php_ini_post_max' => ini_get('post_max_size'),
-            'files_array_content' => array_map(function($file) {
+            'files_array_content' => array_map(function ($file) {
                 if (is_object($file)) {
                     return [
                         'class' => get_class($file),
@@ -161,7 +154,8 @@ class DeviceController extends Controller
                         'size' => method_exists($file, 'getSize') ? $file->getSize() : 'N/A',
                     ];
                 }
-                return ['type' => gettype($file), 'value' => (string)$file];
+
+                return ['type' => gettype($file), 'value' => (string) $file];
             }, $request->files->all()),
         ]);
 
@@ -170,18 +164,19 @@ class DeviceController extends Controller
             $uploadedFile = $request->file($fileInputName);
         }
 
-        if (!$uploadedFile) {
+        if (! $uploadedFile) {
             \Log::warning('processTXT no file received', [
                 'user_id' => $userId,
                 'has_files' => $request->hasFile($fileInputName),
                 'all_files' => array_keys($request->files->all()),
                 'php_files_info' => $phpFilesInfo,
             ]);
+
             return response()->json(['success' => false, 'message' => 'No txt_file found in request.'], 422);
         }
 
         $originalName = (string) $uploadedFile->getClientOriginalName();
-        if (!str_ends_with(strtolower($originalName), '.txt')) {
+        if (! str_ends_with(strtolower($originalName), '.txt')) {
             return response()->json(['success' => false, 'message' => 'Only TXT files allowed'], 422);
         }
 
@@ -218,13 +213,13 @@ class DeviceController extends Controller
             }
 
             try {
-                $package = new Package();
+                $package = new Package;
                 $package->user_id = $user->id;
                 $package->filename = $uploadedFile->getClientOriginalName();
                 $package->data = $pythonResponse['packages'] ?? $pythonResponse;
                 $package->save();
             } catch (\Exception $e) {
-                \Log::warning('Failed to save package data: ' . $e->getMessage());
+                \Log::warning('Failed to save package data: '.$e->getMessage());
             }
 
             return response()->json($pythonResponse);
@@ -240,7 +235,7 @@ class DeviceController extends Controller
     {
         try {
             $pythonUrl = config('services.python_packages_api.url', 'http://172.16.126.166:8000');
-            $endpoint = rtrim($pythonUrl, '/') . '/api/process-txt';
+            $endpoint = rtrim($pythonUrl, '/').'/api/process-txt';
 
             \Log::info('callPythonAPI start', [
                 'endpoint' => $endpoint,
@@ -248,7 +243,7 @@ class DeviceController extends Controller
                 'realpath' => $uploadedFile ? $uploadedFile->getRealPath() : null,
             ]);
 
-            $client = new \GuzzleHttp\Client();
+            $client = new \GuzzleHttp\Client;
 
             $response = $client->post($endpoint, [
                 'multipart' => [
@@ -262,7 +257,7 @@ class DeviceController extends Controller
             ]);
 
             \Log::info('callPythonAPI response status', ['status' => $response->getStatusCode()]);
-            \Log::info('callPythonAPI response body (truncated)', ['body' => substr((string)$response->getBody(), 0, 400)]);
+            \Log::info('callPythonAPI response body (truncated)', ['body' => substr((string) $response->getBody(), 0, 400)]);
 
             $status = $response->getStatusCode();
             $body = (string) $response->getBody();
@@ -271,7 +266,7 @@ class DeviceController extends Controller
                 return json_decode($body, true);
             }
 
-            \Log::error('Python API Returned non-2xx: ' . $status . ' body: ' . $body);
+            \Log::error('Python API Returned non-2xx: '.$status.' body: '.$body);
 
             return [
                 'success' => false,
@@ -309,6 +304,7 @@ class DeviceController extends Controller
             UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
             UPLOAD_ERR_EXTENSION => 'Upload stopped by PHP extension',
         ];
+
         return $errorMessages[$errorCode] ?? 'Unknown error';
     }
 

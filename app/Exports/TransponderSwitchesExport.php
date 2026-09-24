@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class TransponderSwitchesExport implements FromCollection, WithHeadings, ShouldAutoSize
+class TransponderSwitchesExport implements FromCollection, ShouldAutoSize, WithHeadings
 {
     /**
      * Return a collection of rows to export.

@@ -10,6 +10,7 @@ use Livewire\Component;
 class TransponderTracker extends Component
 {
     public string $upLinkSite = 'Zacatecas';
+
     public string $transponders = 'KU01, KU03, KU05, KU07, KU09, KU11';
 
     protected array $allowedSites = ['Zacatecas', 'Iztapalapa', 'Distribuido'];

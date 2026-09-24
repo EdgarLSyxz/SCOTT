@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Download;
-use App\Models\DeviceStoreAvailability;
 
 class Device extends Model
 {
@@ -37,7 +35,7 @@ class Device extends Model
     protected function image(): Attribute
     {
         return Attribute::make(
-            get: fn() => Storage::url($this->image_url),
+            get: fn () => Storage::url($this->image_url),
         );
     }
 
