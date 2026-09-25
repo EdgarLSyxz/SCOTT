@@ -144,8 +144,13 @@ class SolarInterferencesModal extends Component
             $this->groupedEvents = $grouped;
             $this->orderedDates = $ordered;
             $this->todayHasData = ! empty($todayEvents);
-            $this->totalEvents = $events->count();
-            $this->totalChannels = $events->pluck('channel_name')->filter()->unique()->count();
+            $this->totalEvents = collect($grouped)->flatten(1)->count();
+            $this->totalChannels = collect($grouped)
+                ->flatten(1)
+                ->pluck('channel_name')
+                ->filter()
+                ->unique()
+                ->count();
             $this->loadedAt = time();
 
             if ($this->todayHasData) {

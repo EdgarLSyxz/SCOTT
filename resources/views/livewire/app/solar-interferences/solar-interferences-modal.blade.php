@@ -20,7 +20,7 @@
                                 <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i>
                                 {{ $activeDocumentName }}
                                 · <i class="fa-solid fa-tv mr-1 text-rose-500"></i>
-                                {{ number_format($totalChannels) }} {{ trans_choice('Channel|Channels', $totalChannels) }}
+                                {{ number_format($totalChannels) }} {{ __(trans_choice('Channel|Channels', $totalChannels)) }}
                             </p>
                         </div>
                         <button type="button" @click="$wire.closeModal()"
@@ -50,10 +50,6 @@
                                             </span>
                                         </h4>
                                     </div>
-                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-amber-500 text-white">
-                                        <i class="fa-solid fa-bolt mr-1"></i>
-                                        {{ __('Focus') }}
-                                    </span>
                                 </div>
 
                                 <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30">
