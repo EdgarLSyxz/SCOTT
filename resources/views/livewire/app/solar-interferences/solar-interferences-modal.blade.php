@@ -2,7 +2,8 @@
     @if ($open && $activeDocumentName)
         <div class="fixed inset-0 z-[9999] overflow-y-auto"
             aria-labelledby="solar-modal-title-global" role="dialog" aria-modal="true"
-            x-data
+            x-data="{ focusToday() { const el = document.getElementById('solar-today-section'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } }"
+            x-init="$wire.on('solar-focus-today', () => focusToday())"
             @keydown.escape.window="$wire.closeModal()">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
                 <div class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 transition-opacity" @click="$wire.closeModal()"></div>
@@ -19,9 +20,7 @@
                                 <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i>
                                 {{ $activeDocumentName }}
                                 · <i class="fa-solid fa-tv mr-1 text-rose-500"></i>
-                                {{ number_format($totalChannels) }} {{ trans_choice('channel|channels', $totalChannels) }}
-                                · <i class="fa-solid fa-list mr-1"></i>
-                                {{ number_format($totalEvents) }} {{ trans_choice('event|events', $totalEvents) }}
+                                {{ number_format($totalChannels) }} {{ trans_choice('Channel|Channels', $totalChannels) }}
                             </p>
                         </div>
                         <button type="button" @click="$wire.closeModal()"
@@ -40,14 +39,14 @@
                         </div>
                     @else
                         @if ($todayHasData)
-                            <div class="mb-5 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10 shadow-lg overflow-hidden">
+                            <div id="solar-today-section" class="mb-5 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10 shadow-lg overflow-hidden">
                                 <div class="px-4 py-3 bg-amber-500/10 dark:bg-amber-500/20 border-b border-amber-300/40 dark:border-amber-700/40 flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-sun text-amber-500 animate-pulse"></i>
                                         <h4 class="font-bold text-amber-900 dark:text-amber-100">
                                             {{ __('Today') }}
                                             <span class="font-normal text-amber-700 dark:text-amber-300">·
-                                                {{ \Carbon\Carbon::parse($today)->translatedFormat('l, d \\d\\e F') }}
+                                                {{ ucfirst(\Carbon\Carbon::parse($today)->translatedFormat('l, d \\d\\e F')) }}
                                             </span>
                                         </h4>
                                     </div>
@@ -57,7 +56,7 @@
                                     </span>
                                 </div>
 
-                                <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30 max-h-[320px] overflow-y-auto">
+                                <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30">
                                     @foreach ($todayEvents as $event)
                                         @php
                                             $resolved = $event['channel'];
@@ -66,7 +65,7 @@
                                             $logoUrl = !empty($resolved['image_url']) ? asset('storage/' . $resolved['image_url']) : null;
                                             $section = $event['section'] ?? null;
                                         @endphp
-                                        <li class="px-4 py-3 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
+                                        <li class="px-4 py-4 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
                                             @if ($logoUrl)
                                                 <img src="{{ $logoUrl }}"
                                                     alt="{{ $resolved['name'] }}"
@@ -118,14 +117,14 @@
                             </div>
                         @endif
 
-                        <div class="max-h-[40vh] overflow-y-auto pr-2 -mr-2">
+                        <div class="pr-2 -mr-2">
                             <h5 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 px-1 flex items-center gap-2">
                                 <i class="fa-solid fa-calendar-week"></i>
                                 {{ __('Upcoming & recent events') }}
                             </h5>
 
                             @php
-                                $displayedDates = array_keys($groupedEvents);
+                                $displayedDates = $orderedDates ?? [];
                             @endphp
 
                             @forelse ($displayedDates as $date)
@@ -133,7 +132,7 @@
                                     @continue
                                 @endif
                                 @php
-                                    $dayEvents = $groupedEvents[$date];
+                                    $dayEvents = $groupedEvents[$date] ?? [];
                                     if (empty($dayEvents)) {
                                         continue;
                                     }
@@ -146,7 +145,7 @@
                                         <div class="flex items-center gap-2">
                                             <i class="fa-solid fa-calendar-day text-gray-500 dark:text-gray-400 text-sm"></i>
                                             <h6 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                                {{ $carbonDate->translatedFormat('l, d \\d\\e F') }}
+                                                {{ ucfirst($carbonDate->translatedFormat('l, d \\d\\e F')) }}
                                             </h6>
                                             @if ($isPast)
                                                 <span class="inline-flex items-center px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -159,7 +158,7 @@
                                             @endif
                                         </div>
                                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                                            {{ trans_choice(':count channel|:count channels', $uniqueChannels, ['count' => $uniqueChannels]) }}
+                                            {{ trans_choice(':count Channel|:count Channels', $uniqueChannels, ['count' => $uniqueChannels]) }}
                                         </span>
                                     </div>
 

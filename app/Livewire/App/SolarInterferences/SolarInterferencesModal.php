@@ -29,6 +29,8 @@ class SolarInterferencesModal extends Component
 
     public array $groupedEvents = [];
 
+    public array $orderedDates = [];
+
     public int $totalEvents = 0;
 
     public int $totalChannels = 0;
@@ -120,14 +122,35 @@ class SolarInterferencesModal extends Component
                 ->all();
 
             $todayKey = $today->format('Y-m-d');
+            $yesterdayKey = $today->copy()->subDay()->format('Y-m-d');
             $todayEvents = $grouped[$todayKey] ?? [];
+
+            $ordered = array_values(array_filter(
+                array_keys($grouped),
+                fn ($date) => $date !== $todayKey
+            ));
+
+            usort($ordered, function (string $a, string $b) use ($yesterdayKey) {
+                if ($a === $yesterdayKey) {
+                    return -1;
+                }
+                if ($b === $yesterdayKey) {
+                    return 1;
+                }
+                return strcmp($b, $a);
+            });
 
             $this->todayEvents = $todayEvents;
             $this->groupedEvents = $grouped;
+            $this->orderedDates = $ordered;
             $this->todayHasData = ! empty($todayEvents);
             $this->totalEvents = $events->count();
             $this->totalChannels = $events->pluck('channel_name')->filter()->unique()->count();
             $this->loadedAt = time();
+
+            if ($this->todayHasData) {
+                $this->dispatch('solar-focus-today');
+            }
         } finally {
             $this->loading = false;
         }

@@ -1351,8 +1351,11 @@
     "Days": "Días",
     "Today": "Hoy",
     ":count Channel|:count Channels": ":count Canal|:count Canales",
-    "Channels per satellite": "Canales por satélite"
-    ,"Satellite": "Satélite"
-    ,"Telepuerto": "Telepuerto"
-    ,"State": "Estado"
+    "Channels per satellite": "Canales por satélite",
+    "Satellite": "Satélite",
+    "Telepuerto": "Telepuerto",
+    "State": "Estado",
+    "Upcoming & recent events": "Próximos y recientes eventos",
+    "Past": "Pasado",
+    "Upcoming": "Próximo"
 }
