@@ -6,130 +6,88 @@ use App\Models\SolarInterference;
 use App\Models\SolarInterferenceUpload;
 use App\Services\SolarChannelResolver;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class SolarInterferencesWidget extends Component
 {
-    public bool $open = false;
-
     public ?string $activeDocumentName = null;
 
-    public function mount()
+    public bool $todayHasData = false;
+
+    public int $todayChannelsCount = 0;
+
+    public function mount(): void
     {
-        $this->loadActiveData();
+        $this->refreshBadge();
     }
 
     public function loadActiveData(): void
     {
-        $active = SolarInterferenceUpload::active()
-            ->orderByDesc('last_event_date')
-            ->first();
-
-        $this->activeDocumentName = $active?->document_name;
+        $this->refreshBadge();
     }
 
-    public function openModal(): void
+    protected function refreshBadge(): void
     {
-        $this->open = true;
-    }
+        $this->activeDocumentName = Cache::remember(
+            'solar:active_document_name',
+            now()->addMinutes(5),
+            function () {
+                return SolarInterferenceUpload::active()
+                    ->orderByDesc('last_event_date')
+                    ->first()
+                    ?->document_name;
+            }
+        );
 
-    public function closeModal(): void
-    {
-        $this->open = false;
-    }
-
-    public function getRecordsProperty(): Collection
-    {
         if (! $this->activeDocumentName) {
-            return collect();
+            $this->todayHasData = false;
+            $this->todayChannelsCount = 0;
+            return;
         }
 
-        return SolarInterference::query()
+        $today = Carbon::today()->toDateString();
+
+        $channels = SolarInterference::query()
             ->where('document_name', $this->activeDocumentName)
-            ->orderBy('event_date')
-            ->orderBy('start_time')
-            ->get();
-    }
+            ->whereDate('event_date', $today)
+            ->pluck('channels');
 
-    public function getEventsProperty(): Collection
-    {
-        $events = collect();
+        $unique = collect();
 
-        foreach ($this->records as $record) {
-            $channelList = $record->channel_list;
-
-            if (empty($channelList)) {
-                $events->push($this->buildEventEntry($record, null, $record->region_name));
-
-                continue;
-            }
-
-            foreach ($channelList as $channel) {
-                $events->push($this->buildEventEntry($record, $channel, $record->region_name));
+        foreach ($channels as $json) {
+            if (is_array($json)) {
+                foreach ($json as $name) {
+                    if ($name) {
+                        $unique->push($name);
+                    }
+                }
             }
         }
 
-        return $events;
-    }
+        $unique = $unique->unique();
 
-    protected function buildEventEntry(SolarInterference $record, ?string $channel, string $label): array
-    {
-        return [
-            'record' => $record,
-            'channel' => $channel,
-            'label' => $label,
-            'date' => $record->event_date,
-            'date_key' => $record->event_date->format('Y-m-d'),
-            'start_time' => $record->start_time,
-            'end_time' => $record->end_time,
-            'duration_seconds' => $record->duration_seconds,
-            'section' => $record->section,
-            'section_label' => $record->section_label,
-        ];
-    }
+        if ($unique->isEmpty()) {
+            $this->todayHasData = false;
+            $this->todayChannelsCount = 0;
+            return;
+        }
 
-    public function getGroupedEventsProperty(): Collection
-    {
-        return $this->events
-            ->groupBy('date_key')
-            ->sortKeys();
-    }
+        $resolved = app(SolarChannelResolver::class)->resolveMany($unique->all());
 
-    public function resolveChannel(string $channelName): ?array
-    {
-        return app(SolarChannelResolver::class)->resolve($channelName);
+        $count = $unique
+            ->filter(function (string $name) use ($resolved) {
+                $key = mb_strtolower(trim(preg_replace('/\s+/u', ' ', $name)));
+                return ! empty($resolved[$key]);
+            })
+            ->count();
+
+        $this->todayHasData = $count > 0;
+        $this->todayChannelsCount = $count;
     }
 
     public function render()
     {
-        $today = Carbon::today()->format('Y-m-d');
-        $groupedEvents = $this->groupedEvents;
-        $todayEvents = $groupedEvents->get($today, collect());
-
-        $orderedDates = $groupedEvents
-            ->keys()
-            ->sortBy(function ($date) use ($today) {
-                return $date === $today ? '0' : $date;
-            })
-            ->values();
-
-        $todayChannels = $todayEvents
-            ->pluck('channel')
-            ->filter()
-            ->unique()
-            ->filter(fn($ch) => $this->resolveChannel($ch))
-            ->values();
-
-        return view('livewire.app.solar-interferences.solar-interferences-widget', [
-            'groupedEvents' => $groupedEvents,
-            'orderedDates' => $orderedDates,
-            'today' => $today,
-            'todayEvents' => $todayEvents,
-            'todayHasData' => $todayEvents->isNotEmpty(),
-            'todayChannels' => $todayChannels,
-            'totalEvents' => $this->events->count(),
-            'totalChannels' => $this->events->pluck('channel')->filter()->unique()->count(),
-        ]);
+        return view('livewire.app.solar-interferences.solar-interferences-widget');
     }
 }
