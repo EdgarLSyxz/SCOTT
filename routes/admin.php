@@ -29,84 +29,59 @@ Route::resource('/channels', ChannelController::class)
 Route::resource('/stages', StageController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Stage']);
 
-Route::resource('/devices', DeviceController::class)
+Route::get('/devices/packages', [DeviceController::class, 'packages'])
+    ->name('devices.packages')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/packages', [DeviceController::class, 'packages'])
-    ->name('admin.devices.packages')
+Route::post('/devices/process-pdf', [DeviceController::class, 'processPDF'])
+    ->name('devices.process-pdf')
     ->middleware(['auth', 'verified']);
 
-Route::post('admin/devices/process-pdf', [DeviceController::class, 'processPDF'])
-    ->name('admin.devices.process-pdf')
+Route::get('/devices/packages/data', [PackageController::class, 'apiList'])
+    ->name('devices.packages.data')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/packages/data', [PackageController::class, 'apiList'])
-    ->name('admin.devices.packages.data')
+Route::get('/devices/packages/{id}/excel', [PackageController::class, 'exportExcel'])
+    ->name('devices.packages.excel')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/packages/{id}/excel', [PackageController::class, 'exportExcel'])
-    ->name('admin.devices.packages.excel')
+Route::get('/devices/log-analytics', [DeviceController::class, 'logAnalytics'])
+    ->name('devices.log-analytics')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/log-analytics', [DeviceController::class, 'logAnalytics'])
-    ->name('admin.devices.log-analytics')
+Route::post('/log-analytics/upload', [LogAnalyticsController::class, 'upload'])
+    ->name('log-analytics.upload')
     ->middleware(['auth', 'verified']);
 
-Route::post('admin/log-analytics/upload', [LogAnalyticsController::class, 'upload'])
-    ->name('admin.log-analytics.upload')
+Route::delete('/log-analytics/{id}', [LogAnalyticsController::class, 'delete'])
+    ->name('log-analytics.delete')
     ->middleware(['auth', 'verified']);
 
-Route::delete('admin/log-analytics/{id}', [LogAnalyticsController::class, 'delete'])
-    ->name('admin.log-analytics.delete')
+Route::get('/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
+    ->name('devices.monthly-downloads')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/monthly-downloads', [DeviceController::class, 'monthlyDownloads'])
-    ->name('admin.devices.monthly-downloads')
+Route::get('/devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
+    ->name('downloads.history.csv')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/downloads/history.csv', [DownloadExportController::class, 'historyCSV'])
-    ->name('admin.downloads.history.csv')
+Route::post('/devices/downloads/history.pdf', [DownloadExportController::class, 'historyPDF'])
+    ->name('downloads.history.pdf')
     ->middleware(['auth', 'verified']);
 
-Route::post('admin/devices/downloads/history.pdf', [DownloadExportController::class, 'historyPDF'])
-    ->name('admin.downloads.history.pdf')
+Route::post('/devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
+    ->name('downloads.history.email')
     ->middleware(['auth', 'verified']);
 
-Route::post('admin/devices/downloads/history.email', [DownloadExportController::class, 'historyEmail'])
-    ->name('admin.downloads.history.email')
+Route::get('/devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
+    ->name('downloads.history.data')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/downloads/history.data', [DownloadExportController::class, 'historyData'])
-    ->name('admin.downloads.history.data')
+Route::get('/devices/downloads/months', [DownloadExportController::class, 'getMonthsByYear'])
+    ->name('downloads.months')
     ->middleware(['auth', 'verified']);
 
-Route::get('admin/devices/downloads/months', [DownloadExportController::class, 'getMonthsByYear'])
-    ->name('admin.downloads.months')
-    ->middleware(['auth', 'verified']);
-
-Route::resource('/radios', RadioController::class)
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Radio']);
-
-Route::prefix('solar-interferences')->name('solar-interferences.')->middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', [SolarInterferenceController::class, 'index'])->name('index');
-    Route::get('/create', [SolarInterferenceController::class, 'create'])->name('create');
-    Route::get('/upload/{upload}', [SolarInterferenceController::class, 'show'])->name('show');
-    Route::delete('/upload/{upload}', [SolarInterferenceController::class, 'destroy'])->name('destroy');
-    Route::patch('/upload/{upload}/toggle', [SolarInterferenceController::class, 'toggleStatus'])->name('toggle');
-});
-
-Route::resource('/grafana', GrafanaController::class)
-    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\GrafanaPanel']);
-
-Route::resource('admin/reports/sla', ReportSlaController::class)
-    ->middleware(['auth', 'verified']);
-
-Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])
-    ->withoutMiddleware(\App\Http\Middleware\CheckUserStatus::class)
-    ->name('user.switch-area')
-    ->middleware(['auth', 'verified']);
-
-Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('/devices/rack-layout')->name('rack-layout.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');
     Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
     Route::post('/', [RackLayoutController::class, 'store'])->name('store');
@@ -132,16 +107,36 @@ Route::prefix('admin/devices/rack-layout')->name('admin.rack-layout.')->middlewa
     });
 });
 
-Route::view('/modulators', 'admin.modulators.index')
-    ->name('admin.modulators.index')
-    ->middleware(['auth', 'verified'])
-    ->middleware(\App\Http\Middleware\EnsureUserCanAccessModulators::class);
+Route::resource('/devices', DeviceController::class)
+    ->middleware(['auth', 'verified']);
+
+Route::resource('/radios', RadioController::class)
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\Radio']);
+
+Route::prefix('solar-interferences')->name('solar-interferences.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [SolarInterferenceController::class, 'index'])->name('index');
+    Route::get('/create', [SolarInterferenceController::class, 'create'])->name('create');
+    Route::get('/upload/{upload}', [SolarInterferenceController::class, 'show'])->name('show');
+    Route::delete('/upload/{upload}', [SolarInterferenceController::class, 'destroy'])->name('destroy');
+    Route::patch('/upload/{upload}/toggle', [SolarInterferenceController::class, 'toggleStatus'])->name('toggle');
+});
+
+Route::resource('/grafana', GrafanaController::class)
+    ->middleware(['auth', 'verified', 'can:viewAny,App\Models\GrafanaPanel']);
+
+Route::resource('admin/reports/sla', ReportSlaController::class)
+    ->middleware(['auth', 'verified']);
+
+Route::match(['get', 'post'], '/user/switch-area/{area}', [UserController::class, 'switchArea'])
+    ->withoutMiddleware(\App\Http\Middleware\CheckUserStatus::class)
+    ->name('user.switch-area')
+    ->middleware(['auth', 'verified']);
 
 Route::view('/modulators', 'admin.modulators.index')
     ->name('modulators.index')
     ->middleware(['auth', 'verified'])
     ->middleware(\App\Http\Middleware\EnsureUserCanAccessModulators::class);
 
-Route::get('admin/modulators/switches/export', [\App\Http\Controllers\Admin\ModulatorExportController::class, 'export'])
-    ->name('admin.modulators.switches.export')
+Route::get('/modulators/switches/export', [\App\Http\Controllers\Admin\ModulatorExportController::class, 'export'])
+    ->name('modulators.switches.export')
     ->middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserCanAccessModulators::class]);

@@ -92,7 +92,7 @@ class PackageManager extends Component
         }
 
         $models = $query->orderBy('created_at', 'desc')
-            ->get(['id', 'user_id', 'filename', 'data', 'created_at']);
+            ->get(['id', 'user_id', 'filename', 'created_at']);
 
         $this->uploads = $models->map(function ($m) {
             $attrs = $m->getAttributes();
