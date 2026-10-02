@@ -14,7 +14,8 @@ enum MediaIssue: string
     case AUDIO_IN_ENGLISH = 'AUDIO IN ENGLISH';
     case NO_SUBTITLES = 'NO SUBTITLES';
     case AUDIO_LAG = 'AUDIO LAG';
-    case LYP_SYNC = 'LYP SYNC';
+    case LIP_SYNC = 'LIP SYNC';
+    case AUDIO_DESCRIPTOR = 'AUDIO DESCRIPTOR';
     case INTERMITTENCY = 'INTERMITTENCY';
     case VIDEO_LAG = 'VIDEO LAG';
     case FREEZING = 'FREEZING';
@@ -22,6 +23,8 @@ enum MediaIssue: string
     case FLICKERING = 'FLICKERING';
     case IMAGE_IN_BLACKS = 'IMAGE IN BLACKS';
     case DIGITIZED_IMAGE = 'DIGITIZED IMAGE';
+    case WRONG_PROGRAMMING = 'WRONG PROGRAMMING';
+    case COLOR_BARS = 'COLOR BARS';
     case PHASE_GAP_IN_EPG = 'PHASE GAP IN EPG';
     case WRONG_EPG = 'WRONG EPG';
     case NO_EPG = 'NO EPG';
@@ -51,7 +54,8 @@ enum MediaIssue: string
             self::AUDIO_IN_ENGLISH->value => ['color' => 'amber', 'group' => 'audio'],
             self::NO_SUBTITLES->value => ['color' => 'amber', 'group' => 'audio'],
             self::AUDIO_LAG->value => ['color' => 'amber', 'group' => 'audio'],
-            self::LYP_SYNC->value => ['color' => 'amber', 'group' => 'audio'],
+            self::LIP_SYNC->value => ['color' => 'amber', 'group' => 'audio'],
+            self::AUDIO_DESCRIPTOR->value => ['color' => 'amber', 'group' => 'audio'],
 
             self::NO_VIDEO->value => ['color' => 'blue', 'group' => 'video'],
             self::VIDEO_LAG->value => ['color' => 'blue', 'group' => 'video'],
@@ -60,6 +64,8 @@ enum MediaIssue: string
             self::FLICKERING->value => ['color' => 'blue', 'group' => 'video'],
             self::IMAGE_IN_BLACKS->value => ['color' => 'blue', 'group' => 'video'],
             self::DIGITIZED_IMAGE->value => ['color' => 'blue', 'group' => 'video'],
+            self::WRONG_PROGRAMMING->value => ['color' => 'blue', 'group' => 'video'],
+            self::COLOR_BARS->value => ['color' => 'blue', 'group' => 'video'],
 
             self::WRONG_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],
             self::NO_CHANNEL_LOGO->value => ['color' => 'sky', 'group' => 'ui'],

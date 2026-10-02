@@ -13,7 +13,7 @@ class TransponderTracker extends Component
 
     public string $transponders = 'KU01, KU03, KU05, KU07, KU09, KU11';
 
-    protected array $allowedSites = ['Zacatecas', 'Iztapalapa', 'Distribuido'];
+    protected array $allowedSites = ['Zacatecas', 'Toluca', 'Iztapalapa', 'Distribuido'];
 
     public function mount(): void
     {
@@ -25,7 +25,7 @@ class TransponderTracker extends Component
         $this->authorizeArea();
 
         $this->validate([
-            'upLinkSite' => 'required|in:Zacatecas,Iztapalapa,Distribuido',
+            'upLinkSite' => 'required|in:Zacatecas,Toluca,Iztapalapa,Distribuido',
             'transponders' => 'required|string|max:255',
         ]);
 
