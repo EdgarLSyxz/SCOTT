@@ -40,6 +40,7 @@
                 open: false,
                 search: '',
                 selectedChannel: undefined,
+                isSearching: false,
                 channels: @js($channels->map(fn($c) => [
                     'id' => $c->id,
                     'number' => $c->number,
@@ -48,12 +49,15 @@
                     'url' => $c->url,
                     'multicast' => $channelMulticasts[$c->number] ?? null,
                 ])),
+                get displayText() {
+                    if (this.isSearching) return this.search;
+                    if (this.selectedChannel) return this.selectedChannel.number + ' ' + this.selectedChannel.name;
+                    return '';
+                },
                 get filteredChannels() {
-                    if (this.open && this.selectedChannel && this.search === (this.selectedChannel.number + ' ' + this.selectedChannel.name)) {
-                        return this.channels;
-                    }
-                    if (this.search === '') return this.channels;
-                    const term = this.search.toLowerCase();
+                    if (!this.isSearching) return this.channels;
+                    const term = (this.search || '').trim().toLowerCase();
+                    if (term === '') return this.channels;
                     return this.channels.filter(c => {
                         const combined = (c.number + ' ' + c.name).toLowerCase();
                         return c.name.toLowerCase().includes(term)
@@ -61,8 +65,16 @@
                             || combined.includes(term);
                     });
                 },
+                openDropdown() {
+                    this.open = true;
+                },
+                startSearching() {
+                    this.isSearching = true;
+                    this.search = '';
+                },
                 selectChannel(channel) {
                     this.selectedChannel = channel;
+                    this.isSearching = false;
                     this.search = channel.number + ' ' + channel.name;
                     this.open = false;
                     $wire.set('selectedChannel', channel.id);
@@ -74,6 +86,7 @@
                             if (found) {
                                 this.selectedChannel = found;
                                 this.search = found.number + ' ' + found.name;
+                                this.isSearching = false;
                             }
                         }
                         this.$watch('$wire.selectedChannel', (id) => {
@@ -81,6 +94,7 @@
                             this.selectedChannel = found || undefined;
                             if (found) {
                                 this.search = found.number + ' ' + found.name;
+                                this.isSearching = false;
                             }
                         });
                     });
@@ -93,11 +107,11 @@
                     </label>
                     <div class="flex flex-row gap-2">
                         <div class="relative flex-1">
-                            <img x-show="selectedChannel && search === (selectedChannel.number + ' ' + selectedChannel.name)"
+                            <img x-show="selectedChannel && !isSearching"
                                 :src="selectedChannel.image"
                                 class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 object-contain rounded dark:bg-gray-700">
-                            <input type="text" x-model="search" @focus="open = true" @click="open = true"
-                                @input="open = true" @click.away="open = false"
+                            <input type="text" :value="displayText" @input="search = $event.target.value; isSearching = true; openDropdown()" @focus="openDropdown()"
+                                @click="openDropdown()" @click.away="open = false"
                                 placeholder="{{ __('Search channel...') }}"
                                 class="w-full pl-12 pr-2 py-2 rounded-md bg-gray-50 border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-2 {{ $focusRing }} text-sm transition-all h-10 cursor-pointer"
                                 autocomplete="off">
