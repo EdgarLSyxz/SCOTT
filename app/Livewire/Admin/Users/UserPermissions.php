@@ -31,9 +31,12 @@ class UserPermissions extends Component
 
     public $hasSwitchAdmin = false;
 
+    public $hasDataCenterAdmin = false;
+
     protected $listeners = [
         'user-status-toggled' => 'onUserStatusToggled',
         'switches-admin-toggled' => 'onSwitchesAdminToggled',
+        'data-centers-admin-toggled' => 'onDataCentersAdminToggled',
     ];
 
     public function onUserStatusToggled(int $userId, bool $status): void
@@ -56,6 +59,18 @@ class UserPermissions extends Component
 
         $perm = \Spatie\Permission\Models\Permission::where('name', 'switches.admin')->first();
         $this->hasSwitchAdmin = $perm ? $this->user->hasPermissionTo('switches.admin') : false;
+    }
+
+    public function onDataCentersAdminToggled(int $userId, bool $hasDataCenterAdmin): void
+    {
+        if ((int) $this->user->id !== (int) $userId) {
+            return;
+        }
+
+        $this->user->refresh();
+
+        $perm = \Spatie\Permission\Models\Permission::where('name', 'data-centers.admin')->first();
+        $this->hasDataCenterAdmin = $perm ? $this->user->hasPermissionTo('data-centers.admin') : false;
     }
 
     public function mount(User $user)
@@ -111,6 +126,9 @@ class UserPermissions extends Component
 
         $switchPerm = Permission::where('name', 'switches.admin')->first();
         $this->hasSwitchAdmin = $switchPerm ? $user->hasPermissionTo('switches.admin') : false;
+
+        $dataCenterPerm = Permission::where('name', 'data-centers.admin')->first();
+        $this->hasDataCenterAdmin = $dataCenterPerm ? $user->hasPermissionTo('data-centers.admin') : false;
 
         $firstMasterId = User::role('master')->orderBy('id')->value('id');
 
@@ -222,10 +240,6 @@ class UserPermissions extends Component
         }
 
         $this->dispatch('user-status-toggled', userId: $this->user->id, status: (bool) $this->user->status);
-        $this->dispatchBrowserEvent('user-status-changed', [
-            'userId' => (int) $this->user->id,
-            'status' => (bool) $this->user->status,
-        ]);
 
         $this->dispatch('swal', [
             'icon' => 'success',
@@ -483,10 +497,69 @@ class UserPermissions extends Component
         $this->hasSwitchAdmin = $this->user->permissions->contains('id', $perm->id);
 
         $this->dispatch('switches-admin-toggled', userId: $this->user->id, hasSwitchAdmin: (bool) $this->hasSwitchAdmin);
-        $this->dispatchBrowserEvent('switches-admin-changed', [
-            'userId' => (int) $this->user->id,
-            'hasSwitchAdmin' => (bool) $this->hasSwitchAdmin,
+
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => __('Well done!'),
+            'text' => $message,
         ]);
+    }
+
+    public function toggleDataCenterAdmin()
+    {
+        $auth = auth()->user();
+
+        if (! ($this->canEditPermissions || ($auth && $auth->hasRole('master')))) {
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => __('Access denied'),
+                'text' => __('You are not authorized to change this setting.'),
+            ]);
+
+            return;
+        }
+
+        $permName = 'data-centers.admin';
+
+        $perm = Permission::firstOrCreate([
+            'name' => $permName,
+            'guard_name' => 'web',
+        ]);
+
+        try {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Throwable $e) {
+        }
+
+        $this->user->unsetRelation('permissions');
+        $this->user->load('permissions');
+
+        $hasPerm = false;
+        try {
+            $hasPerm = $this->user->hasPermissionTo($perm->id) || $this->user->hasPermissionTo($permName);
+        } catch (\Throwable $e) {
+            $hasPerm = $this->user->permissions->contains('id', $perm->id);
+        }
+
+        if ($hasPerm) {
+            $this->user->revokePermissionTo($perm);
+            $message = __('Data center administration permission revoked.');
+        } else {
+            $this->user->givePermissionTo($perm);
+            $message = __('Data center administration permission granted.');
+        }
+
+        $this->user->unsetRelation('permissions');
+        $this->user->load('permissions');
+
+        try {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Throwable $e) {
+        }
+
+        $this->hasDataCenterAdmin = $this->user->permissions->contains('id', $perm->id);
+
+        $this->dispatch('data-centers-admin-toggled', userId: $this->user->id, hasDataCenterAdmin: (bool) $this->hasDataCenterAdmin);
 
         $this->dispatch('swal', [
             'icon' => 'success',

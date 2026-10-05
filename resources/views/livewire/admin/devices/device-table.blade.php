@@ -3,6 +3,27 @@
         $allowedIds = [1, 2, 3, 5, 7, 8];
         $userId = Auth::id();
         $isAllowedId = $userId && in_array((int) $userId, $allowedIds, true);
+
+        $canDataCenters = false;
+        if (Auth::user()) {
+            try {
+                \Spatie\Permission\Models\Permission::firstOrCreate([
+                    'name' => 'data-centers.admin',
+                    'guard_name' => 'web',
+                ]);
+                app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+                $u = Auth::user();
+                $u->unsetRelation('permissions');
+                $u->unsetRelation('roles');
+                $u->load('permissions');
+                $u->load('roles');
+
+                $canDataCenters = $u->hasPermissionTo('data-centers.admin');
+            } catch (\Throwable $e) {
+                $canDataCenters = false;
+            }
+        }
     @endphp
 
     @if($isAllowedId || Auth::user()?->can('create', App\Models\Device::class))
@@ -29,7 +50,7 @@
                         {{ __('CDN Traffic') }}
                     </a>
                 @endif
-                @if($isAllowedId)
+                @if($canDataCenters)
                     <a href="{{ route('admin.rack-layout.index') }}"
                         class="hidden lg:block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                         <i class="fa-solid fa-server mr-1"></i>
@@ -66,7 +87,7 @@
                 {{ __('CDN Traffic') }}
             </a>
         @endif
-        @if($isAllowedId)
+        @if($canDataCenters)
             <a href="{{ route('admin.rack-layout.index') }}"
                 class="mb-4 lg:hidden block text-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none shadow-xl">
                 <i class="fa-solid fa-server mr-1"></i>

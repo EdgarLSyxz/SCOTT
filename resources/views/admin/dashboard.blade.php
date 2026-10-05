@@ -63,10 +63,15 @@
                     $currentUser = Auth::user();
                     $isMaster = $currentUser && ($currentUser->id === 1 || $currentUser->hasRole('master'));
                     $canSwitching = false;
+                    $canDataCenters = false;
                     if ($currentUser) {
                         try {
                             \Spatie\Permission\Models\Permission::firstOrCreate([
                                 'name' => 'switches.admin',
+                                'guard_name' => 'web',
+                            ]);
+                            \Spatie\Permission\Models\Permission::firstOrCreate([
+                                'name' => 'data-centers.admin',
                                 'guard_name' => 'web',
                             ]);
 
@@ -78,8 +83,10 @@
                             $currentUser->load('roles');
 
                             $canSwitching = $currentUser->hasPermissionTo('switches.admin');
+                            $canDataCenters = $currentUser->hasPermissionTo('data-centers.admin');
                         } catch (\Throwable $e) {
                             $canSwitching = false;
+                            $canDataCenters = false;
                         }
                     }
 
@@ -122,7 +129,7 @@
                             'gradient' => 'from-amber-400 via-orange-500 to-rose-500',
                             'shadow' => 'shadow-orange-500/40',
                             'icon_color' => 'text-white',
-                            'visible' => $isMaster,
+                            'visible' => $isMaster || $canDataCenters,
                         ],
                         [
                             'label' => __('Database'),

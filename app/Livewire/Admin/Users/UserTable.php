@@ -19,6 +19,7 @@ class UserTable extends Component
     protected $listeners = [
         'user-status-toggled' => 'handleUserRowChanged',
         'switches-admin-toggled' => 'handleUserRowChanged',
+        'data-centers-admin-toggled' => 'handleUserRowChanged',
     ];
 
     public function handleUserRowChanged(int $userId = 0, bool $status = null): void

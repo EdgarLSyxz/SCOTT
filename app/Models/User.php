@@ -138,6 +138,30 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
+    public function canAccessDataCenters(): bool
+    {
+        try {
+            $permission = \Spatie\Permission\Models\Permission::firstOrCreate([
+                'name' => 'data-centers.admin',
+                'guard_name' => 'web',
+            ]);
+
+            try {
+                app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+            } catch (\Throwable $e) {
+            }
+
+            $this->unsetRelation('permissions');
+            $this->unsetRelation('roles');
+            $this->load('permissions');
+            $this->load('roles');
+
+            return $permission && $this->hasPermissionTo('data-centers.admin');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     public function canManageModulatorPin(): bool
     {
         $isMaster = (int) $this->id === 1 || $this->hasRole('master');

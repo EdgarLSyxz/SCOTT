@@ -1,7 +1,8 @@
 <div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden"
     x-data="{}"
-    x-on:user-status-changed.window="Livewire.dispatch('$refresh')"
-    x-on:switches-admin-changed.window="Livewire.dispatch('$refresh')">
+    x-on:user-status-toggled-global.window="Livewire.dispatch('$refresh')"
+    x-on:switches-admin-toggled-global.window="Livewire.dispatch('$refresh')"
+    x-on:data-centers-admin-toggled-global.window="Livewire.dispatch('$refresh')">
     <div class="overflow-x-auto">
         <table class="min-w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
             <thead class="text-xs dark:text-white uppercase dark:bg-gray-600 shadow-2xl">
@@ -59,6 +60,10 @@
                     <th scope="col" class="px-6 py-3 whitespace-nowrap w-[120px]">
                         <i class="fa-solid fa-arrow-right-arrow-left mr-1.5"></i>
                         {{ __('Conmutar') }}
+                    </th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap w-[120px]">
+                        <i class="fa-solid fa-building mr-1.5"></i>
+                        {{ __('Data centers') }}
                     </th>
                     @if ($isMasterViewer)
                         <th class="px-6 py-3 whitespace-nowrap cursor-pointer w-[120px]"
@@ -220,6 +225,22 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            @php $hasDataCenterAdmin = method_exists($user, 'hasPermissionTo') ? $user->hasPermissionTo('data-centers.admin') : false; @endphp
+                            @if ($hasDataCenterAdmin)
+                                <span
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                    <i class="fa-solid fa-circle-check mr-1"></i>
+                                    {{ __('Yes') }}
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                    <i class="fa-solid fa-ban mr-1"></i>
+                                    {{ __('No') }}
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             @if ($user->status)
                                 <span
                                     class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
@@ -242,7 +263,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="bg-white dark:bg-gray-800 py-6 text-center">
+                        <td colspan="9" class="bg-white dark:bg-gray-800 py-6 text-center">
                             <i class="fa-solid fa-circle-info mr-1"></i>
                             {{ __('There are no users registered for this area.') }}
                         </td>
