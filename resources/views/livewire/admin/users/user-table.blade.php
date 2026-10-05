@@ -1,4 +1,7 @@
-<div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden">
+<div class="bg-white dark:bg-gray-800 relative shadow-2xl rounded-lg overflow-hidden"
+    x-data="{}"
+    x-on:user-status-changed.window="Livewire.dispatch('$refresh')"
+    x-on:switches-admin-changed.window="Livewire.dispatch('$refresh')">
     <div class="overflow-x-auto">
         <table class="min-w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
             <thead class="text-xs dark:text-white uppercase dark:bg-gray-600 shadow-2xl">

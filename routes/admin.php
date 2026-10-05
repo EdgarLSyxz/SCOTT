@@ -16,7 +16,13 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('admin.dashboard');
+    $systemInfo = [
+        'php' => PHP_VERSION,
+        'laravel' => app()->version(),
+        'locale' => app()->getLocale(),
+    ];
+
+    return view('admin.dashboard', compact('systemInfo'));
 })->name('dashboard');
 
 Route::resource('/users', UserController::class)->middleware(['auth', 'verified']);

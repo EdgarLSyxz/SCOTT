@@ -16,6 +16,16 @@ class UserTable extends Component
         'statusFilter' => ['except' => 'active'],
     ];
 
+    protected $listeners = [
+        'user-status-toggled' => 'handleUserRowChanged',
+        'switches-admin-toggled' => 'handleUserRowChanged',
+    ];
+
+    public function handleUserRowChanged(int $userId = 0, bool $status = null): void
+    {
+        $this->dispatch('$refresh');
+    }
+
     protected function isMaster($user)
     {
         return $user && ($user->id === 1 || $user->hasRole('master'));

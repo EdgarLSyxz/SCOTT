@@ -102,7 +102,26 @@
         }
     }
 
-    $canAccessModulators = $currentUser?->canAccessModulators() ?? false;
+    $canAccessModulators = false;
+    if ($currentUser) {
+        try {
+            \Spatie\Permission\Models\Permission::firstOrCreate([
+                'name' => 'switches.admin',
+                'guard_name' => 'web',
+            ]);
+
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+            $currentUser->unsetRelation('permissions');
+            $currentUser->unsetRelation('roles');
+            $currentUser->load('permissions');
+            $currentUser->load('roles');
+
+            $canAccessModulators = $currentUser->hasPermissionTo('switches.admin');
+        } catch (\Throwable $e) {
+            $canAccessModulators = false;
+        }
+    }
 
     if (! $canAccessModulators) {
         $links = array_values(array_filter($links, function ($l) {

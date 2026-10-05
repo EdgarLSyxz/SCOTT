@@ -1360,5 +1360,21 @@
     "State": "Estado",
     "Upcoming & recent events": "Próximos y recientes eventos",
     "Past": "Pasado",
-    "Upcoming": "Próximo"
+    "Upcoming": "Próximo",
+    "Welcome back": "Bienvenido de nuevo",
+    "Admin panel": "Panel de administración",
+    "Quick actions": "Acciones rápidas",
+    "Common shortcuts": "Atajos comunes",
+    "My profile": "Mi perfil",
+    "View users": "Ver usuarios",
+    "View data centers": "Ver centros de datos",
+    "View switches": "Ver conmutaciones",
+    "View database": "Ver base de datos",
+    "Manage": "Administrar",
+    "Data centers": "Centros de datos",
+    "Locations": "Ubicaciones",
+    "Database": "Base de datos",
+    "Monitoring": "Monitoreo",
+    "Switches": "Conmutaciones",
+    "Search channel or number": "Buscar canal o número"
 }

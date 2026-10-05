@@ -116,22 +116,26 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function canAccessModulators(): bool
     {
-        $isMaster = (int) $this->id === 1 || $this->hasRole('master');
-        $isDth = strtoupper(trim((string) ($this->area ?? ''))) === 'DTH';
-        $isConmutacionesManager = (bool) ($this->is_conmutaciones_manager ?? false);
-
-        $hasSwitchesAdminPermission = false;
         try {
             $permission = \Spatie\Permission\Models\Permission::firstOrCreate([
                 'name' => 'switches.admin',
                 'guard_name' => 'web',
             ]);
-            $hasSwitchesAdminPermission = $permission && $this->hasPermissionTo('switches.admin');
-        } catch (\Throwable $e) {
-            $hasSwitchesAdminPermission = false;
-        }
 
-        return $isMaster || $isDth || $isConmutacionesManager || $hasSwitchesAdminPermission;
+            try {
+                app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+            } catch (\Throwable $e) {
+            }
+
+            $this->unsetRelation('permissions');
+            $this->unsetRelation('roles');
+            $this->load('permissions');
+            $this->load('roles');
+
+            return $permission && $this->hasPermissionTo('switches.admin');
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     public function canManageModulatorPin(): bool

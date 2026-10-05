@@ -2,16 +2,24 @@
     @if ($open && $activeDocumentName)
         <div class="fixed inset-0 z-[9999] overflow-y-auto"
             aria-labelledby="solar-modal-title-global" role="dialog" aria-modal="true"
-            x-data="{ focusToday() { const el = document.getElementById('solar-today-section'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } }"
+            x-data="{
+                focusToday() { const el = document.getElementById('solar-today-section'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+                query: '',
+                matches(text, number) {
+                    const q = this.query.trim().toLowerCase();
+                    if (!q) return true;
+                    return (text || '').toLowerCase().includes(q) || String(number || '').toLowerCase().includes(q);
+                }
+            }"
             x-init="$wire.on('solar-focus-today', () => focusToday())"
-            @keydown.escape.window="$wire.closeModal()">
+            @keydown.escape.window="if(query.length){query=''}else{$wire.closeModal()}">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
                 <div class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 transition-opacity" @click="$wire.closeModal()"></div>
 
                 <div class="relative inline-block w-full max-w-4xl p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-2xl rounded-2xl"
                     @click.stop>
-                    <div class="flex items-center justify-between mb-5">
-                        <div>
+                    <div class="flex items-center justify-between mb-5 gap-4">
+                        <div class="min-w-0">
                             <h3 id="solar-modal-title-global" class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <i class="fa-solid fa-sun text-amber-500"></i>
                                 {{ __('Affected channels') }}
@@ -23,13 +31,23 @@
                                 {{ number_format($totalChannels) }} {{ __(trans_choice('Channel|Channels', $totalChannels)) }}
                             </p>
                         </div>
-                        <button type="button" @click="$wire.closeModal()"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                            <span class="sr-only">{{ __('Close modal') }}</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500"></i>
+                                <input type="search"
+                                        x-model="query"
+                                        placeholder="{{ __('Search channel or number...') }}"
+                                        aria-label="{{ __('Search channel or number') }}"
+                                        class="w-48 sm:w-64 pl-8 pr-8 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400" />
+                                <button type="button"
+                                        x-show="query.length"
+                                        x-cloak
+                                        @click="query=''"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     @if ($loading && $loadedAt === 0)
@@ -61,7 +79,8 @@
                                             $logoUrl = !empty($resolved['image_url']) ? asset('storage/' . $resolved['image_url']) : null;
                                             $section = $event['section'] ?? null;
                                         @endphp
-                                        <li class="px-4 py-4 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
+                                        <li x-show="matches('{{ addslashes($resolved['name'] ?? '') }}', '{{ $resolved['number'] ?? '' }}')"
+                                            class="px-4 py-4 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
                                             @if ($logoUrl)
                                                 <img src="{{ $logoUrl }}"
                                                     alt="{{ $resolved['name'] }}"
@@ -167,7 +186,8 @@
                                                 $logoUrl = !empty($resolved['image_url']) ? asset('storage/' . $resolved['image_url']) : null;
                                                 $section = $event['section'] ?? null;
                                             @endphp
-                                            <li class="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/40 transition">
+                                            <li x-show="matches('{{ addslashes($resolved['name'] ?? '') }}', '{{ $resolved['number'] ?? '' }}')"
+                                                class="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/40 transition">
                                                 @if ($logoUrl)
                                                     <img src="{{ $logoUrl }}"
                                                         alt="{{ $resolved['name'] }}"

@@ -31,6 +31,33 @@ class UserPermissions extends Component
 
     public $hasSwitchAdmin = false;
 
+    protected $listeners = [
+        'user-status-toggled' => 'onUserStatusToggled',
+        'switches-admin-toggled' => 'onSwitchesAdminToggled',
+    ];
+
+    public function onUserStatusToggled(int $userId, bool $status): void
+    {
+        if ((int) $this->user->id !== (int) $userId) {
+            return;
+        }
+
+        $this->user->refresh();
+        $this->user->status = (bool) $status;
+    }
+
+    public function onSwitchesAdminToggled(int $userId, bool $hasSwitchAdmin): void
+    {
+        if ((int) $this->user->id !== (int) $userId) {
+            return;
+        }
+
+        $this->user->refresh();
+
+        $perm = \Spatie\Permission\Models\Permission::where('name', 'switches.admin')->first();
+        $this->hasSwitchAdmin = $perm ? $this->user->hasPermissionTo('switches.admin') : false;
+    }
+
     public function mount(User $user)
     {
         $this->user = $user;
@@ -193,6 +220,12 @@ class UserPermissions extends Component
             }
         } catch (\Exception $e) {
         }
+
+        $this->dispatch('user-status-toggled', userId: $this->user->id, status: (bool) $this->user->status);
+        $this->dispatchBrowserEvent('user-status-changed', [
+            'userId' => (int) $this->user->id,
+            'status' => (bool) $this->user->status,
+        ]);
 
         $this->dispatch('swal', [
             'icon' => 'success',
@@ -416,16 +449,44 @@ class UserPermissions extends Component
             'guard_name' => 'web',
         ]);
 
-        if ($this->user->hasPermissionTo($permName)) {
-            $this->user->revokePermissionTo($permName);
+        try {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Throwable $e) {
+        }
+
+        $this->user->unsetRelation('permissions');
+        $this->user->load('permissions');
+
+        $hasPerm = false;
+        try {
+            $hasPerm = $this->user->hasPermissionTo($perm->id) || $this->user->hasPermissionTo($permName);
+        } catch (\Throwable $e) {
+            $hasPerm = $this->user->permissions->contains('id', $perm->id);
+        }
+
+        if ($hasPerm) {
+            $this->user->revokePermissionTo($perm);
             $message = __('Switch administration permission revoked.');
         } else {
-            $this->user->givePermissionTo($permName);
+            $this->user->givePermissionTo($perm);
             $message = __('Switch administration permission granted.');
         }
 
+        $this->user->unsetRelation('permissions');
         $this->user->load('permissions');
-        $this->hasSwitchAdmin = $this->user->hasPermissionTo($permName);
+
+        try {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Throwable $e) {
+        }
+
+        $this->hasSwitchAdmin = $this->user->permissions->contains('id', $perm->id);
+
+        $this->dispatch('switches-admin-toggled', userId: $this->user->id, hasSwitchAdmin: (bool) $this->hasSwitchAdmin);
+        $this->dispatchBrowserEvent('switches-admin-changed', [
+            'userId' => (int) $this->user->id,
+            'hasSwitchAdmin' => (bool) $this->hasSwitchAdmin,
+        ]);
 
         $this->dispatch('swal', [
             'icon' => 'success',

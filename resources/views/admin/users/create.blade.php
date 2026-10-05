@@ -150,21 +150,17 @@
                             </select>
                         </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-1 gap-5 mt-5 w-full">
-                    <div>
-                        <x-label for="is_conmutaciones_manager">
-                            <i class="fa-solid fa-right-left mr-1"></i>
-                            {{ __('Conmutaciones manager') }}
-                            <span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">
-                                {{ __('(Will access the switching panel)') }}
-                            </span>
-                        </x-label>
-                        <select id="is_conmutaciones_manager" name="is_conmutaciones_manager"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white {{ Auth::user()->area === 'DTH' ? 'focus:ring-secondary-600 focus:border-secondary-600 dark:focus:ring-secondary-500 dark:focus:border-secondary-500' : 'focus:ring-primary-600 focus:border-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500' }}">
-                            <option selected disabled>{{ __('Select option') }}</option>
-                            <option value="1" @if(old('is_conmutaciones_manager') === '1') selected @endif>{{ __('Yes') }}</option>
-                            <option value="0" @if(old('is_conmutaciones_manager') === '0') selected @endif>{{ __('No') }}</option>
-                        </select>
+                <div class="mt-5 p-4 rounded-xl border border-amber-200/70 bg-amber-50/60 dark:bg-amber-900/20 dark:border-amber-700/40">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-circle-info text-amber-600 dark:text-amber-300 mt-0.5"></i>
+                        <div>
+                            <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                {{ __('Switching panel access') }}
+                            </p>
+                            <p class="text-xs text-amber-700/90 dark:text-amber-300/80 mt-1">
+                                {{ __('After creating the user, open the "Permissions" tab to grant access to the switching (conmutaciones) panel.') }}
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <div class="flex justify-end items-center">
