@@ -39,13 +39,6 @@
                                         placeholder="{{ __('Search channel or number...') }}"
                                         aria-label="{{ __('Search channel or number') }}"
                                         class="w-48 sm:w-64 pl-8 pr-8 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400" />
-                                <button type="button"
-                                        x-show="query.length"
-                                        x-cloak
-                                        @click="query=''"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                                    <i class="fa-solid fa-xmark text-xs"></i>
-                                </button>
                             </div>
                         </div>
                     </div>
