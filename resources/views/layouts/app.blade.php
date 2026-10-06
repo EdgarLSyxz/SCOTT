@@ -67,6 +67,12 @@
 
     <!-- Scrollbar Styles -->
     <style>
+        [x-cloak] { display: none !important; }
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-decoration {
+            -webkit-appearance: none;
+            appearance: none;
+        }
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -84,6 +90,14 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background-color: #555;
+        }
+
+        @keyframes progress-pulse {
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            50%      { opacity: 0.92; filter: brightness(1.08); }
+        }
+        .animate-progress-pulse {
+            animation: progress-pulse 2.2s ease-in-out infinite;
         }
     </style>
 

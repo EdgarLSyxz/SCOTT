@@ -11,5 +11,6 @@ enum ChannelOrigin: string
     case KU_09 = 'KU 09';
     case KU_11 = 'KU 11';
     case KU_13 = 'KU 13';
+    case KU_15 = 'KU 15';
     case OVERON = 'OVERON';
 }

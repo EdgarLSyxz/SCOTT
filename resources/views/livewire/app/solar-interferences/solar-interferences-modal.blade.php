@@ -1,4 +1,8 @@
 <div wire:ignore.self>
+    @php
+        $areaIsDTH = Auth::user()?->area === 'DTH';
+        $areaColor = fn(string $classes) => $areaIsDTH ? str_replace('amber', 'secondary', $classes) : str_replace('amber', 'primary', $classes);
+    @endphp
     @if ($open && $activeDocumentName)
         <div class="fixed inset-0 z-[9999] overflow-y-auto"
             aria-labelledby="solar-modal-title-global" role="dialog" aria-modal="true"
@@ -9,61 +13,205 @@
                     const q = this.query.trim().toLowerCase();
                     if (!q) return true;
                     return (text || '').toLowerCase().includes(q) || String(number || '').toLowerCase().includes(q);
-                }
+                },
+                countVisible() {
+                    const total = document.querySelectorAll('[data-channel-row]').length;
+                    if (!this.query.trim()) return null;
+                    let visible = 0;
+                    document.querySelectorAll('[data-channel-row]').forEach(el => {
+                        if (el.offsetParent !== null) visible++;
+                    });
+                    return { visible, total };
+                },
+                searchCount: 0,
+                updateSearchCount() { this.searchCount = this.countVisible(); }
             }"
-            x-init="$wire.on('solar-focus-today', () => focusToday())"
+            x-init="$nextTick(() => updateSearchCount()); $watch('query', () => updateSearchCount()); $wire.on('solar-focus-today', () => focusToday())"
             @keydown.escape.window="if(query.length){query=''}else{$wire.closeModal()}">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
                 <div class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 transition-opacity" @click="$wire.closeModal()"></div>
 
                 <div class="relative inline-block w-full max-w-4xl p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-2xl rounded-2xl"
                     @click.stop>
-                    <div class="flex items-center justify-between mb-5 gap-4">
-                        <div class="min-w-0">
-                            <h3 id="solar-modal-title-global" class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <i class="fa-solid fa-sun text-amber-500"></i>
-                                {{ __('Affected channels') }}
-                            </h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i>
-                                {{ $activeDocumentName }}
-                                · <i class="fa-solid fa-tv mr-1 text-rose-500"></i>
-                                {{ number_format($totalChannels) }} {{ __(trans_choice('Channel|Channels', $totalChannels)) }}
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500"></i>
-                                <input type="search"
-                                        x-model="query"
-                                        placeholder="{{ __('Search channel or number...') }}"
-                                        aria-label="{{ __('Search channel or number') }}"
-                                        class="w-48 sm:w-64 pl-8 pr-8 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400" />
+                    <div class="mb-6">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br {{ $areaIsDTH ? 'from-secondary-400 to-secondary-600' : 'from-primary-400 to-primary-600' }} text-white shadow-md {{ $areaIsDTH ? 'shadow-secondary-500/30' : 'shadow-primary-500/30' }} shrink-0">
+                                        <i class="fa-solid fa-sun text-sm"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <h3 id="solar-modal-title-global" class="text-lg font-bold text-gray-900 dark:text-white leading-tight truncate">
+                                            {{ __('Affected channels') }}
+                                        </h3>
+                                        <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                            {{ __('Solar interference window') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <div class="relative group" x-data="{ focused: false }">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 {{ $areaColor('group-focus-within:text-amber-500') }}"></i>
+                                    <x-input type="search"
+                                            x-model="query"
+                                            @focus="focused = true"
+                                            @blur="focused = false"
+                                            @keydown.escape="query = ''"
+                                            placeholder="{{ __('Search by channel number or name...') }}"
+                                            aria-label="{{ __('Search by channel number or name') }}"
+                                            class="w-80 sm:w-96 pl-10 pr-9 py-2 text-xs rounded-xl border" />
+                                    <button x-show="query"
+                                        x-cloak
+                                        type="button"
+                                        @click="query = ''"
+                                        aria-label="{{ __('Clear search') }}"
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 transition-colors">
+                                        <i class="fa-solid fa-xmark text-[10px]"></i>
+                                    </button>
+                                    <div x-show="query && searchCount"
+                                        x-cloak
+                                        x-transition.opacity
+                                        class="absolute right-0 top-full mt-1.5 px-2 py-1 rounded-md text-[10px] font-medium bg-gray-900 dark:bg-gray-700 text-white shadow-lg whitespace-nowrap z-10">
+                                        <span x-text="searchCount ? `${searchCount.visible}/${searchCount.total}` : ''"></span>
+                                        {{ __('Matches') }}
+                                    </div>
+                                </div>
+                                <button type="button" @click="$wire.closeModal()"
+                                    aria-label="{{ __('Close') }}"
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
                             </div>
                         </div>
+
+                        @if ($windowStart && $windowEnd && $totalDays > 0)
+                            @php
+                                $startLabel = ucwords(\Carbon\Carbon::parse($windowStart)->translatedFormat('d M Y'), ' ');
+                                $endLabel = ucwords(\Carbon\Carbon::parse($windowEnd)->translatedFormat('d M Y'), ' ');
+                                $statusStyles = [
+                                    'upcoming' => [
+                                        'gradient' => 'from-blue-500/10 via-blue-400/5 to-transparent',
+                                        'border' => 'border-blue-200/70 dark:border-blue-800/40',
+                                        'bar' => 'bg-gradient-to-r from-blue-500 to-cyan-400',
+                                        'glow' => 'shadow-blue-500/20',
+                                        'badge' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 ring-1 ring-blue-200/60 dark:ring-blue-700/40',
+                                        'icon' => 'fa-clock',
+                                        'label' => __('Upcoming'),
+                                        'marker' => 'bg-blue-500',
+                                    ],
+                                    'active' => [
+                                        'gradient' => $areaColor('from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10'),
+                                        'border' => $areaColor('border-amber-400 dark:border-amber-500'),
+                                        'bar' => $areaIsDTH
+                                            ? 'bg-gradient-to-r from-secondary-500 via-secondary-400 to-secondary-500'
+                                            : 'bg-gradient-to-r from-primary-500 via-primary-400 to-primary-500',
+                                        'glow' => $areaColor('shadow-amber-500/30'),
+                                        'badge' => $areaIsDTH
+                                            ? 'bg-secondary-500 hover:bg-secondary-600 text-white ring-1 ring-secondary-600/30 shadow-sm shadow-secondary-500/30'
+                                            : 'bg-primary-500 hover:bg-primary-600 text-white ring-1 ring-primary-600/30 shadow-sm shadow-primary-500/30',
+                                        'icon' => 'fa-bolt',
+                                        'label' => __('In progress'),
+                                        'marker' => $areaIsDTH ? 'bg-secondary-300 dark:bg-secondary-200' : 'bg-primary-300 dark:bg-primary-200',
+                                        'markerDot' => $areaIsDTH ? 'bg-secondary-200 dark:bg-secondary-300' : 'bg-primary-200 dark:bg-primary-300',
+                                        'pulse' => true,
+                                    ],
+                                    'finished' => [
+                                        'gradient' => 'from-emerald-500/10 via-emerald-400/5 to-transparent',
+                                        'border' => 'border-emerald-200/70 dark:border-emerald-800/40',
+                                        'bar' => 'bg-gradient-to-r from-emerald-500 to-teal-400',
+                                        'glow' => 'shadow-emerald-500/20',
+                                        'badge' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 ring-1 ring-emerald-200/60 dark:ring-emerald-700/40',
+                                        'icon' => 'fa-circle-check',
+                                        'label' => __('Finished'),
+                                        'marker' => 'bg-emerald-500',
+                                    ],
+                                ];
+                                $current = $statusStyles[$progressStatus] ?? $statusStyles['upcoming'];
+                                $markerPercent = $progressStatus === 'finished' ? 100 : ($progressStatus === 'upcoming' ? 0 : $progressPercent);
+                            @endphp
+                            <div class="relative overflow-hidden rounded-2xl border {{ $current['border'] }} bg-gradient-to-br {{ $current['gradient'] }} {{ $progressStatus === 'active' ? 'shadow-lg' : 'dark:bg-gray-900/40 shadow-sm hover:shadow-md' }} transition-shadow duration-300"
+                                aria-label="{{ __('Solar interference progress') }}">
+                                <div class="px-5 pt-4 pb-4">
+                                    <div class="flex items-center justify-between gap-3 mb-3">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold {{ $current['badge'] }} shrink-0">
+                                                <i class="fa-solid {{ $current['icon'] }} text-[10px]"></i>
+                                                {{ $current['label'] }}
+                                            </span>
+                                            <span class="text-[11px] text-gray-500 dark:text-gray-300 inline-flex items-center gap-1.5 min-w-0 truncate">
+                                                <i class="fa-regular fa-calendar text-gray-400 dark:text-gray-400 shrink-0"></i>
+                                                <span class="truncate">{{ $startLabel }}</span>
+                                                <i class="fa-solid fa-arrow-right text-[8px] text-gray-400 dark:text-gray-400 shrink-0"></i>
+                                                <span class="truncate">{{ $endLabel }}</span>
+                                            </span>
+                                        </div>
+                                        <div class="flex items-baseline gap-1 shrink-0">
+                                            <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white tabular-nums">
+                                                {{ $progressPercent }}<span class="text-sm text-gray-500 dark:text-gray-400 font-semibold">%</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="relative w-full h-3 bg-gray-200/80 dark:bg-gray-700/80 rounded-full overflow-visible shadow-inner"
+                                        role="progressbar"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                        aria-valuenow="{{ $progressPercent }}">
+                                        <div class="absolute inset-y-0 left-0 {{ $current['bar'] }} transition-all duration-700 ease-out rounded-full shadow-sm {{ $current['glow'] }}"
+                                            style="width: {{ $progressPercent }}%"></div>
+                                        @if ($progressStatus === 'active')
+                                            <div class="absolute top-1/2 -translate-y-1/2 translate-x-[-50%] w-4 h-4 rounded-full {{ $current['markerDot'] ?? '' }} ring-2 ring-white {{ $areaColor('dark:ring-primary-400') }} shadow-md {{ $current['marker'] }} transition-all duration-700 ease-out"
+                                                style="left: {{ $progressPercent }}%;"></div>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex items-center justify-between mt-3 text-[11px]">
+                                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                            <span class="font-bold tabular-nums text-gray-900 dark:text-white">{{ $elapsedDays }}</span>
+                                            <span class="text-gray-400 dark:text-gray-500">/</span>
+                                            <span class="font-semibold tabular-nums text-gray-700 dark:text-gray-200">{{ $totalDays }}</span>
+                                            <span class="text-gray-500 dark:text-gray-400">{{ __('Days') }}</span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                                            @if ($progressStatus === 'upcoming')
+                                                <i class="fa-regular fa-hourglass text-blue-500"></i>
+                                                {{ trans_choice(':count Day to start|:count Days to start', $remainingDays, ['count' => $remainingDays]) }}
+                                            @elseif ($progressStatus === 'finished')
+                                                <i class="fa-solid fa-flag-checkered text-emerald-500"></i>
+                                                {{ __('Interference window has ended.') }}
+                                            @else
+                                                <i class="fa-regular fa-hourglass-half {{ $areaColor('text-amber-500') }}"></i>
+                                                {{ trans_choice(':count Day remaining|:count Days remaining', $remainingDays, ['count' => $remainingDays]) }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     @if ($loading && $loadedAt === 0)
                         <div class="py-12 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                            <i class="fa-solid fa-spinner fa-spin text-2xl text-amber-500 mb-2"></i>
+                            <i class="fa-solid fa-spinner fa-spin text-2xl {{ $areaColor('text-amber-500') }} mb-2"></i>
                             <p class="text-sm">{{ __('Loading affected channels...') }}</p>
                         </div>
                     @else
                         @if ($todayHasData)
-                            <div id="solar-today-section" class="mb-5 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10 shadow-lg overflow-hidden">
-                                <div class="px-4 py-3 bg-amber-500/10 dark:bg-amber-500/20 border-b border-amber-300/40 dark:border-amber-700/40 flex items-center justify-between">
+                            <div id="solar-today-section" class="mb-5 rounded-xl border-2 {{ $areaColor('border-amber-400 dark:border-amber-500') }} bg-gradient-to-br {{ $areaColor('from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10') }} shadow-lg overflow-hidden">
+                                <div class="px-4 py-3 {{ $areaColor('bg-amber-500/10 dark:bg-amber-500/20') }} border-b {{ $areaColor('border-amber-400 dark:border-primary-400') }} flex items-center justify-between">
                                     <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-sun text-amber-500 animate-pulse"></i>
-                                        <h4 class="font-bold text-amber-900 dark:text-amber-100">
+                                        <i class="fa-solid fa-sun {{ $areaColor('text-amber-500') }} animate-pulse"></i>
+                                        <h4 class="font-bold {{ $areaColor('text-amber-900 dark:text-amber-100') }}">
                                             {{ __('Today') }}
-                                            <span class="font-normal text-amber-700 dark:text-amber-300">·
+                                            <span class="font-normal {{ $areaColor('text-amber-700 dark:text-amber-300') }}">·
                                                 {{ ucfirst(\Carbon\Carbon::parse($today)->translatedFormat('l, d \\d\\e F')) }}
                                             </span>
                                         </h4>
                                     </div>
                                 </div>
 
-                                <ul class="divide-y divide-amber-200/60 dark:divide-amber-800/30">
+                                <ul class="divide-y {{ $areaColor('divide-amber-200/60 dark:divide-primary-800/30') }}">
                                     @foreach ($todayEvents as $event)
                                         @php
                                             $resolved = $event['channel'];
@@ -73,7 +221,8 @@
                                             $section = $event['section'] ?? null;
                                         @endphp
                                         <li x-show="matches('{{ addslashes($resolved['name'] ?? '') }}', '{{ $resolved['number'] ?? '' }}')"
-                                            class="px-4 py-4 flex items-center gap-3 hover:bg-amber-100/40 dark:hover:bg-amber-900/20 transition">
+                                            data-channel-row
+                                            class="px-4 py-4 flex items-center gap-3 {{ $areaColor('hover:bg-amber-100/40 dark:hover:bg-amber-900/20') }} transition">
                                             @if ($logoUrl)
                                                 <img src="{{ $logoUrl }}"
                                                     alt="{{ $resolved['name'] }}"
@@ -89,8 +238,8 @@
                                                     <span class="text-rose-600 dark:text-rose-300 mr-1">{{ $resolved['number'] }}</span>
                                                     {{ $resolved['name'] }}
                                                 </p>
-                                                <p class="text-xs text-amber-800 dark:text-amber-300 truncate">
-                                                    <i class="fa-solid {{ $section === 'satellite' ? 'fa-satellite' : ($section === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
+                                                <p class="text-xs {{ $areaColor('text-amber-800 dark:text-amber-300') }} truncate">
+                                                    <i class="fa-solid {{ $section === 'satellite' ? 'fa-satellite-dish' : ($section === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
                                                     {{ $event['label'] }}
                                                 </p>
                                             </div>
@@ -180,6 +329,7 @@
                                                 $section = $event['section'] ?? null;
                                             @endphp
                                             <li x-show="matches('{{ addslashes($resolved['name'] ?? '') }}', '{{ $resolved['number'] ?? '' }}')"
+                                                data-channel-row
                                                 class="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/40 transition">
                                                 @if ($logoUrl)
                                                     <img src="{{ $logoUrl }}"
@@ -197,7 +347,7 @@
                                                         {{ $resolved['name'] }}
                                                     </p>
                                                     <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                                                        <i class="fa-solid {{ $section === 'satellite' ? 'fa-satellite' : ($section === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
+                                                        <i class="fa-solid {{ $section === 'satellite' ? 'fa-satellite-dish' : ($section === 'teleport' ? 'fa-tower-broadcast' : 'fa-map') }} mr-1"></i>
                                                         {{ $event['label'] }}
                                                     </p>
                                                 </div>
@@ -225,15 +375,11 @@
                         </div>
                     @endif
 
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                         <span>
                             <i class="fa-solid fa-circle-info mr-1"></i>
                             {{ __('Times shown in UTC-6 (Ciudad de México).') }}
                         </span>
-                        <button type="button" @click="$wire.closeModal()"
-                            class="px-4 py-1.5 text-sm rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium">
-                            {{ __('Close') }}
-                        </button>
                     </div>
                 </div>
             </div>

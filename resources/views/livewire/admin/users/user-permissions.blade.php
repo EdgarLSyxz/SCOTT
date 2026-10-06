@@ -15,7 +15,7 @@
                         ? 'bg-secondary-200 text-secondary-800 dark:bg-secondary-700 dark:text-secondary-100'
                         : ($userArea === 'OTT' ? 'bg-primary-200 text-primary-800 dark:bg-primary-700 dark:text-primary-100' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100');
 
-                    $smallBadgeBase = 'inline-flex items-center justify-center w-7 h-7 rounded-full focus:outline-none';
+                    $smallBadgeBase = 'inline-flex items-center justify-center w-9 h-9 rounded-full focus:outline-none';
 
                     $statusActiveClasses = 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100';
                     $statusInactiveClasses = 'bg-red-200 text-red-800 dark:bg-red-700 dark:text-red-300';
@@ -167,7 +167,7 @@
                 <span>{{ __('Joined on') }} {{ $user->created_at->format('d M Y') }}</span>
             </div>
 
-            <div class="mt-7 flex flex-wrap gap-3 justify-center sm:justify-end">
+            <div class="mt-7 flex flex-wrap gap-2.5 justify-center sm:justify-end py-1.5">
                 @php $auth = auth()->user();
                     $isSelfFirstAdmin = $auth->id === 1 && $user->id === 1 && $auth->hasRole('master');
                 @endphp

@@ -1376,5 +1376,14 @@
     "Database": "Base de datos",
     "Monitoring": "Monitoreo",
     "Switches": "Conmutaciones",
-    "Search channel or number...": "Buscar canal o número..."
+    "Search by channel number or name...": "Buscar por número o nombre del canal...",
+    "Search by channel number or name": "Buscar por número o nombre del canal",
+    "Matches": "Coincidencias",
+    "In progress": "En progreso",
+    "Finished": "Terminado",
+    "Solar interference progress": "Progreso de la interferencia solar",
+    ":count Day to start|:count Days to start": ":count Día para comenzar|:count Días para comenzar",
+    ":count Day remaining|:count Days remaining": ":count Día restante|:count Días restantes",
+    "Loading affected channels...": "Cargando canales afectados...",
+    "Solar interference window": "Ventana de interferencias solares"
 }

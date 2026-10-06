@@ -37,6 +37,20 @@ class SolarInterferencesModal extends Component
 
     public bool $todayHasData = false;
 
+    public ?string $windowStart = null;
+
+    public ?string $windowEnd = null;
+
+    public int $totalDays = 0;
+
+    public int $elapsedDays = 0;
+
+    public int $remainingDays = 0;
+
+    public int $progressPercent = 0;
+
+    public string $progressStatus = 'upcoming';
+
     public function mount(): void
     {
         $this->activeDocumentName = $this->resolveActiveDocumentName();
@@ -153,12 +167,61 @@ class SolarInterferencesModal extends Component
                 ->count();
             $this->loadedAt = time();
 
+            $this->computeProgressWindow();
+
             if ($this->todayHasData) {
                 $this->dispatch('solar-focus-today');
             }
         } finally {
             $this->loading = false;
         }
+    }
+
+    protected function computeProgressWindow(): void
+    {
+        $upload = SolarInterferenceUpload::query()
+            ->where('document_name', $this->activeDocumentName)
+            ->first();
+
+        if (! $upload || ! $upload->first_event_date || ! $upload->last_event_date) {
+            $this->windowStart = null;
+            $this->windowEnd = null;
+            $this->totalDays = 0;
+            $this->elapsedDays = 0;
+            $this->remainingDays = 0;
+            $this->progressPercent = 0;
+            $this->progressStatus = 'upcoming';
+            return;
+        }
+
+        $start = Carbon::parse($upload->first_event_date)->startOfDay();
+        $end = Carbon::parse($upload->last_event_date)->startOfDay();
+        $today = Carbon::today();
+
+        $totalDays = $start->diffInDays($end) + 1;
+
+        if ($today->lt($start)) {
+            $elapsed = 0;
+            $status = 'upcoming';
+        } elseif ($today->gt($end)) {
+            $elapsed = $totalDays;
+            $status = 'finished';
+        } else {
+            $elapsed = $start->diffInDays($today) + 1;
+            $status = 'active';
+        }
+
+        $percent = $totalDays > 0
+            ? (int) round(($elapsed / $totalDays) * 100)
+            : 0;
+
+        $this->windowStart = $start->toDateString();
+        $this->windowEnd = $end->toDateString();
+        $this->totalDays = $totalDays;
+        $this->elapsedDays = $elapsed;
+        $this->remainingDays = max(0, $totalDays - $elapsed);
+        $this->progressPercent = max(0, min(100, $percent));
+        $this->progressStatus = $status;
     }
 
     protected function resetModalData(): void
@@ -168,6 +231,13 @@ class SolarInterferencesModal extends Component
         $this->todayHasData = false;
         $this->totalEvents = 0;
         $this->totalChannels = 0;
+        $this->windowStart = null;
+        $this->windowEnd = null;
+        $this->totalDays = 0;
+        $this->elapsedDays = 0;
+        $this->remainingDays = 0;
+        $this->progressPercent = 0;
+        $this->progressStatus = 'upcoming';
         $this->loadedAt = time();
     }
 
