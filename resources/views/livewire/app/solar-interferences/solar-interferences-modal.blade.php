@@ -91,7 +91,7 @@
                                 $endLabel = ucwords(\Carbon\Carbon::parse($windowEnd)->translatedFormat('d M Y'), ' ');
                                 $statusStyles = [
                                     'upcoming' => [
-                                        'gradient' => 'from-blue-500/10 via-blue-400/5 to-transparent',
+                                        'gradient' => 'bg-blue-50 dark:bg-blue-900/30',
                                         'border' => 'border-blue-200/70 dark:border-blue-800/40',
                                         'bar' => 'bg-gradient-to-r from-blue-500 to-cyan-400',
                                         'glow' => 'shadow-blue-500/20',
@@ -101,12 +101,12 @@
                                         'marker' => 'bg-blue-500',
                                     ],
                                     'active' => [
-                                        'gradient' => $areaColor('from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10'),
-                                        'border' => $areaColor('border-amber-400 dark:border-amber-500'),
+                                        'gradient' => $areaColor('bg-amber-100 dark:bg-amber-900/40'),
+                                        'border' => $areaColor('border-amber-400 dark:border-amber-400'),
                                         'bar' => $areaIsDTH
                                             ? 'bg-gradient-to-r from-secondary-500 via-secondary-400 to-secondary-500'
                                             : 'bg-gradient-to-r from-primary-500 via-primary-400 to-primary-500',
-                                        'glow' => $areaColor('shadow-amber-500/30'),
+                                        'glow' => 'shadow-amber-500/30',
                                         'badge' => $areaIsDTH
                                             ? 'bg-secondary-500 hover:bg-secondary-600 text-white ring-1 ring-secondary-600/30 shadow-sm shadow-secondary-500/30'
                                             : 'bg-primary-500 hover:bg-primary-600 text-white ring-1 ring-primary-600/30 shadow-sm shadow-primary-500/30',
@@ -117,7 +117,7 @@
                                         'pulse' => true,
                                     ],
                                     'finished' => [
-                                        'gradient' => 'from-emerald-500/10 via-emerald-400/5 to-transparent',
+                                        'gradient' => 'bg-emerald-50 dark:bg-emerald-900/30',
                                         'border' => 'border-emerald-200/70 dark:border-emerald-800/40',
                                         'bar' => 'bg-gradient-to-r from-emerald-500 to-teal-400',
                                         'glow' => 'shadow-emerald-500/20',
@@ -130,7 +130,7 @@
                                 $current = $statusStyles[$progressStatus] ?? $statusStyles['upcoming'];
                                 $markerPercent = $progressStatus === 'finished' ? 100 : ($progressStatus === 'upcoming' ? 0 : $progressPercent);
                             @endphp
-                            <div class="relative overflow-hidden rounded-2xl border {{ $current['border'] }} bg-gradient-to-br {{ $current['gradient'] }} {{ $progressStatus === 'active' ? 'shadow-lg' : 'dark:bg-gray-900/40 shadow-sm hover:shadow-md' }} transition-shadow duration-300"
+                            <div class="relative overflow-hidden rounded-2xl border {{ $current['border'] }} {{ $current['gradient'] }} {{ $progressStatus === 'active' ? 'shadow-lg' : 'dark:bg-gray-900/40 shadow-sm hover:shadow-md' }} transition-shadow duration-300"
                                 aria-label="{{ __('Solar interference progress') }}">
                                 <div class="px-5 pt-4 pb-4">
                                     <div class="flex items-center justify-between gap-3 mb-3">
@@ -161,7 +161,7 @@
                                         <div class="absolute inset-y-0 left-0 {{ $current['bar'] }} transition-all duration-700 ease-out rounded-full shadow-sm {{ $current['glow'] }}"
                                             style="width: {{ $progressPercent }}%"></div>
                                         @if ($progressStatus === 'active')
-                                            <div class="absolute top-1/2 -translate-y-1/2 translate-x-[-50%] w-4 h-4 rounded-full {{ $current['markerDot'] ?? '' }} ring-2 ring-white {{ $areaColor('dark:ring-primary-400') }} shadow-md {{ $current['marker'] }} transition-all duration-700 ease-out"
+                                            <div class="absolute top-1/2 -translate-y-1/2 translate-x-[-50%] w-4 h-4 rounded-full {{ $current['markerDot'] ?? '' }} ring-2 ring-white {{ $areaColor('ring-amber-400 dark:ring-amber-400') }} shadow-md {{ $current['marker'] }} transition-all duration-700 ease-out"
                                                 style="left: {{ $progressPercent }}%;"></div>
                                         @endif
                                     </div>
@@ -198,8 +198,8 @@
                         </div>
                     @else
                         @if ($todayHasData)
-                            <div id="solar-today-section" class="mb-5 rounded-xl border-2 {{ $areaColor('border-amber-400 dark:border-amber-500') }} bg-gradient-to-br {{ $areaColor('from-amber-50 to-amber-100/40 dark:from-amber-900/30 dark:to-amber-900/10') }} shadow-lg overflow-hidden">
-                                <div class="px-4 py-3 {{ $areaColor('bg-amber-500/10 dark:bg-amber-500/20') }} border-b {{ $areaColor('border-amber-400 dark:border-primary-400') }} flex items-center justify-between">
+                            <div id="solar-today-section" class="mb-5 rounded-xl border-2 {{ $areaColor('border-amber-400 dark:border-amber-400') }} {{ $areaColor('bg-amber-100 dark:bg-amber-900/40') }} shadow-lg overflow-hidden">
+                                <div class="px-4 py-3 {{ $areaColor('bg-amber-500/15 dark:bg-amber-500/25') }} border-b {{ $areaColor('border-amber-400 dark:border-amber-400') }} flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-sun {{ $areaColor('text-amber-500') }} animate-pulse"></i>
                                         <h4 class="font-bold {{ $areaColor('text-amber-900 dark:text-amber-100') }}">
@@ -211,7 +211,7 @@
                                     </div>
                                 </div>
 
-                                <ul class="divide-y {{ $areaColor('divide-amber-200/60 dark:divide-primary-800/30') }}">
+                                <ul class="divide-y {{ $areaColor('divide-amber-200/60 dark:divide-amber-800/30') }}">
                                     @foreach ($todayEvents as $event)
                                         @php
                                             $resolved = $event['channel'];
