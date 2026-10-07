@@ -89,6 +89,7 @@ Route::get('/devices/downloads/months', [DownloadExportController::class, 'getMo
 
 Route::prefix('/devices/rack-layout')->name('rack-layout.')->middleware(['auth', 'verified'])->middleware(\App\Http\Middleware\EnsureUserCanAccessDataCenters::class)->group(function () {
     Route::get('/', [RackLayoutController::class, 'index'])->name('index');
+    Route::get('/export-report', [RackLayoutController::class, 'exportReportPdf'])->name('export-report');
     Route::get('/create', [RackLayoutController::class, 'create'])->name('create');
     Route::post('/', [RackLayoutController::class, 'store'])->name('store');
     Route::get('/map', [RackLayoutController::class, 'map'])->name('map');

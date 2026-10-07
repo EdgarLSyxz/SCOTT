@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Rack;
 use App\Models\RackEquipment;
 use App\Models\RackEquipmentHistory;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class RackLayoutController extends Controller
@@ -441,24 +445,178 @@ class RackLayoutController extends Controller
     {
         $this->authorize('view', $rack);
 
+        $rack->load(['equipment', 'activeIpRanges']);
+
         $positions = $rack->positionsMap();
 
-        $html = view('admin.rack-layout.pdf', [
+        $stats = [
+            'total_occupied_u' => (int) $rack->occupied_positions_count,
+            'equipment_count' => (int) $rack->equipment()
+                ->whereNotNull('equipment_name')
+                ->where('equipment_name', '!=', '')
+                ->count(),
+            'empty_positions' => max(0, (int) $rack->total_units - (int) $rack->occupied_positions_count),
+            'occupancy_percent' => $rack->total_units > 0
+                ? ((int) $rack->occupied_positions_count / (int) $rack->total_units) * 100
+                : 0.0,
+        ];
+
+        $images = $this->encodeEquipmentImages($rack);
+        $logoDataUri = $this->encodeBrandLogo();
+
+        $ipRanges = $rack->activeIpRanges;
+
+        $equipmentNotes = $rack->equipment()
+            ->whereNotNull('notes')
+            ->where('notes', '!=', '')
+            ->get()
+            ->map(fn ($eq) => [
+                'name' => $eq->equipment_name ?: __('Unnamed equipment'),
+                'label' => 'U'.$eq->position.($eq->size_u > 1 ? '–U'.($eq->position + $eq->size_u - 1) : ''),
+                'notes' => $eq->notes,
+            ])
+            ->all();
+
+        return $this->renderPdf('admin.rack-layout.pdf', [
             'rack' => $rack,
             'positions' => $positions,
-        ])->render();
+            'stats' => $stats,
+            'images' => $images,
+            'logoDataUri' => $logoDataUri,
+            'ipRanges' => $ipRanges,
+            'equipmentNotes' => collect($equipmentNotes),
+            'generatedBy' => Auth::user()?->name,
+        ], 'Rack-'.preg_replace('/\s+/', '-', $rack->name).'-'.now()->format('Ymd').'.pdf');
+    }
 
-        $dompdf = new \Dompdf\Dompdf;
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('a4', 'portrait');
-        $dompdf->render();
+    public function exportReportPdf(Request $request)
+    {
+        $racks = Rack::with(['equipment', 'activeIpRanges'])
+            ->orderByDesc('is_active')
+            ->orderBy('name')
+            ->get();
 
-        $filename = 'Rack-'.preg_replace('/\s+/', '-', $rack->name).'-'.now()->format('Ymd').'.pdf';
+        $reportData = $racks->map(function (Rack $rack) {
+            $stats = [
+                'total_occupied_u' => (int) $rack->occupied_positions_count,
+                'equipment_count' => (int) $rack->equipment()
+                    ->whereNotNull('equipment_name')
+                    ->where('equipment_name', '!=', '')
+                    ->count(),
+                'empty_positions' => max(0, (int) $rack->total_units - (int) $rack->occupied_positions_count),
+                'occupancy_percent' => $rack->total_units > 0
+                    ? ((int) $rack->occupied_positions_count / (int) $rack->total_units) * 100
+                    : 0.0,
+            ];
 
-        return response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ]);
+            return [
+                'rack' => $rack,
+                'positions' => $rack->positionsMap(),
+                'stats' => $stats,
+                'ipRanges' => $rack->activeIpRanges,
+                'images' => $this->encodeEquipmentImages($rack),
+            ];
+        });
+
+        $totals = [
+            'racks_count' => $racks->count(),
+            'active_racks' => $racks->where('is_active', true)->count(),
+            'total_units_sum' => (int) $racks->sum('total_units'),
+            'total_occupied_u_sum' => (int) $racks->sum(fn ($r) => $r->occupied_positions_count),
+            'total_equipment' => (int) $racks->sum(fn ($r) => $r->equipment()
+                ->whereNotNull('equipment_name')
+                ->where('equipment_name', '!=', '')
+                ->count()),
+            'total_ip_ranges' => (int) $racks->sum(fn ($r) => $r->activeIpRanges->count()),
+        ];
+        $totals['occupancy_percent'] = $totals['total_units_sum'] > 0
+            ? ($totals['total_occupied_u_sum'] / $totals['total_units_sum']) * 100
+            : 0.0;
+
+        $logoDataUri = $this->encodeBrandLogo();
+
+        return $this->renderPdf('admin.rack-layout.report', [
+            'reportData' => $reportData,
+            'totals' => $totals,
+            'logoDataUri' => $logoDataUri,
+            'generatedBy' => Auth::user()?->name,
+        ], 'Rack-Layouts-Report-'.now()->format('Ymd-His').'.pdf');
+    }
+
+    private function encodeEquipmentImages(Rack $rack): array
+    {
+        $images = [];
+        foreach ($rack->equipment as $eq) {
+            if (! $eq->image_url) {
+                continue;
+            }
+            $relativePath = $eq->image_url;
+            $absolutePath = Storage::disk('public')->path($relativePath);
+            if (! is_file($absolutePath) || ! is_readable($absolutePath)) {
+                continue;
+            }
+            $contents = @file_get_contents($absolutePath);
+            if ($contents === false) {
+                continue;
+            }
+            $mime = @mime_content_type($absolutePath) ?: 'image/png';
+            $images[$eq->id] = 'data:'.$mime.';base64,'.base64_encode($contents);
+        }
+
+        return $images;
+    }
+
+    private function encodeBrandLogo(): ?string
+    {
+        $candidates = [
+            public_path('img/startv-stream-logo.png'),
+        ];
+        foreach ($candidates as $path) {
+            if (is_file($path) && is_readable($path)) {
+                $contents = @file_get_contents($path);
+                if ($contents === false) {
+                    continue;
+                }
+                $mime = @mime_content_type($path) ?: 'image/png';
+
+                return 'data:'.$mime.';base64,'.base64_encode($contents);
+            }
+        }
+
+        return null;
+    }
+
+    private function renderPdf(string $view, array $data, string $filename)
+    {
+        $previousLocale = App::getLocale();
+        App::setLocale('es');
+        try {
+            $html = view($view, $data)->render();
+
+            $options = new Options;
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isFontSubsettingEnabled', true);
+            $options->set('chroot', base_path());
+
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('a4', 'portrait');
+            $dompdf->render();
+
+            $canvas = $dompdf->getCanvas();
+            $canvas->page_script(function ($pageNumber, $pageCount, $canvas) {
+                $canvas->text(520, 820, __('Page').' '.$pageNumber.' / '.$pageCount, null, 8, [0.6, 0.6, 0.6]);
+            });
+
+            return response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]);
+        } finally {
+            App::setLocale($previousLocale);
+        }
     }
 
     public function map()

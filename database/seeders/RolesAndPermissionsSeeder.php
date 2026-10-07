@@ -50,6 +50,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'solar-interferences.delete',
             'roles.edit',
             'permissions.assign',
+            'data-centers.admin',
         ];
 
         foreach ($permissions as $permission) {

@@ -31,6 +31,11 @@
             <i class="fa-solid fa-arrow-left mr-1.5"></i>
             {{ __('Go back') }}
         </a>
+        <a href="{{ route('admin.rack-layout.export-pdf', $rack) }}"
+           class="hidden sm:inline-flex items-center text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium rounded-lg text-sm px-4 py-2 transition"
+           title="{{ __('Export complete report as PDF') }}">
+            <i class="fa-solid fa-file-pdf mr-1.5"></i> {{ __('Export PDF') }}
+        </a>
     </x-slot>
 
     <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-none dark:border dark:border-gray-700 p-5">

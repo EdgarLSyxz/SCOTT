@@ -25,6 +25,14 @@
     @if ($racks->count())
         <x-slot name="action">
             <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.rack-layout.export-report') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="hidden sm:inline-flex items-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 font-medium rounded-lg text-sm px-5 py-2 shadow-xl"
+                   title="{{ __('Download complete report (all racks) as PDF') }}">
+                    <i class="fa-solid fa-file-pdf mr-1.5"></i>
+                    {{ __('General report (PDF)') }}
+                </a>
                 <a href="{{ route('admin.rack-layout.create') }}"
                     class="hidden sm:block text-white {{ Auth::user()?->area === 'DTH'
                     ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
@@ -34,6 +42,13 @@
                 </a>
             </div>
         </x-slot>
+        <a href="{{ route('admin.rack-layout.export-report') }}"
+           target="_blank"
+           rel="noopener"
+           class="mb-2 sm:hidden block text-center text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 font-medium rounded-lg text-sm px-5 py-2 shadow-xl">
+            <i class="fa-solid fa-file-pdf mr-1.5"></i>
+            {{ __('General report (PDF)') }}
+        </a>
         <a href="{{ route('admin.rack-layout.create') }}"
             class="mb-4 sm:hidden block text-center text-white {{ Auth::user()?->area === 'DTH'
             ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-4 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-800'
@@ -172,6 +187,9 @@
                                 <i class="fa-solid fa-toggle-on mr-1"></i>
                                 {{ __('Status') }}
                             </th>
+                            <th scope="col" class="px-4 py-3 text-center whitespace-nowrap w-[110px]">
+                                {{ __('Report') }}
+                            </th>
                             <th scope="col" class="px-4 py-3 text-center whitespace-nowrap w-[60px]"></th>
                         </tr>
                     </thead>
@@ -199,6 +217,17 @@
                                             {{ __('Inactive') }}
                                         </span>
                                     @endif
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <a href="{{ route('admin.rack-layout.export-pdf', $rack) }}"
+                                       onclick="event.stopPropagation();"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="inline-flex items-center text-white {{ Auth::user()?->area === 'DTH' ? 'bg-secondary-700 hover:bg-secondary-800 focus:ring-secondary-300 dark:bg-secondary-600 dark:hover:bg-secondary-700' : 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700' }} font-medium rounded-lg text-xs px-3 py-1.5 shadow focus:outline-none focus:ring-4"
+                                       title="{{ __('Download PDF report') }}">
+                                        <i class="fa-solid fa-file-pdf mr-1"></i>
+                                        {{ __('PDF') }}
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4 text-center whitespace-nowrap">
                                     <span class="flex items-center h-full justify-center"
