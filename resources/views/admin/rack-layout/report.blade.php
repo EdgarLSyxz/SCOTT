@@ -336,24 +336,24 @@
         table.equipment tr.bg-yellow td { background: #fef3c7; }
         table.equipment tr.bg-orange td { background: #ffedd5; }
         table.equipment img.thumb {
-            width: 72px;
-            height: 72px;
+            width: 96px;
+            height: 96px;
             object-fit: contain;
             border: 1px solid #e9d5f3;
-            border-radius: 4px;
+            border-radius: 5px;
             background: #ffffff;
-            padding: 2px;
+            padding: 3px;
         }
         table.equipment .no-image {
             display: inline-block;
-            width: 72px;
-            height: 72px;
+            width: 96px;
+            height: 96px;
             background: #f1f5f9;
             border: 1px dashed #cbd5e1;
-            border-radius: 4px;
+            border-radius: 5px;
             text-align: center;
-            line-height: 72px;
-            font-size: 22px;
+            line-height: 96px;
+            font-size: 28px;
             color: #cbd5e1;
         }
 
@@ -628,7 +628,7 @@
         <table class="equipment">
             <thead>
                 <tr>
-                    <th style="width: 86px; text-align: center;">{{ __('Img') }}</th>
+                    <th style="width: 110px; text-align: center;">{{ __('Img') }}</th>
                     <th style="width: 44px; text-align: center;">{{ __('U') }}</th>
                     <th>{{ __('Equipment') }}</th>
                     <th style="width: 14%;">{{ __('Model / IP') }}</th>
