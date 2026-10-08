@@ -79,26 +79,29 @@
         .cdn-value-stream, .cdn-value-everywhere, .cdn-value-merged {
             font-family: Arial, Helvetica, "Liberation Sans", "DejaVu Sans", sans-serif !important;
         }
-        .cdn-panel { border: 1px solid #e9d5f3; border-radius: 10px; overflow: hidden; background: #fff; }
+        .cdn-panel { border: 1px solid #e9d5f3; border-radius: 10px; overflow: hidden; background: #fff; page-break-inside: avoid; break-inside: avoid; }
         .cdn-panel-header { padding: 14px 16px; border-bottom: 1px solid #e9d5f3; background: linear-gradient(135deg, #fdf7ff 0%, #ffffff 50%); border-left: 4px solid #9F24A5; }
         .cdn-panel-title { margin: 0; font-size: 12px; font-weight: 700; color: #9F24A5; letter-spacing: 0.3px; }
-        .cdn-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .cdn-table thead th { padding: 10px 14px; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.4px; color: #ffffff; text-align: center; }
+        .cdn-table { width: 100%; border-collapse: collapse; font-size: 9px; page-break-inside: avoid; break-inside: avoid; }
+        .cdn-table thead { display: table-header-group; }
+        .cdn-table thead th { padding: 7px 10px; font-weight: 700; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.4px; color: #ffffff; text-align: center; }
         .cdn-table thead .cdn-th-desc { background: #9F24A5; text-align: left; }
         .cdn-table thead .cdn-th-stream { background: #00A7C4; }
         .cdn-table thead .cdn-th-everywhere { background: #8B5CF6; }
-        .cdn-table tbody td { padding: 9px 14px; vertical-align: middle; }
+        .cdn-table tbody td { padding: 5px 10px; vertical-align: middle; }
         .cdn-table tbody td:not(.cdn-group-row td) { border-bottom: 1px solid #f2eaf5; color: #374151; }
         .cdn-table tbody tr:last-child td:not(.cdn-group-row td) { border-bottom: none; }
-        .cdn-group-row td { background: #f3e8f9; color: #7a1d82; font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 7px 14px; border-top: 1px solid #e9d5f3; border-bottom: 1px solid #e9d5f3; }
+        .cdn-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+        .cdn-group-row td { background: #f3e8f9; color: #7a1d82; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 5px 10px; border-top: 1px solid #e9d5f3; border-bottom: 1px solid #e9d5f3; }
         .cdn-group-row td:first-child { border-left: 3px solid #9F24A5; }
-        .cdn-label { font-weight: 600; color: #374151; padding-left: 8px; }
+        .cdn-label { font-weight: 600; color: #374151; padding-left: 6px; }
         .cdn-value-stream { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #0089a3; }
         .cdn-value-everywhere { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #7c3aed; }
         .cdn-row-merged td { background: #fafafa; }
         .cdn-row-merged .cdn-label { color: #6b21a8; }
         .cdn-row-merged .cdn-value-merged { text-align: center; font-variant-numeric: tabular-nums; }
-        .cdn-pill { display: inline-block; min-width: 80px; padding: 4px 12px; border: 1px solid #9F24A5; border-radius: 5px; background: #fdf7ff; font-variant-numeric: tabular-nums; color: #9F24A5; font-weight: 700; font-size: 10.5px; }
+        .cdn-pill { display: inline-block; min-width: 70px; padding: 2px 10px; border: 1px solid #9F24A5; border-radius: 5px; background: #fdf7ff; font-variant-numeric: tabular-nums; color: #9F24A5; font-weight: 700; font-size: 9.5px; }
+        .cdn-section { page-break-inside: avoid; break-inside: avoid; }
 
         .cdn-label,
         .cdn-row-merged .cdn-label {
@@ -656,7 +659,10 @@
                     'Costo de CDN BPK < 1 PB (Fijo)',
                     'Costo por TB Consumido',
                     'Costo por Dispositivo',
-                    'Costo por Usuarios Totales'
+                    'Costo por Usuarios Totales',
+                    'Total de Horas Consumidas al Mes',
+                    'Horas Promedio de Consumo por Dispositivo',
+                    'Horas Promedio de Consumo por Suscriptor',
                 ];
                 $cdnGroupLabels = [
                     'Datos base' => [
@@ -683,6 +689,11 @@
                         'Costo Por Usuario',
                         'Costo por Usuarios Totales',
                     ],
+                    'Horas de Consumo' => [
+                        'Total de Horas Consumidas al Mes',
+                        'Horas Promedio de Consumo por Dispositivo',
+                        'Horas Promedio de Consumo por Suscriptor',
+                    ],
                 ];
                 $cdnRowGroupMap = [];
                 foreach ($cdnGroupLabels as $groupLabel => $groupRows) {
@@ -691,7 +702,7 @@
                     }
                 }
             @endphp
-            <div class="section" style="page-break-before: always;">
+            <div class="section cdn-section">
                 <h3>{{ __('CDN Consumption Statistics') }}</h3>
                 <div class="note" style="margin-bottom: 12px;">
                     {{ __('CDN Consumption and cost projection.') }}
@@ -913,13 +924,32 @@
                 @endforeach
 
                 @if(empty($device_id))
+                    @php
+                            $lgNoRecordsMessage = __('No downloads were reported for the month of JULY, AUGUST and SEPTEMBER 2026 on this device');
+                        if (!empty($devices)) {
+                            foreach ($devices as $lgDevice) {
+                                if (mb_strtolower(trim((string) ($lgDevice['name'] ?? ''))) === mb_strtolower('LG')
+                                    && !empty($lgDevice['no_records_message'])) {
+                                    $lgNoRecordsMessage = $lgDevice['no_records_message'];
+                                    break;
+                                }
+                            }
+                        }
+                        $lgReportMonth = $month ?? null;
+                        $lgReportYear = is_numeric($year ?? null) ? (int) $year : (is_string($year ?? null) && preg_match('/\d{4}/', (string) $year, $ym) ? (int) $ym[0] : null);
+                        if ($lgReportMonth === 'all' || $lgReportMonth === null || $lgReportMonth === '') {
+                        $lgNoRecordsMessage = __('No downloads were reported for the month of JULY, AUGUST and SEPTEMBER 2026 on this device');
+                        } elseif ((int) $lgReportMonth === 9 && $lgReportYear === 2026) {
+                            $lgNoRecordsMessage = __('No downloads were reported for the month of SEPTEMBER 2026 on this device');
+                        }
+                    @endphp
                     <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
                         <div class="device-name">Web Client</div>
                         <div class="device-meta">{{ __('Not applicable') }}</div>
                     </div>
                     <div class="group-card" style="background:#f0f4f8; border-left:4px solid #9ca3af; margin-bottom:16px;">
                         <div class="device-name">LG</div>
-                        <div class="device-meta">{{ __('No downloads were reported for the month of JULY and AUGUST 2026 on this device') }}</div>
+                        <div class="device-meta">{{ $lgNoRecordsMessage }}</div>
                     </div>
                 @endif
             @elseif(!empty($devices) && count($devices))

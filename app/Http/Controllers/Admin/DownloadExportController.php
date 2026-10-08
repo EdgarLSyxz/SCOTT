@@ -240,8 +240,10 @@ class DownloadExportController extends Controller
         return false;
     }
 
-    private function buildLgNoRecordsEntry(int $monthsCount = 0, ?string $protocol = null): array
+    private function buildLgNoRecordsEntry(int $monthsCount = 0, ?string $protocol = null, $month = null, $year = null): array
     {
+        $message = $this->getLgNoRecordsMessage($month, $year);
+
         return [
             'id' => null,
             'name' => 'LG',
@@ -255,8 +257,32 @@ class DownloadExportController extends Controller
             'sparkline' => '',
             'no_aplica' => true,
             'no_records' => true,
-            'no_records_message' => __('No downloads were reported for the month of JULY and AUGUST 2026 on this device'),
+            'no_records_message' => $message,
         ];
+    }
+
+    private function getLgNoRecordsMessage($month = null, $year = null): string
+    {
+        $monthKey = null;
+        $yearValue = null;
+
+        if (is_numeric($month)) {
+            $monthKey = (int) $month;
+        } elseif (is_string($month) && $month !== '') {
+            $monthKey = (int) $month;
+        }
+
+        if (is_numeric($year)) {
+            $yearValue = (int) $year;
+        } elseif (is_string($year) && preg_match('/\d{4}/', $year, $m)) {
+            $yearValue = (int) $m[0];
+        }
+
+        if ($monthKey === 9 && $yearValue === 2026) {
+            return __('No downloads were reported for the month of SEPTEMBER 2026 on this device');
+        }
+
+        return __('No downloads were reported for the month of JULY, AUGUST and SEPTEMBER 2026 on this device');
     }
 
     private function shouldShowLgNoRecordsCard(): bool
@@ -312,6 +338,9 @@ class DownloadExportController extends Controller
                 ['label' => 'Costo por Dispositivo', 'cols' => ['B', 'C']],
                 ['label' => 'Costo Por Usuario', 'cols' => ['B', 'C']],
                 ['label' => 'Costo por Usuarios Totales', 'cols' => ['B', 'C']],
+                ['label' => 'Total de Horas Consumidas al Mes', 'cols' => ['B', 'C']],
+                ['label' => 'Horas Promedio de Consumo por Dispositivo', 'cols' => ['B', 'C']],
+                ['label' => 'Horas Promedio de Consumo por Suscriptor', 'cols' => ['B', 'C']],
             ];
 
             foreach ($rowDefinitions as $index => $def) {
@@ -990,7 +1019,7 @@ class DownloadExportController extends Controller
                         if ($this->shouldShowLgNoRecordsCard()
                             && ! $this->lgHasAnyRecords($data['devices'])) {
                             $monthsCount = count($data['period_labels'] ?? []);
-                            $data['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
+                            $data['devices'][] = $this->buildLgNoRecordsEntry($monthsCount, null, $data['month'] ?? null, $data['year'] ?? null);
                         }
                     } else {
                         $data['devices'] = array_values(array_filter($data['devices'] ?? [], function ($d) {
@@ -1214,7 +1243,7 @@ class DownloadExportController extends Controller
                     }
 
                     if ($this->shouldShowLgNoRecordsCard() && ! $this->lgHasAnyRecords($orderedDevices)) {
-                        $orderedDevices[] = $this->buildLgNoRecordsEntry(0);
+                        $orderedDevices[] = $this->buildLgNoRecordsEntry(0, null, $data['month'] ?? null, $data['year'] ?? null);
                     }
                 }
 
@@ -1371,7 +1400,7 @@ class DownloadExportController extends Controller
 
                 if ($this->shouldShowLgNoRecordsCard() && ! $this->lgHasAnyRecords($pd['devices'] ?? [])) {
                     $monthsCount = count($pd['period_labels'] ?? []);
-                    $pd['devices'][] = $this->buildLgNoRecordsEntry($monthsCount);
+                    $pd['devices'][] = $this->buildLgNoRecordsEntry($monthsCount, null, $pd['month'] ?? null, $pd['year'] ?? null);
                 }
             } else {
                 $pd['devices'] = array_values(array_filter($pd['devices'] ?? [], function ($d) {
