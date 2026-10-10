@@ -11,6 +11,10 @@ export default {
         'border-blue-400', 'bg-blue-100', 'dark:bg-blue-900',
         'border-red-500', 'bg-red-100', 'dark:bg-red-900',
         'border-gray-300', 'bg-gray-50', 'dark:bg-gray-700',
+        {
+            pattern: /(bg|text|border|ring|from|to|via|shadow)-(primary|secondary|gray)-(50|100|200|300|400|500|600|700|800|900|950)(\/\d+)?/,
+            variants: ['hover', 'dark', 'dark:hover', 'dark:focus'],
+        },
     ],
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',

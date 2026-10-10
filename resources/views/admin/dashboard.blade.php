@@ -1,5 +1,18 @@
 @php
     use Illuminate\Support\Str;
+
+    $userArea = $userArea ?? (Auth::user()?->area ?? null);
+    $areaColor = match ($userArea) {
+        'OTT' => 'primary',
+        'DTH' => 'secondary',
+        default => 'gray',
+    };
+    $chipBg = "bg-{$areaColor}-50 dark:bg-{$areaColor}-500/15";
+    $chipText = "text-{$areaColor}-700 dark:text-{$areaColor}-300";
+    $chipRing = "ring-{$areaColor}-200/60 dark:ring-{$areaColor}-500/30";
+    $accentBg = "bg-{$areaColor}-600 hover:bg-{$areaColor}-700";
+    $accentText = "text-{$areaColor}-600 dark:text-{$areaColor}-400";
+    $accentBorder = "border-{$areaColor}-600 dark:border-{$areaColor}-400";
 @endphp
 
 <x-admin-layout :breadcrumbs="[
@@ -9,10 +22,10 @@
         ]
     ]">
 
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 px-6 py-7 sm:px-8 sm:py-9 shadow-xl shadow-primary-900/10">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-{{ $areaColor }}-600 via-{{ $areaColor }}-700 to-{{ $areaColor }}-900 px-6 py-7 sm:px-8 sm:py-9 shadow-xl">
         <div class="absolute inset-0 opacity-30 pointer-events-none" aria-hidden="true">
-            <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary-400 blur-3xl"></div>
-            <div class="absolute -bottom-24 -left-12 w-64 h-64 rounded-full bg-primary-300 blur-3xl"></div>
+            <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-{{ $areaColor }}-400 blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-12 w-64 h-64 rounded-full bg-{{ $areaColor }}-300 blur-3xl"></div>
         </div>
 
         <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -22,14 +35,14 @@
                 </span>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 mb-0.5">
-                        <span class="text-[10px] uppercase tracking-[0.18em] font-semibold text-primary-100/80">
+                        <span class="text-[10px] uppercase tracking-[0.18em] font-semibold text-{{ $areaColor }}-100/80">
                             {{ __('Admin panel') }}
                         </span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">
                         {{ config('app.name', 'Laravel') }} • {{ __('OTT •  DTH Communications System') }}
                     </h1>
-                    <p class="text-sm text-primary-100/80 mt-0.5">
+                    <p class="text-sm text-{{ $areaColor }}-100/80 mt-0.5">
                         {{ __('Welcome back') }}, <span class="font-semibold text-white">{{ Auth::user()->name }}</span>
                     </p>
                 </div>
@@ -165,14 +178,19 @@
         </div>
 
         <div class="rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-200/70 dark:border-gray-700/60 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-                <h3 class="flex items-center text-sm font-semibold text-gray-900 dark:text-white">
-                    <i class="fa-solid fa-circle-info mr-2 text-gray-500 dark:text-gray-400"></i>
-                    {{ __('System info') }}
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ __('Application stack') }}
-                </p>
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-start justify-between gap-3">
+                <div>
+                    <h3 class="flex items-center text-sm font-semibold text-gray-900 dark:text-white">
+                        <i class="fa-solid fa-circle-info mr-2 text-gray-500 dark:text-gray-400"></i>
+                        {{ __('System info') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {{ __('Application stack') }}
+                    </p>
+                </div>
+                <span class="inline-flex items-center gap-1 px-2 h-6 rounded-full {{ $chipBg }} {{ $chipText }} ring-1 {{ $chipRing }} text-[11px] font-semibold shrink-0">
+                    v{{ config('app.version', '3.0') }}
+                </span>
             </div>
             <dl class="divide-y divide-gray-100 dark:divide-gray-700/60">
                 @php
@@ -199,33 +217,129 @@
             </dl>
             <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 flex items-center justify-between text-[11px]">
                 <span class="text-gray-500 dark:text-gray-400">{{ __('Last update') }}</span>
-                <span class="font-semibold text-gray-700 dark:text-gray-300">{{ __('July') }} 2026</span>
+                <span class="font-semibold text-gray-700 dark:text-gray-300">{{ __('October') }} 2026</span>
             </div>
         </div>
     </div>
 
-    {{-- <div class="mt-6 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-200/70 dark:border-gray-700/60 shadow-sm overflow-hidden p-5">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200/70 dark:border-gray-700/60">
-                    <i class="fa-solid fa-code text-gray-500 dark:text-gray-400 text-sm"></i>
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ __('Ing. Edgar Leonel Acevedo Cuevas') }}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ __('Developer') }} ·
-                        <a href="mailto:atencionott@stargroup.com.mx" class="hover:text-primary-600 dark:hover:text-primary-400">
-                            ecuevas@stargroup.com.mx
-                        </a>
-                    </p>
+    <div class="mt-6 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-200/70 dark:border-gray-700/60 shadow-sm p-6 sm:p-7">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700/60">
+                    <div class="flex items-center gap-2.5">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-md {{ $chipBg }} {{ $chipText }}">
+                            <i class="fa-solid fa-people-group text-[11px]"></i>
+                        </span>
+                        <div>
+                            <p class="text-[11px] font-semibold tracking-[0.14em] text-gray-500 dark:text-gray-400 uppercase leading-none">{{ __('Development Team') }}</p>
+                            <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white leading-tight">{{ __('Engineering and Technology Department') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                            <i class="fa-solid fa-user-group text-[10px]"></i>
+                            5 {{ __('members') }}
+                        </span>
+                    </div>
+                </div>
+
+                <ul class="mt-2 divide-y divide-gray-100 dark:divide-gray-700/60">
+                    <li class="group flex items-center gap-4 py-3 cursor-default">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700/60 {{ $chipText }} shrink-0">
+                            <i class="fa-solid fa-user text-[12px]"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14.5px] font-semibold text-gray-900 dark:text-white leading-tight truncate">Edgar Leonel Acevedo Cuevas</p>
+                        </div>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                            {{ __('Active') }}
+                        </span>
+                    </li>
+                    <li class="group flex items-center gap-4 py-3 cursor-default">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700/60 {{ $chipText }} shrink-0">
+                            <i class="fa-solid fa-user text-[12px]"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14.5px] font-semibold text-gray-900 dark:text-white leading-tight truncate">Erasmo Rodriguez Cardiel</p>
+                        </div>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                            {{ __('Active') }}
+                        </span>
+                    </li>
+                    <li class="group flex items-center gap-4 py-3 cursor-default">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700/60 {{ $chipText }} shrink-0">
+                            <i class="fa-solid fa-user text-[12px]"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14.5px] font-semibold text-gray-900 dark:text-white leading-tight truncate">Pamela Marlen Escobedo Ramirez</p>
+                        </div>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                            {{ __('Active') }}
+                        </span>
+                    </li>
+                    <li class="group flex items-center gap-4 py-3 cursor-default">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700/60 {{ $chipText }} shrink-0">
+                            <i class="fa-solid fa-user text-[12px]"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14.5px] font-semibold text-gray-900 dark:text-white leading-tight truncate">Saul Rodriguez de la Rosa</p>
+                        </div>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                            {{ __('Active') }}
+                        </span>
+                    </li>
+                    <li class="group flex items-center gap-4 py-3 cursor-default">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700/60 {{ $chipText }} shrink-0">
+                            <i class="fa-solid fa-user text-[12px]"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14.5px] font-semibold text-gray-900 dark:text-white leading-tight truncate">Juan Pablo Ortega Marquez</p>
+                        </div>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                            {{ __('Active') }}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="lg:col-span-4 lg:border-l lg:border-gray-100 lg:dark:border-gray-700/60 lg:pl-6">
+                <div class="flex items-center gap-2.5 pb-4 border-b border-gray-100 dark:border-gray-700/60">
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-md {{ $chipBg }} {{ $chipText }}">
+                        <i class="fa-solid fa-envelope text-[12px]"></i>
+                    </span>
+                    <div>
+                        <p class="text-[11px] font-semibold tracking-[0.14em] text-gray-500 dark:text-gray-400 uppercase leading-none">{{ __('Support Contact') }}</p>
+                        <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white leading-tight">{{ __('Engineering Support') }}</p>
+                    </div>
+                </div>
+
+                <p class="mt-4 text-[13px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {{ __('Reach our engineering team for technical inquiries, system reports and platform assistance.') }}
+                </p>
+
+                <a href="mailto:atencionott@stargroup.com.mx"
+                    class="mt-5 group flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:{{ $accentBorder }} hover:shadow-sm transition-all">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg {{ $chipBg }} {{ $chipText }} group-hover:{{ $accentBg }} group-hover:text-white transition shrink-0">
+                        <i class="fa-solid fa-envelope text-xs"></i>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-none">Email</p>
+                        <p class="mt-1 text-[13.5px] font-semibold text-gray-900 dark:text-white truncate">atencionott@stargroup.com.mx</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[11px] text-gray-400 group-hover:{{ $accentText }} group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+                </a>
+
+                <div class="mt-3 flex items-center gap-2 text-[11.5px] text-gray-500 dark:text-gray-400">
+                    <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    {{ __('Response within 24 hours') }}
                 </div>
             </div>
-            <span class="px-3 h-7 inline-flex items-center rounded-full bg-primary-50 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 text-xs font-semibold">
-                {{ __('Version') }} {{ config('app.version', '0.1') }}
-            </span>
         </div>
-    </div> --}}
+    </div>
 
 </x-admin-layout>

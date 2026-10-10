@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ReportSlaController;
 use App\Http\Controllers\Admin\SolarInterferenceController;
 use App\Http\Controllers\Admin\StageController;
 use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,7 +23,9 @@ Route::get('/', function () {
         'locale' => app()->getLocale(),
     ];
 
-    return view('admin.dashboard', compact('systemInfo'));
+    $userArea = Auth::user()?->area;
+
+    return view('admin.dashboard', compact('systemInfo', 'userArea'));
 })->name('dashboard');
 
 Route::resource('/users', UserController::class)->middleware(['auth', 'verified']);
